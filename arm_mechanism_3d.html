@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>仿人手臂肘关节机构 — 工程化销轴关节 / 贴臂圆柱电机</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; }
+  #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
+  #control-panel {
+    position: fixed; top: 20px; right: 20px; width: 340px;
+    background: rgba(22,22,44,0.92); border: 1px solid rgba(80,80,160,0.4);
+    border-radius: 12px; padding: 20px; z-index: 100;
+    backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    max-height: 90vh; overflow-y: auto;
+  }
+  #control-panel h2 { font-size: 16px; margin-bottom: 4px; color: #7c8aff; border-bottom: 1px solid rgba(80,80,160,0.3); padding-bottom: 8px; }
+  .panel-section { margin-bottom: 16px; }
+  .panel-section h3 { font-size: 13px; color: #a0a0d0; margin-bottom: 8px; }
+  .slider-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .slider-group label { font-size: 12px; color: #b0b0c0; display: flex; justify-content: space-between; }
+  .slider-group .value { color: #7c8aff; font-weight: 600; }
+  input[type=range] { -webkit-appearance: none; width: 100%; height: 6px; background: #2a2a4a; border-radius: 3px; outline: none; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #7c8aff; border-radius: 50%; cursor: pointer; box-shadow: 0 0 8px rgba(124,138,255,0.6); }
+  .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  button { background: #2a2a5a; color: #e0e0e0; border: 1px solid #4a4a8a; border-radius: 6px; padding: 8px 16px; font-size: 13px; cursor: pointer; transition: all 0.2s; flex: 1; }
+  button:hover { background: #3a3a7a; border-color: #6a6aba; }
+  .info-box { background: rgba(20,20,40,0.8); border: 1px solid rgba(60,60,120,0.3); border-radius: 8px; padding: 10px; font-size: 11px; color: #9090b0; line-height: 1.6; }
+  .info-box .highlight { color: #7c8aff; }
+  .info-box .biological { color: #66ddaa; }
+  .toggle-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .toggle-row input[type=checkbox] { width: 16px; height: 16px; accent-color: #7c8aff; }
+  .toggle-row label { font-size: 12px; color: #b0b0c0; cursor: pointer; }
+  #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); color: #7c8aff; font-size: 18px; z-index: 200; }
+</style>
+</head>
+<body>
+<div id="canvas-container"></div>
+<div id="loading">加载中...</div>
+<div id="control-panel" style="display:none;">
+  <h2>肘关节 · 双剪销轴 / 贴臂圆柱电机</h2>
+  <div class="panel-section">
+    <h3>运动控制 · 回缩屈臂，伸出伸直</h3>
+    <div class="slider-group"><label>屈臂角度 <span class="value" id="angle-val">0.0°</span></label><input type="range" id="angle-slider" min="0" max="120" value="0" step="0.5"></div>
+    <div class="slider-group"><label>电机回缩行程 <span class="value" id="stroke-val">0.0 mm</span></label><input type="range" id="stroke-slider" min="0" max="0" value="0" step="any"></div>
+    <div class="slider-group"><label>动画速度 <span class="value" id="speed-val">1.0x</span></label><input type="range" id="speed-slider" min="0.1" max="3.0" value="1.0" step="0.1"></div>
+    <div class="btn-group"><button id="btn-play">▶ 播放</button><button id="btn-reset">⏹ 重置</button></div>
+    <div class="btn-group" style="margin-top:8px;"><button id="btn-view-iso">等轴视图</button><button id="btn-view-front">正面视图</button><button id="btn-view-side">侧面视图</button></div>
+  </div>
+  <div class="panel-section">
+    <h3>显示选项</h3>
+    <div class="toggle-row"><input type="checkbox" id="show-grid" checked><label for="show-grid">网格地面</label></div>
+    <div class="toggle-row"><input type="checkbox" id="show-labels" checked><label for="show-labels">标注标签</label></div>
+    <div class="toggle-row"><input type="checkbox" id="show-trail" checked><label for="show-trail">运动轨迹</label></div>
+    <div class="toggle-row"><input type="checkbox" id="show-body" checked><label for="show-body">人体轮廓参考</label></div>
+  </div>
+  <div class="panel-section"><h3>仿生类比</h3><div class="info-box" id="bio-info"></div></div>
+  <div class="panel-section"><h3>机构参数</h3><div class="info-box" id="param-info"></div></div>
+  <div class="panel-section"><h3>实时数据</h3><div class="info-box" id="live-data"></div></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+// ============================================================
+// 仿人手臂肘关节机构 — 双剪销轴关节、85mm机械连杆、Ø36贴臂圆柱电机
+// ============================================================
+
+// --- 机构参数 ---
+const P = {
+  upperArmLen: 300,
+  forearmLen: 250,
+  motorMountY: 213,
+  motorMountX: 28,
+  motorBodyLen: 90,
+  motorBodyRadius: 18,
+  tendonLinkLen: 85,
+  tendonEffLen: 85,
+  forearmAttachDist: 31,
+  forearmAttachOffset: 14,
+  elbowPinRadius: 5,
+  linkPinRadius: 4,
+  linkEyeRadius: 8.5,
+  scale: 0.35,
+};
+const s = P.scale;
+// 端点及滑块范围全部由同一闭合方程计算，避免硬编码行程。
+P.s_extended = angleToStroke(0);
+P.s_contracted = angleToStroke(120);
+P.strokeMax = P.s_extended - P.s_contracted;
+Object.freeze(P);
+
+// --- 运动学 ---
+function getDPoint(thetaDeg) {
+  const theta = thetaDeg * Math.PI / 180;
+  const dx = P.forearmAttachOffset * Math.cos(theta) - (-P.forearmAttachDist) * Math.sin(theta);
+  const dy = P.forearmAttachOffset * Math.sin(theta) + (-P.forearmAttachDist) * Math.cos(theta);
+  return { x: dx, y: dy };
+}
+
+function angleToStroke(thetaDeg) {
+  const D = getDPoint(thetaDeg);
+  const Ax = P.motorMountX, Ay = P.motorMountY;
+  const ex = Ax - D.x;
+  const ey = Ay - D.y;
+  const val = P.tendonEffLen * P.tendonEffLen - ex * ex;
+  if (val < 0) return -1;
+  return ey - Math.sqrt(val);
+}
+
+function strokeToAngle(stroke) {
+  const u = Math.max(0, Math.min(P.strokeMax, Number(stroke)));
+  if (u === 0) return 0;
+  if (u === P.strokeMax) return 120;
+  const targetS = P.s_extended - u;
+  let lo = 0, hi = 120;
+  for (let i = 0; i < 50; i++) {
+    const mid = (lo + hi) / 2;
+    if (angleToStroke(mid) > targetS) lo = mid; else hi = mid;
+  }
+  return (lo + hi) / 2;
+}
+
+function getStrokeFromAngle(thetaDeg) {
+  return P.s_extended - angleToStroke(thetaDeg);
+}
+
+// u为回缩行程；J=du/dθ，mm/rad；5kg仅沿用旧模型演示工况。
+function getForceData(thetaDeg) {
+  const t = thetaDeg * Math.PI / 180;
+  const D = getDPoint(thetaDeg);
+  const ex = P.motorMountX - D.x;
+  const h = Math.sqrt(P.tendonLinkLen ** 2 - ex ** 2);
+  const xp = -P.forearmAttachOffset * Math.sin(t) + P.forearmAttachDist * Math.cos(t);
+  const J = D.x + ex * xp / h;
+  const torque = 5 * 9.81 * P.forearmLen * Math.sin(t);
+  return { J, forceN: torque / J, torqueNm: torque / 1000 };
+}
+
+function transmissionAngle(thetaDeg) {
+  const D = getDPoint(thetaDeg);
+  const sm = angleToStroke(thetaDeg);
+  const Bx = P.motorMountX, By = P.motorMountY - sm;
+  const BDx = D.x - Bx, BDy = D.y - By;
+  const ODx = D.x, ODy = D.y;
+  const dot = BDx * ODx + BDy * ODy;
+  const magBD = Math.sqrt(BDx * BDx + BDy * BDy);
+  const magOD = Math.sqrt(ODx * ODx + ODy * ODy);
+  if (magBD < 0.001 || magOD < 0.001) return 90;
+  return Math.acos(Math.min(1, Math.max(-1, Math.abs(dot) / (magBD * magOD)))) * 180 / Math.PI;
+}
+
+// --- Three.js ---
+let scene, camera, renderer, controls;
+let upperArmGroup, forearmGroup, motorGroup, tendonGroup;
+let trailLine, labels = [], bodyOutline;
+let isPlaying = false, animDir = 1, animSpeed = 1.0;
+let currentAngle = 0;
+let showGrid = true, showLabels = true, showTrail = true, showBody = true;
+
+const MAT = {
+  upperArm: new THREE.MeshPhongMaterial({ color: 0x4488cc, shininess: 60, specular: 0x224466 }),
+  forearm: new THREE.MeshPhongMaterial({ color: 0x44aacc, shininess: 60, specular: 0x224466 }),
+  motorBody: new THREE.MeshPhongMaterial({ color: 0x333344, shininess: 80, specular: 0x6666aa }),
+  motorRod: new THREE.MeshPhongMaterial({ color: 0xaaaacc, shininess: 100, specular: 0x6666aa }),
+  tendon: new THREE.MeshPhongMaterial({ color: 0xff8844, shininess: 60, specular: 0x664422 }),
+  joint: new THREE.MeshPhongMaterial({ color: 0xcc8800, shininess: 80, specular: 0x664400 }),
+  bearing: new THREE.MeshPhongMaterial({ color: 0x888899, shininess: 100 }),
+  bushing: new THREE.MeshPhongMaterial({ color: 0x334455, shininess: 40, specular: 0x8899aa }),
+  fastener: new THREE.MeshPhongMaterial({ color: 0xb8bcc8, shininess: 120, specular: 0x777788 }),
+  clamp: new THREE.MeshPhongMaterial({ color: 0x667080, shininess: 70, specular: 0x999aaa }),
+  base: new THREE.MeshPhongMaterial({ color: 0x555566, shininess: 30 }),
+  trail: new THREE.LineBasicMaterial({ color: 0xff4488, transparent: true, opacity: 0.5 }),
+  body: new THREE.MeshPhongMaterial({ color: 0x222244, shininess: 10, transparent: true, opacity: 0.15 }),
+};
+
+function createBox(w, h, d, mat) { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.castShadow = true; m.receiveShadow = true; return m; }
+function createCylinder(r, h, mat, segs) { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, segs || 32), mat); m.castShadow = true; m.receiveShadow = true; return m; }
+function createSphere(r, mat, segs) { const m = new THREE.Mesh(new THREE.SphereGeometry(r, segs || 16, segs || 16), mat); m.castShadow = true; return m; }
+function createZCylinder(r, h, mat, segs) { const m = createCylinder(r, h, mat, segs); m.rotation.x = Math.PI / 2; return m; }
+function createClampRing(majorRadius, tubeRadius, mat) { const m = new THREE.Mesh(new THREE.TorusGeometry(majorRadius, tubeRadius, 10, 40), mat); m.rotation.x = Math.PI / 2; m.castShadow = m.receiveShadow = true; return m; }
+function createPinAssembly(prefix, pinRadius, span, washerRadius) {
+  const group = new THREE.Group();
+  group.name = prefix + 'Assembly';
+  const pin = createZCylinder(pinRadius, span, MAT.fastener, 32);
+  pin.name = prefix + 'Pin';
+  group.add(pin);
+  const head = createZCylinder(washerRadius, 3 * s, MAT.fastener, 32);
+  head.name = prefix + 'PinHead';
+  head.position.z = -(span / 2 + 1.5 * s);
+  group.add(head);
+  const nut = createZCylinder(washerRadius * 0.9, 4 * s, MAT.fastener, 6);
+  nut.name = prefix + 'LockNut';
+  nut.position.z = span / 2 + 2 * s;
+  group.add(nut);
+  return group;
+}
+
+function initScene() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x1a1a2e);
+  scene.fog = new THREE.Fog(0x1a1a2e, 400, 1000);
+  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 2000);
+  camera.position.set(150, 55, 310);
+  camera.lookAt(0, 0, 0);
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  document.getElementById('canvas-container').appendChild(renderer.domElement);
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.target.set(0, 20, 0);
+  const ambient = new THREE.AmbientLight(0x404060, 0.6);
+  scene.add(ambient);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dirLight.position.set(100, 200, 150);
+  dirLight.castShadow = true;
+  dirLight.shadow.mapSize.set(2048, 2048);
+  dirLight.shadow.camera.left = -200; dirLight.shadow.camera.right = 200;
+  dirLight.shadow.camera.top = 300; dirLight.shadow.camera.bottom = -200;
+  scene.add(dirLight);
+  const pLight = new THREE.PointLight(0x6060ff, 0.3, 500);
+  pLight.position.set(-100, 100, 100);
+  scene.add(pLight);
+  const gridHelper = new THREE.GridHelper(500, 50, 0x3a3a5a, 0x2a2a4a);
+  gridHelper.position.y = -280 * s;
+  gridHelper.name = 'grid';
+  scene.add(gridHelper);
+  const planeGeo = new THREE.PlaneGeometry(500, 500);
+  const planeMat = new THREE.ShadowMaterial({ opacity: 0.3 });
+  const shadowPlane = new THREE.Mesh(planeGeo, planeMat);
+  shadowPlane.rotation.x = -Math.PI / 2;
+  shadowPlane.position.y = -279.9 * s;
+  shadowPlane.receiveShadow = true;
+  scene.add(shadowPlane);
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+}
+
+function buildMechanism() {
+  // === 上臂与双侧肘叉耳 ===
+  upperArmGroup = new THREE.Group();
+  upperArmGroup.name = 'upperArm';
+  const outline = new THREE.Shape();
+  [[-4,10],[4,10],[8,20],[8,P.upperArmLen],[-8,P.upperArmLen],[-8,20]].forEach(([x,y],i) => {
+    if (i === 0) outline.moveTo(x*s,y*s); else outline.lineTo(x*s,y*s);
+  });
+  outline.closePath();
+  const upperGeo = new THREE.ExtrudeGeometry(outline, { depth:14*s, bevelEnabled:false, steps:1 });
+  upperGeo.translate(0,0,-7*s);
+  const upperArmBody = new THREE.Mesh(upperGeo, MAT.upperArm);
+  upperArmBody.name = 'upperArmBody';
+  upperArmBody.castShadow = upperArmBody.receiveShadow = true;
+  upperArmGroup.add(upperArmBody);
+
+  const shoulder = createBox(24*s, 20*s, 22*s, MAT.base);
+  shoulder.name = 'shoulder';
+  shoulder.position.y = (P.upperArmLen + 10)*s;
+  upperArmGroup.add(shoulder);
+
+  for (const [name,z] of [['elbowForkLeft',-10.5],['elbowForkRight',10.5]]) {
+    const ear = createBox(18*s, 30*s, 5*s, MAT.base);
+    ear.name = name;
+    ear.position.set(0,8*s,z*s);
+    upperArmGroup.add(ear);
+  }
+  for (const [name,z] of [['elbowBushingLeft',-10.5],['elbowBushingRight',10.5]]) {
+    const bushing = createZCylinder(8*s, 5.5*s, MAT.bushing, 32);
+    bushing.name = name;
+    bushing.position.z = z*s;
+    upperArmGroup.add(bushing);
+  }
+  const elbowPinAssembly = createPinAssembly('elbow', P.elbowPinRadius*s, 33*s, 8*s);
+  upperArmGroup.add(elbowPinAssembly);
+  scene.add(upperArmGroup);
+
+  // === 前臂、肘轴套与D双剪叉耳 ===
+  forearmGroup = new THREE.Group();
+  forearmGroup.name = 'forearm';
+  const forearmBody = createBox(14*s, P.forearmLen*s, 12*s, MAT.forearm);
+  forearmBody.name = 'forearmBody';
+  forearmBody.position.set(0,-P.forearmLen*s/2,0);
+  forearmGroup.add(forearmBody);
+  const endFlange = createZCylinder(12*s, 10*s, MAT.base, 32);
+  endFlange.name = 'endFlange';
+  endFlange.position.set(0,-P.forearmLen*s,0);
+  forearmGroup.add(endFlange);
+
+  const elbowSleeve = createZCylinder(11*s, 16*s, MAT.bearing, 32);
+  elbowSleeve.name = 'elbowSleeve';
+  forearmGroup.add(elbowSleeve);
+  const elbowInnerBushing = createZCylinder(6.5*s, 17*s, MAT.bushing, 32);
+  elbowInnerBushing.name = 'elbowInnerBushing';
+  forearmGroup.add(elbowInnerBushing);
+
+  const dBridge = createBox(8*s, 10*s, 18*s, MAT.base);
+  dBridge.name = 'dClevisBridge';
+  dBridge.position.set(4*s,-P.forearmAttachDist*s,0);
+  forearmGroup.add(dBridge);
+  for (const [name,z] of [['dClevisEarLeft',-7],['dClevisEarRight',7]]) {
+    const arm = createBox(18*s, 10*s, 4*s, MAT.base);
+    arm.name = name;
+    arm.position.set(9*s,-P.forearmAttachDist*s,z*s);
+    forearmGroup.add(arm);
+    const boss = createZCylinder(7*s, 4*s, MAT.base, 32);
+    boss.name = name + 'Boss';
+    boss.position.set(P.forearmAttachOffset*s,-P.forearmAttachDist*s,z*s);
+    forearmGroup.add(boss);
+  }
+  scene.add(forearmGroup);
+
+  // === Ø36圆柱直线电机与两道贴臂抱箍 ===
+  motorGroup = new THREE.Group();
+  motorGroup.name = 'motor';
+  const motorBody = createCylinder(P.motorBodyRadius*s, P.motorBodyLen*s, MAT.motorBody, 48);
+  motorBody.name = 'motorBody';
+  motorBody.position.set(P.motorMountX*s,(P.motorMountY-P.motorBodyLen/2)*s,0);
+  motorGroup.add(motorBody);
+  const rearCap = createCylinder(P.motorBodyRadius*s,4*s,MAT.base,48);
+  rearCap.name = 'motorRearCap';
+  rearCap.position.set(P.motorMountX*s,(P.motorMountY-2)*s,0);
+  motorGroup.add(rearCap);
+  const frontCap = createCylinder(P.motorBodyRadius*s,4*s,MAT.base,48);
+  frontCap.name = 'motorFrontCap';
+  frontCap.position.set(P.motorMountX*s,(P.motorMountY-P.motorBodyLen+2)*s,0);
+  motorGroup.add(frontCap);
+
+  for (const [name,y] of [['upperClamp',P.motorMountY-24],['lowerClamp',P.motorMountY-66]]) {
+    const ring = createClampRing(18.5*s,2*s,MAT.clamp);
+    ring.name = name + 'Ring';
+    ring.position.set(P.motorMountX*s,y*s,0);
+    motorGroup.add(ring);
+    const bridge = createBox(22*s,8*s,10*s,MAT.clamp);
+    bridge.name = name + 'Bridge';
+    bridge.position.set(10*s,y*s,0);
+    motorGroup.add(bridge);
+    const bolt = createZCylinder(2.5*s,14*s,MAT.fastener,24);
+    bolt.name = name + 'Bolt';
+    bolt.position.set(4*s,y*s,0);
+    motorGroup.add(bolt);
+  }
+
+  const rodGroup = new THREE.Group();
+  rodGroup.name = 'motorRod';
+  const rod = createCylinder(4*s,100*s,MAT.motorRod,32);
+  rod.name = 'exposedRod';
+  rodGroup.add(rod);
+  const bClevis = new THREE.Group();
+  bClevis.name = 'bClevis';
+  const bBridge = createBox(12*s,8*s,18*s,MAT.base);
+  bBridge.name = 'bClevisBridge';
+  bBridge.position.y = 5*s;
+  bClevis.add(bBridge);
+  for (const [name,z] of [['bClevisEarLeft',-7],['bClevisEarRight',7]]) {
+    const ear = createZCylinder(7*s,4*s,MAT.base,32);
+    ear.name = name;
+    ear.position.z = z*s;
+    bClevis.add(ear);
+  }
+  rodGroup.add(bClevis);
+  motorGroup.add(rodGroup);
+  scene.add(motorGroup);
+
+  // === 中置狗骨形BD刚性连杆，B/D两端双剪销接 ===
+  tendonGroup = new THREE.Group();
+  tendonGroup.name = 'tendonGroup';
+  const webLen = P.tendonLinkLen - 2*P.linkEyeRadius;
+  const tendonWeb = createBox(8*s,webLen*s,6*s,MAT.tendon);
+  tendonWeb.name = 'tendonWeb';
+  tendonGroup.add(tendonWeb);
+  for (const [joint,localY] of [['B',P.tendonLinkLen/2],['D',-P.tendonLinkLen/2]]) {
+    const eye = createZCylinder(P.linkEyeRadius*s,6*s,MAT.tendon,32);
+    eye.name = 'tendonEye' + joint;
+    eye.position.y = localY*s;
+    tendonGroup.add(eye);
+    const liner = createZCylinder((P.linkPinRadius+1)*s,6.5*s,MAT.bushing,32);
+    liner.name = 'tendonBushing' + joint;
+    liner.position.y = localY*s;
+    tendonGroup.add(liner);
+    const pin = createPinAssembly(joint.toLowerCase(),P.linkPinRadius*s,22*s,6*s);
+    pin.position.y = localY*s;
+    tendonGroup.add(pin);
+  }
+  scene.add(tendonGroup);
+
+  buildBodyOutline();
+  updateTrail();
+}
+
+function buildBodyOutline() {
+  bodyOutline = new THREE.Group();
+  bodyOutline.name = 'bodyOutline';
+  const upperOutline = createCylinder(18 * s, P.upperArmLen * s, MAT.body, 24);
+  upperOutline.position.y = (P.upperArmLen / 2) * s;
+  bodyOutline.add(upperOutline);
+  const lowerOutline = createCylinder(15 * s, P.forearmLen * s, MAT.body, 24);
+  lowerOutline.name = 'lowerOutline';
+  lowerOutline.position.y = -P.forearmLen * s / 2;
+  bodyOutline.add(lowerOutline);
+  const shoulderBall = createSphere(20 * s, MAT.body, 20);
+  shoulderBall.position.y = P.upperArmLen * s;
+  bodyOutline.add(shoulderBall);
+  const elbowBall = createSphere(16 * s, MAT.body, 20);
+  bodyOutline.add(elbowBall);
+  scene.add(bodyOutline);
+}
+
+function createTextSprite(text, color) {
+  color = color || '#7c8aff';
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.font = 'bold 36px Arial';
+  const w = ctx.measureText(text).width + 20;
+  canvas.width = w; canvas.height = 50;
+  ctx.font = 'bold 36px Arial';
+  ctx.fillStyle = color;
+  ctx.fillText(text, 10, 38);
+  const texture = new THREE.CanvasTexture(canvas);
+  const mat = new THREE.SpriteMaterial({ map: texture, transparent: true });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(w * 0.15, 50 * 0.15, 1);
+  return sprite;
+}
+
+function updateLabels() {
+  labels.forEach(l => {
+    scene.remove(l);
+    if (l.material.map) l.material.map.dispose();
+    l.material.dispose();
+  });
+  labels = [];
+  if (!showLabels) return;
+  const labelA = createTextSprite('A 电机安装点', '#ff8844');
+  labelA.position.set(P.motorMountX * s + 15, P.motorMountY * s, 15);
+  scene.add(labelA); labels.push(labelA);
+  const labelO = createTextSprite('O 肘关节', '#ffaa44');
+  labelO.position.set(20, 10, 15);
+  scene.add(labelO); labels.push(labelO);
+  const D = getDPoint(currentAngle);
+  const labelD = createTextSprite('D 双剪叉耳销轴', '#44ff88');
+  labelD.position.set(D.x * s + 15, D.y * s, 15);
+  scene.add(labelD); labels.push(labelD);
+  const labelB = createTextSprite('B 推杆叉头销轴', '#ff66aa');
+  const sm = angleToStroke(currentAngle);
+  labelB.position.set(P.motorMountX * s + 15, (P.motorMountY - sm) * s, 15);
+  scene.add(labelB); labels.push(labelB);
+  const labelAngle = createTextSprite('theta = ' + currentAngle.toFixed(1) + ' deg', '#7c8aff');
+  labelAngle.position.set(-40 * s, -60 * s, 20);
+  scene.add(labelAngle); labels.push(labelAngle);
+}
+
+function updateTrail() {
+  if (trailLine) scene.remove(trailLine);
+  if (!showTrail) return;
+  const points = [];
+  for (let a = 0; a <= 120; a += 3) {
+    const D = getDPoint(a);
+    points.push(new THREE.Vector3(D.x * s, D.y * s, 0));
+  }
+  const geo = new THREE.BufferGeometry().setFromPoints(points);
+  trailLine = new THREE.Line(geo, MAT.trail);
+  scene.add(trailLine);
+}
+
+// --- 更新机构位置 ---
+function updateMechanism(angleDeg) {
+  currentAngle = Math.max(0, Math.min(120, Number(angleDeg)));
+  angleDeg = currentAngle;
+  const theta = angleDeg * Math.PI / 180;
+  const sMotor = angleToStroke(angleDeg);
+  const stroke = P.s_extended - sMotor;
+
+  forearmGroup.rotation.z = theta;
+  if (bodyOutline) {
+    const lo = bodyOutline.getObjectByName('lowerOutline');
+    if (lo) {
+      lo.rotation.z = theta;
+      lo.position.set(P.forearmLen * s / 2 * Math.sin(theta), -P.forearmLen * s / 2 * Math.cos(theta), 0);
+    }
+  }
+
+  // B点 = (Ax, Ay - s)
+  const Bx = P.motorMountX;
+  const By = P.motorMountY - sMotor;
+  const D = getDPoint(angleDeg);
+
+  // 前盖到B为外露推杆；B端采用电机叉头夹持中置连杆眼。
+  const rod = motorGroup.getObjectByName('exposedRod');
+  const bClevis = motorGroup.getObjectByName('bClevis');
+  if (rod) {
+    const noseY = P.motorMountY - P.motorBodyLen;
+    rod.scale.y = (noseY - By) / 100;
+    rod.position.set(Bx*s,(noseY+By)/2*s,0);
+  }
+  if (bClevis) bClevis.position.set(Bx*s,By*s,0);
+
+  // 整根狗骨形BD连杆作为刚体更新，中心距恒为P.tendonLinkLen。
+  const midX = (Bx + D.x)/2*s;
+  const midY = (By + D.y)/2*s;
+  tendonGroup.position.set(midX,midY,0);
+  tendonGroup.rotation.z = Math.atan2(D.x-Bx,-(D.y-By));
+  tendonGroup.scale.set(1,1,1);
+
+  updateLabels();
+  updateLiveData(angleDeg, stroke, sMotor);
+}
+
+function updateLiveData(angle, stroke, sMotor) {
+  const mu = transmissionAngle(angle);
+  const f = getForceData(angle);
+  document.getElementById('live-data').innerHTML =
+    '<b>屈臂角度</b>: <span class="highlight">' + angle.toFixed(1) + '°</span> / 120°<br>' +
+    '<b>回缩行程</b>: <span class="highlight">' + stroke.toFixed(2) + ' mm</span> / ' + P.strokeMax.toFixed(2) + ' mm<br>' +
+    '<b>A–B安装距离</b>: ' + sMotor.toFixed(2) + ' mm（非行程）<br>' +
+    '<b>锐角传动角</b>: ' + mu.toFixed(1) + '°<br>' +
+    '<b>理想静态拉力</b>: ' + f.forceN.toFixed(1) + ' N（5kg演示）<br>' +
+    '<b>负载力矩</b>: ' + f.torqueNm.toFixed(2) + ' N·m<br>' +
+    '<b>状态</b>: ' + (angle <= 1 ? '伸直' : angle >= 119 ? '屈曲至120°' : '运动中') + '<br>' +
+    '<b>关节</b>: O双支撑，B/D双剪销轴';
+}
+
+function updateBioInfo() {
+  document.getElementById('bio-info').innerHTML =
+    '<span class="biological">上臂</span> = 肱骨类比（固定主梁，300mm）<br>' +
+    '<span class="biological">前臂</span> = 尺桡骨类比（250mm，中心轴套绕O转动）<br>' +
+    '<span class="biological">圆柱直线电机</span> = 肱二头肌类比（Ø36，两道抱箍贴臂）<br>' +
+    '<span class="biological">BD机械连杆</span> = 肌腱类比（85mm狗骨形刚性杆）<br>' +
+    '<span class="biological">O/B/D</span> = 双剪叉耳、销轴与可更换衬套连接';
+}
+
+function updateParamInfo() {
+  document.getElementById('param-info').innerHTML =
+    '<b>构型</b>: <span class="highlight">正向圆柱电机 · 单根BD刚性连杆 · 三处销轴关节</span><br>' +
+    '<b>上臂/前臂</b>: ' + P.upperArmLen + '/' + P.forearmLen + ' mm<br>' +
+    '<b>电机</b>: Ø' + (2*P.motorBodyRadius) + ' × ' + P.motorBodyLen + ' mm，轴线x=' + P.motorMountX + ' mm<br>' +
+    '<b>贴臂间隙</b>: 2mm（上臂半宽8mm + 电机半径18mm）<br>' +
+    '<b>A点</b>: (' + P.motorMountX + ',' + P.motorMountY + ',0) mm，推杆朝肘部<br>' +
+    '<b>BD中心距</b>: ' + P.tendonLinkLen + ' mm；D=(' + P.forearmAttachOffset + ',-' + P.forearmAttachDist + ',0) mm<br>' +
+    '<b>销轴</b>: O Ø' + (2*P.elbowPinRadius) + '；B/D Ø' + (2*P.linkPinRadius) + ' mm<br>' +
+    '<b>工作行程</b>: <span class="highlight">' + P.strokeMax.toFixed(2) + ' mm</span> / 0～120°<br>' +
+    '<b>连接形式</b>: O双侧支撑；B/D双剪叉耳；狗骨连杆中置；销轴头+锁紧螺母。<br>' +
+    '<b>受力提示</b>: 5kg演示静态峰值约618N；当前为名义刚性概念设计，实物仍需强度、公差、衬套PV值与执行器侧载校核。';
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  if (isPlaying) {
+    currentAngle += animDir * animSpeed * 0.5;
+    if (currentAngle >= 120) { currentAngle = 120; animDir = -1; }
+    if (currentAngle <= 0) { currentAngle = 0; animDir = 1; }
+    document.getElementById('angle-slider').value = currentAngle;
+    document.getElementById('stroke-slider').value = getStrokeFromAngle(currentAngle);
+    updateMechanism(currentAngle);
+    updateSliderLabels();
+  }
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+function updateSliderLabels() {
+  document.getElementById('angle-val').textContent = currentAngle.toFixed(1) + '°';
+  document.getElementById('stroke-val').textContent = getStrokeFromAngle(currentAngle).toFixed(1) + ' mm';
+  document.getElementById('speed-val').textContent = animSpeed.toFixed(1) + 'x';
+}
+
+function setupUI() {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('control-panel').style.display = 'block';
+  updateBioInfo();
+  updateParamInfo();
+  const angleSlider = document.getElementById('angle-slider');
+  const strokeSlider = document.getElementById('stroke-slider');
+  strokeSlider.max = String(P.strokeMax);
+  strokeSlider.step = 'any';
+  const speedSlider = document.getElementById('speed-slider');
+
+  angleSlider.addEventListener('input', function(e) {
+    isPlaying = false;
+    document.getElementById('btn-play').textContent = '▶ 播放';
+    currentAngle = parseFloat(e.target.value);
+    strokeSlider.value = getStrokeFromAngle(currentAngle);
+    updateMechanism(currentAngle);
+    updateSliderLabels();
+  });
+  strokeSlider.addEventListener('input', function(e) {
+    isPlaying = false;
+    document.getElementById('btn-play').textContent = '▶ 播放';
+    currentAngle = strokeToAngle(parseFloat(e.target.value));
+    angleSlider.value = currentAngle;
+    updateMechanism(currentAngle);
+    updateSliderLabels();
+  });
+  speedSlider.addEventListener('input', function(e) {
+    animSpeed = parseFloat(e.target.value);
+    updateSliderLabels();
+  });
+  document.getElementById('btn-play').addEventListener('click', function() {
+    isPlaying = !isPlaying;
+    document.getElementById('btn-play').textContent = isPlaying ? '⏸ 暂停' : '▶ 播放';
+  });
+  document.getElementById('btn-reset').addEventListener('click', function() {
+    isPlaying = false;
+    document.getElementById('btn-play').textContent = '▶ 播放';
+    currentAngle = 0;
+    angleSlider.value = 0;
+    strokeSlider.value = 0;
+    updateMechanism(0);
+    updateSliderLabels();
+  });
+  document.getElementById('btn-view-iso').addEventListener('click', function() { animateCamera(150, 55, 310); });
+  document.getElementById('btn-view-front').addEventListener('click', function() { animateCamera(0, 20, 330); });
+  document.getElementById('btn-view-side').addEventListener('click', function() { animateCamera(330, 20, 0.1); });
+  document.getElementById('show-grid').addEventListener('change', function(e) {
+    showGrid = e.target.checked;
+    var g = scene.getObjectByName('grid');
+    if (g) g.visible = showGrid;
+  });
+  document.getElementById('show-labels').addEventListener('change', function(e) { showLabels = e.target.checked; updateLabels(); });
+  document.getElementById('show-trail').addEventListener('change', function(e) { showTrail = e.target.checked; updateTrail(); });
+  document.getElementById('show-body').addEventListener('change', function(e) { showBody = e.target.checked; if (bodyOutline) bodyOutline.visible = showBody; });
+  updateSliderLabels();
+}
+
+function animateCamera(tx, ty, tz) {
+  var start = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+  var end = { x: tx, y: ty, z: tz };
+  var duration = 800;
+  var startTime = Date.now();
+  function step() {
+    var elapsed = Date.now() - startTime;
+    var t = Math.min(elapsed / duration, 1);
+    var ease = t * (2 - t);
+    camera.position.x = start.x + (end.x - start.x) * ease;
+    camera.position.y = start.y + (end.y - start.y) * ease;
+    camera.position.z = start.z + (end.z - start.z) * ease;
+    camera.lookAt(0, 50 * s, 0);
+    if (t < 1) requestAnimationFrame(step);
+  }
+  step();
+}
+
+initScene();
+buildMechanism();
+updateMechanism(0);
+setupUI();
+animate();
+</script>
+</body>
+</html>
