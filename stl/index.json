@@ -1,0 +1,179 @@
+{
+  "unit": "mm",
+  "model": "robot_arm print-ready v4-integrated",
+  "generated_from": "arm_mechanism_3d.html",
+  "note": "每个STL为一个独立零件（kind=printed为打印件，purchased_rivet为外购标准肩铆钉），单位mm，坐标为模型空间（铆钉孔轴=Z）。打印时保持Z为竖直方向。",
+  "parts": [
+    {
+      "part": "upperArmProximal",
+      "kind": "printed",
+      "triangles": 856,
+      "bounding_box_mm": [
+        24,
+        182,
+        30
+      ],
+      "source_meshes": [
+        "upperArmBodyProximal",
+        "shoulder",
+        "upperArmPSplicePadTop",
+        "upperArmPSplicePadBottom",
+        "upperArmPSplicePadTopFoot",
+        "upperArmPSplicePadBottomFoot"
+      ]
+    },
+    {
+      "part": "upperArmDistal",
+      "kind": "printed",
+      "triangles": 1900,
+      "bounding_box_mm": [
+        22,
+        158.2,
+        26
+      ],
+      "source_meshes": [
+        "upperArmBodyDistal",
+        "elbowEarBaseLeft",
+        "elbowYokeWebLeft",
+        "elbowEarBaseRight",
+        "elbowYokeWebRight",
+        "elbowForkLeft",
+        "elbowForkLeftRib",
+        "elbowForkRight",
+        "elbowForkRightRib",
+        "upperArmDSplicePadTop",
+        "upperArmDSplicePadBottom"
+      ]
+    },
+    {
+      "part": "forearmProximal",
+      "kind": "printed",
+      "triangles": 2020,
+      "bounding_box_mm": [
+        33,
+        144.2,
+        20
+      ],
+      "source_meshes": [
+        "forearmBodyProximal",
+        "elbowSleeveBody",
+        "dClevisBridge",
+        "dClevisEarLeft",
+        "dClevisEarLeftBoss",
+        "dClevisEarRight",
+        "dClevisEarRightBoss",
+        "forearmPSplicePadTop",
+        "forearmPSplicePadBottom"
+      ]
+    },
+    {
+      "part": "forearmDistal",
+      "kind": "printed",
+      "triangles": 756,
+      "bounding_box_mm": [
+        24,
+        139,
+        28
+      ],
+      "source_meshes": [
+        "forearmBodyDistal",
+        "endFlange",
+        "forearmDSplicePadTop",
+        "forearmDSplicePadBottom",
+        "forearmDSplicePadTopFoot",
+        "forearmDSplicePadBottomFoot"
+      ]
+    },
+    {
+      "part": "motorSaddle",
+      "kind": "printed",
+      "triangles": 1944,
+      "bounding_box_mm": [
+        50.61,
+        46.57,
+        45.92
+      ],
+      "source_meshes": [
+        "saddleRingUpper",
+        "saddleRingLower",
+        "saddleSpine",
+        "saddleSpineRib"
+      ]
+    },
+    {
+      "part": "rodClevis",
+      "kind": "printed",
+      "triangles": 1036,
+      "bounding_box_mm": [
+        16,
+        17,
+        18
+      ],
+      "source_meshes": [
+        "bClevisBridge",
+        "bClevisEarLeft",
+        "bClevisEarRight"
+      ]
+    },
+    {
+      "part": "linkBD",
+      "kind": "printed",
+      "triangles": 780,
+      "bounding_box_mm": [
+        30.99,
+        100.83,
+        8
+      ],
+      "source_meshes": [
+        "tendonWeb",
+        "tendonEyeB",
+        "tendonEyeD"
+      ]
+    },
+    {
+      "part": "rivetElbow",
+      "kind": "purchased_rivet",
+      "triangles": 384,
+      "bounding_box_mm": [
+        16,
+        16,
+        33
+      ],
+      "source_meshes": [
+        "elbowRivetHead",
+        "elbowRivetShank",
+        "elbowRivetTail"
+      ]
+    },
+    {
+      "part": "rivetB",
+      "kind": "purchased_rivet",
+      "triangles": 384,
+      "bounding_box_mm": [
+        12.99,
+        12.99,
+        23.5
+      ],
+      "source_meshes": [
+        "bRivetHead",
+        "bRivetShank",
+        "bRivetTail"
+      ]
+    },
+    {
+      "part": "rivetD",
+      "kind": "purchased_rivet",
+      "triangles": 384,
+      "bounding_box_mm": [
+        12.99,
+        12.99,
+        23.5
+      ],
+      "source_meshes": [
+        "dRivetHead",
+        "dRivetShank",
+        "dRivetTail"
+      ]
+    }
+  ]
+}

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>仿人手臂肘关节机构 — 工程化销轴关节 / 贴臂圆柱电机</title>
+<title>仿人手臂肘关节机构 — 一体化3D打印版 / 肩铆钉关节 / 贴臂圆柱电机</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; }
@@ -39,7 +39,7 @@
 <div id="canvas-container"></div>
 <div id="loading">加载中...</div>
 <div id="control-panel" style="display:none;">
-  <h2>肘关节 · 双剪销轴 / 贴臂圆柱电机</h2>
+  <h2>肘关节 · 一体化3D打印 / 双剪肩铆钉</h2>
   <div class="panel-section">
     <h3>运动控制 · 回缩屈臂，伸出伸直</h3>
     <div class="slider-group"><label>屈臂角度 <span class="value" id="angle-val">0.0°</span></label><input type="range" id="angle-slider" min="0" max="120" value="0" step="0.5"></div>
@@ -57,13 +57,15 @@
   </div>
   <div class="panel-section"><h3>仿生类比</h3><div class="info-box" id="bio-info"></div></div>
   <div class="panel-section"><h3>机构参数</h3><div class="info-box" id="param-info"></div></div>
+  <div class="panel-section"><h3>3D打印指南</h3><div class="info-box" id="print-info"></div></div>
   <div class="panel-section"><h3>实时数据</h3><div class="info-box" id="live-data"></div></div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
 // ============================================================
-// 仿人手臂肘关节机构 — 双剪销轴关节、85mm机械连杆、Ø36贴臂圆柱电机
+// 仿人手臂肘关节机构 — 一体化双剪肩铆钉关节、85mm机械连杆、Ø36贴臂圆柱电机
+// v4零件精简：24打印件 → 10打印件；压入衬套取消，孔直接打印；双抱箍并成单鞍座
 // ============================================================
 
 // --- 机构参数 ---
@@ -82,8 +84,37 @@ const P = {
   linkPinRadius: 4,
   linkEyeRadius: 8.5,
   scale: 0.35,
+  // ===== 3D打印（FDM，0.4mm喷嘴）工艺参数 =====
+  // 孔按“铆钉杆径 + 2×单边间隙”派生，孔口带45°导入倒角，孔轴统一沿Z（=打印方向）
+  // v4一体化：取消压入衬套，孔直接打印在凸台/轴套/耳片上；关节只用单件肩铆钉
+  print: {
+    radialClearance: 0.3,      // 转动配合单边间隙 mm（Ø8/Ø10铆钉的FDM经验值）
+    axialClearance: 0.5,       // 每个端面的轴向浮动间隙 mm
+    chamfer: 1.0,              // 孔口45°导入倒角 mm
+    wallMin: 3.0,              // 结构最小壁厚 mm（≈7圈0.4mm壁线）
+    layerHeight: 0.2,          // 建议层高 mm
+    linkThickness: 8,          // 连杆Z向厚度 mm（=层堆叠方向，抗弯）
+    earPlateThickness: 5,      // O肘叉耳片厚度 mm
+    clevisEarThickness: 4,     // B/D叉耳厚度 mm
+    earBossRadius: 10,         // O肘耳片凸台半径 mm（打印直孔壁厚4.7）
+    sleeveOuterDia: 22,        // 前臂肘轴套外径 mm（打印直孔壁厚5.7，作整体更换件）
+    sleeveThickness: 15,       // 前臂肘轴套长度 mm
+    ringClearance: 0.2,        // 电机鞍座对Ø36缸体的夹持间隙 mm
+    spliceYUpper: 140,         // 上臂分体拼接线位置 mm（两段各≈200mm，适配220mm幅面）
+    spliceYForearm: -125,      // 前臂分体拼接线位置 mm（两段125/125mm）
+    spliceFlangeT: 4,          // 一体化搭接凸台单层厚度 mm
+    splicePadLen: 30,          // 搭接凸台沿臂向长度 mm
+    spliceLapPast: 5,          // 凸台/舌片越过对接面的长度 mm（短悬桥可直接打印）
+    spliceTongueLen: 15,       // 近端舌片总长 mm（含越过段，与远端凸台搭接）
+    spliceBoltDia: 4.4,        // 拼接贯穿孔径 mm（M4）
+    spliceBoltInset: 5,        // 螺栓距臂身中线距离 mm（Ø4.4孔离臂边仍有3mm实体）
+    spliceBoltOff: 6,          // 螺栓到对接面距离 mm（落在lag段臂身+双层凸台正下方）
+  },
 };
 const s = P.scale;
+// 孔径由铆钉杆径与打印间隙派生；v4不再有衬套座孔
+P.boreElbow = 2 * P.elbowPinRadius + 2 * P.print.radialClearance;    // Ø10.6
+P.boreLink = 2 * P.linkPinRadius + 2 * P.print.radialClearance;      // Ø8.6
 // 端点及滑块范围全部由同一闭合方程计算，避免硬编码行程。
 P.s_extended = angleToStroke(0);
 P.s_contracted = angleToStroke(120);
@@ -167,6 +198,9 @@ const MAT = {
   joint: new THREE.MeshPhongMaterial({ color: 0xcc8800, shininess: 80, specular: 0x664400 }),
   bearing: new THREE.MeshPhongMaterial({ color: 0x888899, shininess: 100 }),
   bushing: new THREE.MeshPhongMaterial({ color: 0x334455, shininess: 40, specular: 0x8899aa }),
+  bushingDS: new THREE.MeshPhongMaterial({ color: 0x3d5266, shininess: 40, specular: 0x8899aa, side: THREE.DoubleSide }),
+  bearingDS: new THREE.MeshPhongMaterial({ color: 0x8899aa, shininess: 100, side: THREE.DoubleSide }),
+  baseDS: new THREE.MeshPhongMaterial({ color: 0x555566, shininess: 30, side: THREE.DoubleSide }),
   fastener: new THREE.MeshPhongMaterial({ color: 0xb8bcc8, shininess: 120, specular: 0x777788 }),
   clamp: new THREE.MeshPhongMaterial({ color: 0x667080, shininess: 70, specular: 0x999aaa }),
   base: new THREE.MeshPhongMaterial({ color: 0x555566, shininess: 30 }),
@@ -179,20 +213,116 @@ function createCylinder(r, h, mat, segs) { const m = new THREE.Mesh(new THREE.Cy
 function createSphere(r, mat, segs) { const m = new THREE.Mesh(new THREE.SphereGeometry(r, segs || 16, segs || 16), mat); m.castShadow = true; return m; }
 function createZCylinder(r, h, mat, segs) { const m = createCylinder(r, h, mat, segs); m.rotation.x = Math.PI / 2; return m; }
 function createClampRing(majorRadius, tubeRadius, mat) { const m = new THREE.Mesh(new THREE.TorusGeometry(majorRadius, tubeRadius, 10, 40), mat); m.rotation.x = Math.PI / 2; m.castShadow = m.receiveShadow = true; return m; }
-function createPinAssembly(prefix, pinRadius, span, washerRadius) {
+// --- 3D打印几何工具（全部按mm建模，再统一乘s缩放到场景） ---
+function circlePath(r) { const p = new THREE.Path(); p.absarc(0, 0, r, 0, Math.PI * 2, true); return p; }
+// 带真实通孔的挤出板件：孔轴沿Z（打印方向），孔口倒角由Lathe类件自带（板件孔为直孔）
+// 一体化搭接接头（v4）：凸台直接长在两段臂身上，不再有独立拼接法兰
+// lead段凸台贴内层、lag段凸台搭到外层，二者在对接面附近上下错层咬合，
+// 由2×M4竖向贯穿螺栓把"外层凸台+内层凸台+lag段臂身"一次夹紧（孔轴沿Z，免支撑）。
+// 越出本段端面的凸台≤spliceLapPast mm，首层为短悬桥，0.2mm层高可直接桥接。
+function addIntegralSplice(group, prefix, role, yMm, dir, halfWidthMm, halfThickMm, mat) {
+  const pr = P.print, ft = pr.spliceFlangeT, pad = pr.splicePadLen;
+  const bx = pr.spliceBoltInset, hr = pr.spliceBoltDia / 2, off = pr.spliceBoltOff;
+  const by = yMm + dir * off;                           // 螺栓y（落在lag段臂身内）
+  const zIn = halfThickMm + 0.5 * ft;                   // 贴身层中心（z: halfThick..halfThick+ft，与臂身面熔合）
+  const zUp = halfThickMm + 1.5 * ft;                   // 抬高层中心（z: +ft..+2ft，压在越出段上）
+  // mkPad: y0/y1为mm端点（自动排序），punched=是否打螺栓孔（孔必须落在板内）
+  const mkPad = (nm, yA, yB, zc, punched) => {
+    const y0 = Math.min(yA, yB), y1 = Math.max(yA, yB), cy = (y0 + y1) / 2;
+    const holes = punched ? [[-bx, by - cy, hr], [bx, by - cy, hr]] : [];
+    const p = createPlateWithHoles(2 * halfWidthMm, y1 - y0, ft, holes, mat);
+    p.name = nm;
+    p.position.set(0, cy * s, zc * s);
+    group.add(p);
+  };
+  if (role === 'lead') {
+    // 内层凸台：30mm长在lead段臂身上（熔合）+ 8mm越出，搭到lag段面并垫在lag头下
+    mkPad(prefix + 'SplicePadTop',    yMm - dir * pad, yMm + dir * (off + 2), zIn, true);
+    mkPad(prefix + 'SplicePadBottom', yMm - dir * pad, yMm + dir * (off + 2), -zIn, true);
+    return;
+  }
+  // 外层凸台 = 贴身"脚"（22mm，与lag臂身熔合，可打印）+ 抬高"头"（压在内层越出段上，螺栓从头穿）
+  // 头与脚在 z=+ft 平面重叠6mm熔合；头悬出端2mm短悬挑可桥接
+  mkPad(prefix + 'SplicePadTopFoot',    yMm + dir * (off + 2), yMm + dir * pad, zIn, false);
+  mkPad(prefix + 'SplicePadBottomFoot', yMm + dir * (off + 2), yMm + dir * pad, -zIn, false);
+  mkPad(prefix + 'SplicePadTop',    yMm - dir * 2, yMm + dir * (off + 8), zUp, true);
+  mkPad(prefix + 'SplicePadBottom', yMm - dir * 2, yMm + dir * (off + 8), -zUp, true);
+  const span = halfThickMm + 2 * ft;
+  for (const sx of [-bx, bx]) {
+    const tag = sx < 0 ? 'L' : 'R';
+    const bolt = createZCylinder(2 * s, (2 * span + 4) * s, MAT.fastener, 20);
+    bolt.name = prefix + 'SpliceBolt' + tag;
+    bolt.position.set(sx * s, by * s, 0);
+    group.add(bolt);
+    const head = createZCylinder(3.7 * s, 2.4 * s, MAT.fastener, 6);
+    head.name = prefix + 'SpliceBoltHead' + tag;
+    head.position.set(sx * s, by * s, (span + 1.2) * s);
+    group.add(head);
+    const nut = createZCylinder(3.7 * s, 3 * s, MAT.fastener, 6);
+    nut.name = prefix + 'SpliceBoltNut' + tag;
+    nut.position.set(sx * s, by * s, -(span + 1.5) * s);
+    group.add(nut);
+  }
+}
+
+function createBoredPlate(shape, boreR, depthMM, mat) {
+  if (boreR > 0) shape.holes.push(circlePath(boreR));
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: depthMM, bevelEnabled: false, steps: 1, curveSegments: 32 });
+  geo.translate(0, 0, -depthMM / 2);
+  geo.scale(s, s, s);
+  const m = new THREE.Mesh(geo, mat);
+  m.castShadow = m.receiveShadow = true;
+  return m;
+}
+function createPlateWithHoles(w, h, depthMM, holes, mat) {
+  const shape = new THREE.Shape();
+  shape.moveTo(-w/2, -h/2); shape.lineTo(w/2, -h/2); shape.lineTo(w/2, h/2); shape.lineTo(-w/2, h/2); shape.closePath();
+  for (const [hx, hy, hr] of holes) { const p = new THREE.Path(); p.absarc(hx, hy, hr, 0, Math.PI*2, true); shape.holes.push(p); }
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: depthMM, bevelEnabled: false, steps: 1, curveSegments: 24 });
+  geo.translate(0, 0, -depthMM/2);
+  geo.scale(s, s, s);
+  const m = new THREE.Mesh(geo, mat);
+  m.castShadow = m.receiveShadow = true;
+  return m;
+}
+function createBoredDisc(outerR, boreR, depthMM, mat) {
+  const shape = new THREE.Shape();
+  shape.absarc(0, 0, outerR, 0, Math.PI * 2, false);
+  return createBoredPlate(shape, boreR, depthMM, mat);
+}
+// 回转体件（肘轴套/连杆环形眼）：Lathe旋转成型，孔口自带45°×c导入倒角，孔轴沿Z
+function createBushingRing(boreDia, outerDia, depthMM, chamferMM, mat) {
+  const r = boreDia / 2, R = outerDia / 2, t = depthMM;
+  const c = Math.max(0.2, Math.min(chamferMM, t / 2 - 0.05, (outerDia - boreDia) / 2 - 0.05));
+  const pts = [
+    new THREE.Vector2(R, 0), new THREE.Vector2(r + c, 0),
+    new THREE.Vector2(r, c), new THREE.Vector2(r, t - c),
+    new THREE.Vector2(r + c, t), new THREE.Vector2(R, t), new THREE.Vector2(R, 0),
+  ];
+  const geo = new THREE.LatheGeometry(pts, 32);
+  geo.rotateX(Math.PI / 2);
+  geo.translate(0, 0, -t / 2);
+  geo.scale(s, s, s);
+  const m = new THREE.Mesh(geo, mat);
+  m.castShadow = m.receiveShadow = true;
+  return m;
+}
+// 单件肩铆钉（v4）：铆钉头+光杆+镦成形尾，一个零件替代"销杆+销头+内六角+锁紧螺母"四件
+// span按“头/尾分别贴合两侧耳片外端面”给定；尾端现场铆压扩径，永不松脱
+function createRivet(prefix, shankR, headR, headT, span, tailLen, mat) {
   const group = new THREE.Group();
   group.name = prefix + 'Assembly';
-  const pin = createZCylinder(pinRadius, span, MAT.fastener, 32);
-  pin.name = prefix + 'Pin';
-  group.add(pin);
-  const head = createZCylinder(washerRadius, 3 * s, MAT.fastener, 32);
-  head.name = prefix + 'PinHead';
-  head.position.z = -(span / 2 + 1.5 * s);
+  const head = createZCylinder(headR, headT, mat, 32);
+  head.name = prefix + 'RivetHead';
+  head.position.z = -(span / 2 + headT / 2);
   group.add(head);
-  const nut = createZCylinder(washerRadius * 0.9, 4 * s, MAT.fastener, 6);
-  nut.name = prefix + 'LockNut';
-  nut.position.z = span / 2 + 2 * s;
-  group.add(nut);
+  const shank = createZCylinder(shankR, span, mat, 32);
+  shank.name = prefix + 'RivetShank';
+  group.add(shank);
+  const tail = createZCylinder(shankR * 1.2, tailLen, mat, 32);
+  tail.name = prefix + 'RivetTail';
+  tail.position.z = span / 2 + tailLen / 2;
+  group.add(tail);
   return group;
 }
 
@@ -244,78 +374,120 @@ function initScene() {
 }
 
 function buildMechanism() {
-  // === 上臂与双侧肘叉耳 ===
+  // === 上臂：两段臂身 + 一体化肘叉耳（叉耳、叉桥与下段臂身为同一打印件）===
   upperArmGroup = new THREE.Group();
   upperArmGroup.name = 'upperArm';
-  const outline = new THREE.Shape();
-  [[-4,10],[4,10],[8,20],[8,P.upperArmLen],[-8,P.upperArmLen],[-8,20]].forEach(([x,y],i) => {
-    if (i === 0) outline.moveTo(x*s,y*s); else outline.lineTo(x*s,y*s);
-  });
-  outline.closePath();
-  const upperGeo = new THREE.ExtrudeGeometry(outline, { depth:14*s, bevelEnabled:false, steps:1 });
-  upperGeo.translate(0,0,-7*s);
-  const upperArmBody = new THREE.Mesh(upperGeo, MAT.upperArm);
-  upperArmBody.name = 'upperArmBody';
-  upperArmBody.castShadow = upperArmBody.receiveShadow = true;
-  upperArmGroup.add(upperArmBody);
+  const pr = P.print;
+  // 分体打印：臂身在拼接线处断开为两段（各≤200mm）；拼接孔全部落在凸台上，臂身不再开孔
+  const syU = pr.spliceYUpper;
+  const upperSegments = [
+    // 端部收窄至y=13起（对角半径13.3 > 轴套回转半径11），真实让开Ø22轴套扫掠区
+    { name: 'upperArmBodyDistal',   pts: [[-3,13],[3,13],[8,22],[8,syU],[-8,syU],[-8,22]] },
+    { name: 'upperArmBodyProximal', pts: [[-8,syU],[8,syU],[8,P.upperArmLen],[-8,P.upperArmLen]] },
+  ];
+  for (const seg of upperSegments) {
+    const sh = new THREE.Shape();
+    seg.pts.forEach(([x,y],i) => { if (i === 0) sh.moveTo(x*s,y*s); else sh.lineTo(x*s,y*s); });
+    sh.closePath();
+    const g = new THREE.ExtrudeGeometry(sh, { depth:14*s, bevelEnabled:false, steps:1 });
+    g.translate(0,0,-7*s);
+    const m = new THREE.Mesh(g, MAT.upperArm);
+    m.name = seg.name; m.castShadow = m.receiveShadow = true;
+    upperArmGroup.add(m);
+  }
+  // 一体化搭接接头：凸台直接长在臂身上（无独立拼接法兰），2×M4分段夹紧
+  addIntegralSplice(upperArmGroup, 'upperArmD', 'lead', syU, 1, 8, 7, MAT.upperArm);
+  addIntegralSplice(upperArmGroup, 'upperArmP', 'lag',  syU, 1, 8, 7, MAT.upperArm);
 
   const shoulder = createBox(24*s, 20*s, 22*s, MAT.base);
   shoulder.name = 'shoulder';
   shoulder.position.y = (P.upperArmLen + 10)*s;
   upperArmGroup.add(shoulder);
 
+  // 一体化肘叉耳：底座+Ø20凸台+Ø10.6打印直孔（取消压入衬套，孔壁4.7mm）
+  // 叉桥把耳片实体连到臂身，跨过前臂轴套回转半径Ø22并留1mm间隙
+  const earPlateT = pr.earPlateThickness;                      // 5mm
+  const earFaceZ = earPlateT / 2;                              // ±2.5
+  const elbowRivetSpan = 2 * (10.5 + earFaceZ);                // 26mm，铆钉光杆穿满两侧耳片
+  for (const [name,z] of [['elbowEarBaseLeft',-10.5],['elbowEarBaseRight',10.5]]) {
+    const base = createBox(22*s, 18*s, earPlateT*s, MAT.base);
+    base.name = name;
+    base.position.set(0,17.5*s,z*s);
+    upperArmGroup.add(base);
+    const web = createBox(18*s, 14.5*s, 7*s, MAT.base);
+    web.name = name.replace('EarBase','YokeWeb');
+    web.position.set(0, 19.25*s, (z>0?9.5:-9.5)*s);
+    upperArmGroup.add(web);
+  }
   for (const [name,z] of [['elbowForkLeft',-10.5],['elbowForkRight',10.5]]) {
-    const ear = createBox(18*s, 30*s, 5*s, MAT.base);
-    ear.name = name;
-    ear.position.set(0,8*s,z*s);
-    upperArmGroup.add(ear);
+    // Ø20凸台+Ø10.6打印直孔（孔轴沿Z），配Ø10肩铆钉
+    const boss = createBoredDisc(pr.earBossRadius, P.boreElbow / 2, earPlateT, MAT.base);
+    boss.name = name;
+    boss.position.set(0,0,z*s);
+    upperArmGroup.add(boss);
+    const rib = createBox(9*s, 8*s, earPlateT*s, MAT.base);
+    rib.name = name + 'Rib';
+    rib.position.set(0,12*s,z*s);
+    upperArmGroup.add(rib);
   }
-  for (const [name,z] of [['elbowBushingLeft',-10.5],['elbowBushingRight',10.5]]) {
-    const bushing = createZCylinder(8*s, 5.5*s, MAT.bushing, 32);
-    bushing.name = name;
-    bushing.position.z = z*s;
-    upperArmGroup.add(bushing);
-  }
-  const elbowPinAssembly = createPinAssembly('elbow', P.elbowPinRadius*s, 33*s, 8*s);
-  upperArmGroup.add(elbowPinAssembly);
+  const elbowRivet = createRivet('elbow', P.elbowPinRadius*s, 8*s, 3*s, elbowRivetSpan*s, 4*s, MAT.fastener);
+  upperArmGroup.add(elbowRivet);
   scene.add(upperArmGroup);
 
-  // === 前臂、肘轴套与D双剪叉耳 ===
+  // === 前臂：两段臂身 + 一体化肘轴套 + 一体化D双剪叉耳 ===
   forearmGroup = new THREE.Group();
   forearmGroup.name = 'forearm';
-  const forearmBody = createBox(14*s, P.forearmLen*s, 12*s, MAT.forearm);
-  forearmBody.name = 'forearmBody';
-  forearmBody.position.set(0,-P.forearmLen*s/2,0);
-  forearmGroup.add(forearmBody);
+  // 前臂同样拆成两段打印（每段125mm）；拼接孔全部落在凸台上
+  const syF = P.print.spliceYForearm;
+  const forearmSegments = [
+    { name: 'forearmBodyProximal', pts: [[-7,0],[7,0],[7,syF],[-7,syF]] },
+    { name: 'forearmBodyDistal',   pts: [[-7,syF],[7,syF],[7,-P.forearmLen],[-7,-P.forearmLen]] },
+  ];
+  for (const seg of forearmSegments) {
+    const sh = new THREE.Shape();
+    seg.pts.forEach(([x,y],i) => { if (i === 0) sh.moveTo(x*s,y*s); else sh.lineTo(x*s,y*s); });
+    sh.closePath();
+    const g = new THREE.ExtrudeGeometry(sh, { depth:12*s, bevelEnabled:false, steps:1 });
+    g.translate(0,0,-6*s);
+    const m = new THREE.Mesh(g, MAT.forearm);
+    m.name = seg.name; m.castShadow = m.receiveShadow = true;
+    forearmGroup.add(m);
+  }
+  addIntegralSplice(forearmGroup, 'forearmP', 'lead', syF, -1, 7, 6, MAT.forearm);
+  addIntegralSplice(forearmGroup, 'forearmD', 'lag',  syF, -1, 7, 6, MAT.forearm);
   const endFlange = createZCylinder(12*s, 10*s, MAT.base, 32);
   endFlange.name = 'endFlange';
   endFlange.position.set(0,-P.forearmLen*s,0);
   forearmGroup.add(endFlange);
 
-  const elbowSleeve = createZCylinder(11*s, 16*s, MAT.bearing, 32);
-  elbowSleeve.name = 'elbowSleeve';
-  forearmGroup.add(elbowSleeve);
-  const elbowInnerBushing = createZCylinder(6.5*s, 17*s, MAT.bushing, 32);
-  elbowInnerBushing.name = 'elbowInnerBushing';
-  forearmGroup.add(elbowInnerBushing);
+  // 肘轴套（整体更换件）：外径Ø22、内孔Ø10.6打印直孔（壁厚5.7mm）、长15mm
+  const sleeveParts = new THREE.Group();
+  sleeveParts.name = 'elbowSleeve';
+  const sleeveBody = createBushingRing(P.boreElbow, pr.sleeveOuterDia, pr.sleeveThickness, pr.chamfer, MAT.bearingDS);
+  sleeveBody.name = 'elbowSleeveBody';
+  sleeveParts.add(sleeveBody);
+  forearmGroup.add(sleeveParts);
 
-  const dBridge = createBox(8*s, 10*s, 18*s, MAT.base);
+  // D双剪叉耳一体化：桥+耳片与上段臂身为同一打印件
+  const dBridge = createBox(10*s, 12*s, 18*s, MAT.base);
   dBridge.name = 'dClevisBridge';
-  dBridge.position.set(4*s,-P.forearmAttachDist*s,0);
+  dBridge.position.set(3*s,-P.forearmAttachDist*s,0);
   forearmGroup.add(dBridge);
+  const dClevisT = pr.clevisEarThickness;                      // 4mm
   for (const [name,z] of [['dClevisEarLeft',-7],['dClevisEarRight',7]]) {
-    const arm = createBox(18*s, 10*s, 4*s, MAT.base);
+    const arm = createBox(18*s, 9*s, dClevisT*s, MAT.base);
     arm.name = name;
     arm.position.set(9*s,-P.forearmAttachDist*s,z*s);
     forearmGroup.add(arm);
-    const boss = createZCylinder(7*s, 4*s, MAT.base, 32);
+    // Ø8.6打印直孔（孔壁3.7mm），配Ø8肩铆钉
+    const boss = createBoredDisc(8, P.boreLink / 2, dClevisT, MAT.base);
     boss.name = name + 'Boss';
     boss.position.set(P.forearmAttachOffset*s,-P.forearmAttachDist*s,z*s);
     forearmGroup.add(boss);
   }
   scene.add(forearmGroup);
 
-  // === Ø36圆柱直线电机与两道贴臂抱箍 ===
+  // === Ø36圆柱直线电机与一体化双环贴臂鞍座（两环+脊板同一打印件）===
   motorGroup = new THREE.Group();
   motorGroup.name = 'motor';
   const motorBody = createCylinder(P.motorBodyRadius*s, P.motorBodyLen*s, MAT.motorBody, 48);
@@ -331,19 +503,40 @@ function buildMechanism() {
   frontCap.position.set(P.motorMountX*s,(P.motorMountY-P.motorBodyLen+2)*s,0);
   motorGroup.add(frontCap);
 
-  for (const [name,y] of [['upperClamp',P.motorMountY-24],['lowerClamp',P.motorMountY-66]]) {
-    const ring = createClampRing(18.5*s,2*s,MAT.clamp);
-    ring.name = name + 'Ring';
-    ring.position.set(P.motorMountX*s,y*s,0);
+  // 一体化鞍座：两道C形环+共用脊板一体打印（原2环+2桥板4件 → 1件），2×M4贯穿上臂
+  const clampTube = 2.4, clampGap = 0.7;
+  const clampMajor = P.motorBodyRadius + P.print.ringClearance + clampTube;
+  const saddleRingY = [P.motorMountY-24, P.motorMountY-66];
+  saddleRingY.forEach((y, i) => {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(clampMajor*s, clampTube*s, 10, 48, Math.PI*2-clampGap), MAT.clamp);
+    ring.name = 'saddleRing' + (i === 0 ? 'Upper' : 'Lower');
+    ring.rotation.x = Math.PI/2;
+    ring.rotation.z = clampGap/2;
+    ring.position.set(P.motorMountX*s, y*s, 0);
+    ring.castShadow = ring.receiveShadow = true;
     motorGroup.add(ring);
-    const bridge = createBox(22*s,8*s,10*s,MAT.clamp);
-    bridge.name = name + 'Bridge';
-    bridge.position.set(10*s,y*s,0);
-    motorGroup.add(bridge);
-    const bolt = createZCylinder(2.5*s,14*s,MAT.fastener,24);
-    bolt.name = name + 'Bolt';
-    bolt.position.set(4*s,y*s,0);
+  });
+  const spine = createBox(18*s, 8*s, 10*s, MAT.clamp);
+  spine.name = 'saddleSpine';
+  spine.position.set(8*s, (P.motorMountY-45)*s, 0);
+  motorGroup.add(spine);
+  const spineRib = createBox(18*s, (saddleRingY[0]-saddleRingY[1]+2)*s, 5*s, MAT.clamp);
+  spineRib.name = 'saddleSpineRib';
+  spineRib.position.set(8*s, (P.motorMountY-45)*s, 0);
+  motorGroup.add(spineRib);
+  for (const [side,dy] of [['A',2.5],['B',-2.5]]) {
+    const bolt = createZCylinder(2*s,15*s,MAT.fastener,24);
+    bolt.name = 'saddleBolt' + side;
+    bolt.position.set(5*s,(P.motorMountY-45+dy)*s,0);
     motorGroup.add(bolt);
+    const head = createZCylinder(3.6*s,2.2*s,MAT.fastener,6);
+    head.name = 'saddleBoltHead' + side;
+    head.position.set(5*s,(P.motorMountY-45+dy)*s,7.6*s);
+    motorGroup.add(head);
+    const nut = createZCylinder(3.6*s,2.6*s,MAT.fastener,6);
+    nut.name = 'saddleBoltNut' + side;
+    nut.position.set(5*s,(P.motorMountY-45+dy)*s,-7.8*s);
+    motorGroup.add(nut);
   }
 
   const rodGroup = new THREE.Group();
@@ -351,6 +544,7 @@ function buildMechanism() {
   const rod = createCylinder(4*s,100*s,MAT.motorRod,32);
   rod.name = 'exposedRod';
   rodGroup.add(rod);
+  // 推杆叉头：与B铆钉配对的唯一独立运动件
   const bClevis = new THREE.Group();
   bClevis.name = 'bClevis';
   const bBridge = createBox(12*s,8*s,18*s,MAT.base);
@@ -358,7 +552,7 @@ function buildMechanism() {
   bBridge.position.y = 5*s;
   bClevis.add(bBridge);
   for (const [name,z] of [['bClevisEarLeft',-7],['bClevisEarRight',7]]) {
-    const ear = createZCylinder(7*s,4*s,MAT.base,32);
+    const ear = createBoredDisc(8, P.boreLink / 2, P.print.clevisEarThickness, MAT.base);
     ear.name = name;
     ear.position.z = z*s;
     bClevis.add(ear);
@@ -367,25 +561,24 @@ function buildMechanism() {
   motorGroup.add(rodGroup);
   scene.add(motorGroup);
 
-  // === 中置狗骨形BD刚性连杆，B/D两端双剪销接 ===
+  // === 中置狗骨形BD刚性连杆，B/D两端双剪肩铆钉 ===
   tendonGroup = new THREE.Group();
   tendonGroup.name = 'tendonGroup';
+  // 杆身8×8mm等厚（Z向8mm=打印层堆叠方向，承载面内受力，100%填充）
   const webLen = P.tendonLinkLen - 2*P.linkEyeRadius;
-  const tendonWeb = createBox(8*s,webLen*s,6*s,MAT.tendon);
+  const tendonWeb = createBox(8*s,webLen*s,P.print.linkThickness*s,MAT.tendon);
   tendonWeb.name = 'tendonWeb';
   tendonGroup.add(tendonWeb);
   for (const [joint,localY] of [['B',P.tendonLinkLen/2],['D',-P.tendonLinkLen/2]]) {
-    const eye = createZCylinder(P.linkEyeRadius*s,6*s,MAT.tendon,32);
+    // 环形眼：外径Ø17、厚8mm、Ø8.6打印直孔，孔口45°导入倒角；孔壁4.2mm
+    const eye = createBushingRing(P.boreLink, 2*P.linkEyeRadius, P.print.linkThickness, P.print.chamfer, MAT.bushingDS);
     eye.name = 'tendonEye' + joint;
     eye.position.y = localY*s;
     tendonGroup.add(eye);
-    const liner = createZCylinder((P.linkPinRadius+1)*s,6.5*s,MAT.bushing,32);
-    liner.name = 'tendonBushing' + joint;
-    liner.position.y = localY*s;
-    tendonGroup.add(liner);
-    const pin = createPinAssembly(joint.toLowerCase(),P.linkPinRadius*s,22*s,6*s);
-    pin.position.y = localY*s;
-    tendonGroup.add(pin);
+    // Ø8单件肩铆钉：头贴叉耳外端面，镦尾贴另一侧，替代"销+头+内六角+锁紧螺母"
+    const rivet = createRivet(joint.toLowerCase(), P.linkPinRadius*s, 6.5*s, 2.5*s, 18*s, 3*s, MAT.fastener);
+    rivet.position.y = localY*s;
+    tendonGroup.add(rivet);
   }
   scene.add(tendonGroup);
 
@@ -531,7 +724,7 @@ function updateBioInfo() {
     '<span class="biological">前臂</span> = 尺桡骨类比（250mm，中心轴套绕O转动）<br>' +
     '<span class="biological">圆柱直线电机</span> = 肱二头肌类比（Ø36，两道抱箍贴臂）<br>' +
     '<span class="biological">BD机械连杆</span> = 肌腱类比（85mm狗骨形刚性杆）<br>' +
-    '<span class="biological">O/B/D</span> = 双剪叉耳、销轴与可更换衬套连接';
+    '<span class="biological">O/B/D</span> = 一体化双剪叉耳、单件肩铆钉连接（无衬套）';
 }
 
 function updateParamInfo() {
@@ -542,10 +735,26 @@ function updateParamInfo() {
     '<b>贴臂间隙</b>: 2mm（上臂半宽8mm + 电机半径18mm）<br>' +
     '<b>A点</b>: (' + P.motorMountX + ',' + P.motorMountY + ',0) mm，推杆朝肘部<br>' +
     '<b>BD中心距</b>: ' + P.tendonLinkLen + ' mm；D=(' + P.forearmAttachOffset + ',-' + P.forearmAttachDist + ',0) mm<br>' +
-    '<b>销轴</b>: O Ø' + (2*P.elbowPinRadius) + '；B/D Ø' + (2*P.linkPinRadius) + ' mm<br>' +
+    '<b>铆钉/铆钉孔</b>: O Ø' + (2*P.elbowPinRadius) + '/Ø' + P.boreElbow.toFixed(1) + '；B/D Ø' + (2*P.linkPinRadius) + '/Ø' + P.boreLink.toFixed(1) + ' mm（打印间隙' + P.print.radialClearance + 'mm）<br>' +
     '<b>工作行程</b>: <span class="highlight">' + P.strokeMax.toFixed(2) + ' mm</span> / 0～120°<br>' +
-    '<b>连接形式</b>: O双侧支撑；B/D双剪叉耳；狗骨连杆中置；销轴头+锁紧螺母。<br>' +
-    '<b>受力提示</b>: 5kg演示静态峰值约618N；当前为名义刚性概念设计，实物仍需强度、公差、衬套PV值与执行器侧载校核。';
+    '<b>连接形式</b>: O双侧支撑；B/D双剪叉耳；狗骨连杆中置；单件肩铆钉（现场镦尾）。<br>' +
+    '<b>受力提示</b>: 5kg演示静态峰值约618N；当前为名义刚性概念设计，实物仍需强度、公差、孔壁磨损与执行器侧载校核。';
+}
+
+function updatePrintInfo() {
+  const pr = P.print;
+  document.getElementById('print-info').innerHTML =
+    '<b>工艺</b>: FDM 0.4mm喷嘴 · 层高' + pr.layerHeight + 'mm · 铆钉孔轴<b>沿Z（打印方向）</b>，竖直孔免支撑<br>' +
+    '<b>配合间隙</b>: 单边' + pr.radialClearance + 'mm → O孔Ø' + P.boreElbow.toFixed(1) + '（铆钉Ø' + (2*P.elbowPinRadius) + '）、B/D孔Ø' + P.boreLink.toFixed(1) + '（铆钉Ø' + (2*P.linkPinRadius) + '）<br>' +
+    '<b>导入倒角</b>: 轴套/连杆眼孔口45°×' + pr.chamfer + 'mm旋转成型自带；板件孔为直孔，铆钉头自导向<br>' +
+    '<b>最小壁厚</b>: ' + pr.wallMin + 'mm（≈7圈0.4mm壁线）；孔壁实测 O耳 ' + ((pr.earBossRadius - P.boreElbow/2).toFixed(1)) + 'mm、肘轴套 ' + ((pr.sleeveOuterDia/2 - P.boreElbow/2).toFixed(1)) + 'mm、B/D ' + ((8 - P.boreLink/2).toFixed(1)) + 'mm、连杆眼 ' + ((P.linkEyeRadius - P.boreLink/2).toFixed(1)) + 'mm<br>' +
+    '<b>轴向间隙</b>: 每侧' + pr.axialClearance + 'mm，铆钉头/镦尾贴合叉耳外端面，不夹死中置连杆耳<br>' +
+    '<b>连杆</b>: 杆身8×8mm，Z向' + pr.linkThickness + 'mm为层堆叠方向，平躺打印、100%填充<br>' +
+    '<b>电机鞍座</b>: 双C形环+脊板一体打印，内径Ø' + (2*(P.motorBodyRadius+pr.ringClearance)).toFixed(1) + '，2×M4压紧（原两道抱箍4件并1件）<br>' +
+    '<b>材料</b>: 臂/鞍座 PETG或PLA+；连杆 PETG/PA-CF；铆钉建议金属肩铆钉或打印肩销<br>' +
+    '<b>一体化拼接</b>: 上臂y=' + pr.spliceYUpper + 'mm、前臂y=' + pr.spliceYForearm + 'mm；凸台直接长在臂身上（无独立拼接板），2×M4竖向贯穿（孔轴沿Z），两段≤200mm上220mm幅面<br>' +
+    '<b>装配</b>: 孔直接打印成形（Ø10.6/Ø8.6），先穿铆钉试转再镦尾；如磨损可后续扩孔压 bronze 衬套<br>' +
+    '<b>注意</b>: 打印收缩、层间强度与孔壁磨损需试件标定；618N为理想静载估算。';
 }
 
 function animate() {
@@ -574,6 +783,7 @@ function setupUI() {
   document.getElementById('control-panel').style.display = 'block';
   updateBioInfo();
   updateParamInfo();
+  updatePrintInfo();
   const angleSlider = document.getElementById('angle-slider');
   const strokeSlider = document.getElementById('stroke-slider');
   strokeSlider.max = String(P.strokeMax);
