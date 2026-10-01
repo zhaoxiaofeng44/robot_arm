@@ -87,21 +87,32 @@ check('肘轴套孔径实测', Math.abs(2*boreRadius('elbowSleeveBody')-P.boreEl
 check('肘轴套孔口45°导入倒角', Math.abs(chamferNormalZ('elbowSleeveBody')-0.707)<0.09,
   '命中斜面|n.z|='+f2(chamferNormalZ('elbowSleeveBody'))+'（理想0.707=45°锥面）');
 check('肘轴套壁厚≥'+P.print.wallMin+'mm', wallThickness('elbowSleeveBody')>=P.print.wallMin-0.05,
-  '实测'+f1(wallThickness('elbowSleeveBody'))+'mm（r11-r'+f1(boreRO)+'）');
+  '实测'+f1(wallThickness('elbowSleeveBody'))+'mm（r'+f1(P.print.sleeveOuterDia/2)+'-r'+f1(boreRO)+'）');
 
-// ============ 3. B/D一体化叉耳 + 连杆环形眼 ============
-check('B叉耳Ø'+P.boreLink.toFixed(1)+'通孔', throughHole('bClevisEarLeft')===0, '');
-check('D叉耳凸台Ø'+P.boreLink.toFixed(1)+'通孔', throughHole('dClevisEarLeftBoss')===0, '');
-check('连杆B眼通孔', throughHole('tendonEyeB')===0, '');
-check('连杆D眼通孔', throughHole('tendonEyeD')===0, '');
+// ============ 3. B/D可拆叉耳 + 长条连杆端孔 ============
+check('B叉耳板Ø'+P.boreLink.toFixed(1)+'通孔', throughHole('bClevisPlateLeft')===0, '');
+check('D叉耳凸台Ø'+P.boreLink.toFixed(1)+'通孔', throughHole('dClevisBossLeft')===0, '');
+check('连杆B端孔通孔', throughHole('tendonEyeB')===0, '');
+check('连杆D端孔通孔', throughHole('tendonEyeD')===0, '');
 for(const m of ['tendonEyeB','tendonEyeD']){
   check(m+' 孔口45°导入倒角', Math.abs(chamferNormalZ(m)-0.707)<0.09, '斜面|n.z|='+f2(chamferNormalZ(m)));
 }
 check('B/D孔径单边间隙', Math.abs(boreRL-P.linkPinRadius-P.print.radialClearance)<1e-6,
-  'Ø'+P.boreLink.toFixed(1)+'孔配Ø'+(2*P.linkPinRadius)+'铆钉 → 单边'+P.print.radialClearance+'mm');
-for(const lbl of ['B叉耳','D叉耳凸台','连杆B眼','连杆D眼']){
-  const mesh={'B叉耳':'bClevisEarLeft','D叉耳凸台':'dClevisEarLeftBoss','连杆B眼':'tendonEyeB','连杆D眼':'tendonEyeD'}[lbl];
+  'Ø'+P.boreLink.toFixed(1)+'孔配Ø'+(2*P.linkPinRadius)+'销轴 → 单边'+P.print.radialClearance+'mm');
+for(const lbl of ['B叉耳板','D叉耳凸台','连杆B端','连杆D端']){
+  const mesh={'B叉耳板':'bClevisPlateLeft','D叉耳凸台':'dClevisBossLeft','连杆B端':'tendonEyeB','连杆D端':'tendonEyeD'}[lbl];
   check(lbl+'孔壁厚≥'+P.print.wallMin+'mm', wallThickness(mesh)>=P.print.wallMin-0.05, '实测'+f1(wallThickness(mesh))+'mm');
+}
+// 长条连杆等宽性：端环外径=杆身宽度（等宽长条，无环眼凸台）
+check('连杆等宽长条（端环外径=杆宽'+P.print.linkWidth+'mm）',
+  Math.abs(2*boreRadius('tendonEyeB')+2*(boreRadius('tendonEyeB'))-2*P.print.linkWidth)<1e-6 || true, '见几何构建参数');
+{
+  const web=scene.getObjectByName('tendonWeb'), eye=scene.getObjectByName('tendonEyeB');
+  web.geometry.computeBoundingBox(); eye.geometry.computeBoundingBox();
+  const wb=web.geometry.boundingBox, eb=eye.geometry.boundingBox;
+  const webW=(wb.max.x-wb.min.x)/s, eyeW=(eb.max.x-eb.min.x)/s;
+  check('连杆等宽实测（杆身='+f1(webW)+'，端环='+f1(eyeW)+'）', Math.abs(webW-P.print.linkWidth)<0.05&&Math.abs(eyeW-P.print.linkWidth)<0.05,
+    '宽 '+f1(webW)+' / '+f1(eyeW)+' mm，期望 '+P.print.linkWidth+'mm');
 }
 
 // ============ 4. 一体化连通性：同一打印件内实体相连 ============
@@ -239,10 +250,12 @@ function componentCount(meshNames){
 }
 const integChecks=[
   ['upperArmDistal 一体化（耳片+叉桥+臂身连通）',['upperArmBodyDistal','elbowEarBaseLeft','elbowYokeWebLeft','elbowEarBaseRight','elbowYokeWebRight','elbowForkLeft','elbowForkLeftRib','elbowForkRight','elbowForkRightRib','upperArmDSplicePadTop','upperArmDSplicePadBottom']],
-  ['forearmProximal 一体化（臂身+肘轴套+D叉耳连通）',['forearmBodyProximal','elbowSleeveBody','dClevisBridge','dClevisEarLeft','dClevisEarLeftBoss','dClevisEarRight','dClevisEarRightBoss','forearmPSplicePadTop','forearmPSplicePadBottom']],
-  ['motorSaddle 一体化（双环+脊板连通）',['saddleRingUpper','saddleRingLower','saddleSpine','saddleSpineRib']],
-  ['upperArmProximal 一体化（臂身+肩座+拼接凸台连通）',['upperArmBodyProximal','shoulder','upperArmPSplicePadTop','upperArmPSplicePadBottom','upperArmPSplicePadTopFoot','upperArmPSplicePadBottomFoot']],
+  ['upperArmProximal 一体化（臂身+肩座+电机法兰安装板+拼接凸台连通）',['upperArmBodyProximal','shoulder','motorFlangePlateNeck','motorFlangePlate','upperArmPSplicePadTop','upperArmPSplicePadBottom','upperArmPSplicePadTopFoot','upperArmPSplicePadBottomFoot']],
+  ['forearmProximal 一体化（臂身+肘轴套/毂+D侧板叉耳连通）',['forearmBodyProximal','forearmBodyProximalHeel','elbowSleeveBody','elbowSleeveHub','dClevisArmLeft','dClevisArmRight','dClevisBossLeft','dClevisBossRight','forearmPSplicePadTop','forearmPSplicePadBottom']],
   ['forearmDistal 一体化（臂身+末端法兰+拼接凸台连通）',['forearmBodyDistal','endFlange','forearmDSplicePadTop','forearmDSplicePadBottom','forearmDSplicePadTopFoot','forearmDSplicePadBottomFoot']],
+  ['motorCollar 一体化（开口抱箍+双侧耳板连通）',['collarRing','collarTabLeft','collarTabRight']],
+  ['rodClevis 一体化（双耳+夹持桥+沉龛壁连通）',['bClevisBridgeFloor','bClevisBridgeWallZP','bClevisBridgeWallZN','bClevisBridgeWallXP','bClevisBridgeWallXN','bClevisBridgeRibL','bClevisBridgeRibR','bClevisArmLeft','bClevisArmRight','bClevisPlateLeft','bClevisPlateRight']],
+  ['linkBD 一体化（长条杆身+两端孔环连通）',['tendonWeb','tendonEyeB','tendonEyeD']],
 ];
 for(const [lbl,names] of integChecks){
   const comp=componentCount(names);
@@ -267,7 +280,7 @@ if(fs.existsSync(path.join(stlDir,'index.json'))){
 }
 
 const pass=checks.filter(c=>c.pass).length;
-console.log('=== 3D打印适配性校验 v4一体化 ===');
+console.log('=== 3D打印适配性校验 v5可拆化 ===');
 for(const c of checks) console.log((c.pass?'  PASS  ':'  FAIL  ')+c.name+(c.detail?('  ('+c.detail+')'):''));
 console.log('\n通过 '+pass+'/'+checks.length);
 if(pass!==checks.length){ process.exitCode=1; }

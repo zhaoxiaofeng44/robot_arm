@@ -1,21 +1,92 @@
 {
   "unit": "mm",
-  "model": "robot_arm print-ready v4-integrated",
+  "model": "robot_arm print-ready v5-serviceable",
   "generated_from": "arm_mechanism_3d.html",
-  "note": "每个STL为一个独立零件（kind=printed为打印件，purchased_rivet为外购标准肩铆钉），单位mm，坐标为模型空间（铆钉孔轴=Z）。打印时保持Z为竖直方向。",
+  "note": "每个STL为一个独立打印零件，单位mm，已按打印姿态摆放（销轴孔轴=Z竖直，落地z=0）。紧固件全部外购，见purchased_parts_bom。",
+  "purchased_parts_bom": [
+    {
+      "part": "shoulderBoltO",
+      "spec": "肩螺栓（塞打螺丝）Ø10 h9×26，端部螺纹M8",
+      "qty": 1,
+      "used": "O肘关节销轴"
+    },
+    {
+      "part": "shoulderBoltB",
+      "spec": "肩螺栓 Ø8 h9×18，端部螺纹M6",
+      "qty": 1,
+      "used": "B推杆叉头销轴"
+    },
+    {
+      "part": "shoulderBoltD",
+      "spec": "肩螺栓 Ø8 h9×20，端部螺纹M6",
+      "qty": 1,
+      "used": "D连杆销轴（含两侧1mm定位凸台堆叠）"
+    },
+    {
+      "part": "rodNutM6",
+      "spec": "M6六角螺母",
+      "qty": 1,
+      "used": "沉入B叉头沉龛，夹持电机推杆端部螺纹"
+    },
+    {
+      "part": "washerO",
+      "spec": "平垫 Ø10.5/Ø16×1.6",
+      "qty": 1,
+      "used": "O肩螺栓螺母侧"
+    },
+    {
+      "part": "washerBD",
+      "spec": "平垫 Ø8.4/Ø12×1.6",
+      "qty": 2,
+      "used": "B/D肩螺栓螺母侧"
+    },
+    {
+      "part": "nylocNutM8",
+      "spec": "M8尼龙自锁螺母（AF13）",
+      "qty": 1,
+      "used": "O肩螺栓"
+    },
+    {
+      "part": "nylocNutM6",
+      "spec": "M6尼龙自锁螺母（AF10）",
+      "qty": 2,
+      "used": "B/D肩螺栓"
+    },
+    {
+      "part": "boltM4x22",
+      "spec": "M4×22 内六角 + 平垫 + M4尼龙自锁螺母",
+      "qty": 2,
+      "used": "电机后抱箍贯穿上臂"
+    },
+    {
+      "part": "boltM4x16",
+      "spec": "M4×16 内六角",
+      "qty": 4,
+      "used": "电机前法兰旋入安装板（建议安装板用M4热熔螺母）"
+    },
+    {
+      "part": "boltM4x36",
+      "spec": "M4×36 + 平垫 + M4尼龙自锁螺母",
+      "qty": 6,
+      "used": "上臂/前臂一体化拼接凸台贯穿"
+    }
+  ],
   "parts": [
     {
       "part": "upperArmProximal",
       "kind": "printed",
-      "triangles": 856,
+      "note": "含电机法兰安装板（一体）",
+      "triangles": 2344,
       "bounding_box_mm": [
-        24,
+        59,
         182,
-        30
+        37
       ],
       "source_meshes": [
         "upperArmBodyProximal",
         "shoulder",
+        "motorFlangePlateNeck",
+        "motorFlangePlate",
         "upperArmPSplicePadTop",
         "upperArmPSplicePadBottom",
         "upperArmPSplicePadTopFoot",
@@ -25,6 +96,7 @@
     {
       "part": "upperArmDistal",
       "kind": "printed",
+      "note": "含一体化肘叉耳",
       "triangles": 1900,
       "bounding_box_mm": [
         22,
@@ -48,20 +120,22 @@
     {
       "part": "forearmProximal",
       "kind": "printed",
-      "triangles": 2020,
+      "note": "含肘轴套/毂与D侧板叉耳；建议绕X翻转180°打印（D侧板朝下落床）",
+      "triangles": 3172,
       "bounding_box_mm": [
-        33,
-        144.2,
+        32,
+        143.2,
         20
       ],
       "source_meshes": [
         "forearmBodyProximal",
+        "forearmBodyProximalHeel",
         "elbowSleeveBody",
-        "dClevisBridge",
-        "dClevisEarLeft",
-        "dClevisEarLeftBoss",
-        "dClevisEarRight",
-        "dClevisEarRightBoss",
+        "elbowSleeveHub",
+        "dClevisArmLeft",
+        "dClevisArmRight",
+        "dClevisBossLeft",
+        "dClevisBossRight",
         "forearmPSplicePadTop",
         "forearmPSplicePadBottom"
       ]
@@ -69,6 +143,7 @@
     {
       "part": "forearmDistal",
       "kind": "printed",
+      "note": "含末端法兰",
       "triangles": 756,
       "bounding_box_mm": [
         24,
@@ -85,94 +160,59 @@
       ]
     },
     {
-      "part": "motorSaddle",
+      "part": "motorCollar",
       "kind": "printed",
-      "triangles": 1944,
+      "note": "电机后开口抱箍；已绕X转90°导出（内孔轴竖直，直接打印）",
+      "triangles": 1780,
       "bounding_box_mm": [
-        50.61,
-        46.57,
-        45.92
+        51.2,
+        42.4,
+        42
       ],
       "source_meshes": [
-        "saddleRingUpper",
-        "saddleRingLower",
-        "saddleSpine",
-        "saddleSpineRib"
+        "collarRing",
+        "collarTabLeft",
+        "collarTabRight"
       ]
     },
     {
       "part": "rodClevis",
       "kind": "printed",
-      "triangles": 1036,
+      "note": "B推杆叉头（双耳+螺母沉龛夹持桥）",
+      "triangles": 1132,
       "bounding_box_mm": [
-        16,
-        17,
-        18
+        21.2,
+        24,
+        21.8
       ],
       "source_meshes": [
-        "bClevisBridge",
-        "bClevisEarLeft",
-        "bClevisEarRight"
+        "bClevisBridgeFloor",
+        "bClevisBridgeWallZP",
+        "bClevisBridgeWallZN",
+        "bClevisBridgeWallXP",
+        "bClevisBridgeWallXN",
+        "bClevisBridgeRibL",
+        "bClevisBridgeRibR",
+        "bClevisArmLeft",
+        "bClevisArmRight",
+        "bClevisPlateLeft",
+        "bClevisPlateRight"
       ]
     },
     {
       "part": "linkBD",
       "kind": "printed",
+      "note": "等宽长条连杆 100×15×8",
       "triangles": 780,
       "bounding_box_mm": [
-        30.99,
-        100.83,
+        28.99,
+        98.83,
         8
       ],
       "source_meshes": [
         "tendonWeb",
         "tendonEyeB",
         "tendonEyeD"
-      ]
-    },
-    {
-      "part": "rivetElbow",
-      "kind": "purchased_rivet",
-      "triangles": 384,
-      "bounding_box_mm": [
-        16,
-        16,
-        33
-      ],
-      "source_meshes": [
-        "elbowRivetHead",
-        "elbowRivetShank",
-        "elbowRivetTail"
-      ]
-    },
-    {
-      "part": "rivetB",
-      "kind": "purchased_rivet",
-      "triangles": 384,
-      "bounding_box_mm": [
-        12.99,
-        12.99,
-        23.5
-      ],
-      "source_meshes": [
-        "bRivetHead",
-        "bRivetShank",
-        "bRivetTail"
-      ]
-    },
-    {
-      "part": "rivetD",
-      "kind": "purchased_rivet",
-      "triangles": 384,
-      "bounding_box_mm": [
-        12.99,
-        12.99,
-        23.5
-      ],
-      "source_meshes": [
-        "dRivetHead",
-        "dRivetShank",
-        "dRivetTail"
       ]
     }
   ]

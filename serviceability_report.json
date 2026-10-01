@@ -1,0 +1,257 @@
+{
+  "version": "v5-serviceable",
+  "pass": 50,
+  "total": 50,
+  "checks": [
+    {
+      "name": "0° O关节 螺母侧工具通道畅通(Ø17)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "0° O关节 抽销通道畅通(Ø9.2)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "0° B关节 螺母侧工具通道畅通(Ø14)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "0° B关节 抽销通道畅通(Ø7.2)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "0° D关节 螺母侧工具通道畅通(Ø14)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "0° D关节 抽销通道畅通(Ø7.2)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "60° O关节 螺母侧工具通道畅通(Ø17)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "60° O关节 抽销通道畅通(Ø9.2)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "60° B关节 螺母侧工具通道畅通(Ø14)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "60° B关节 抽销通道畅通(Ø7.2)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "60° D关节 螺母侧工具通道畅通(Ø14)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "60° D关节 抽销通道畅通(Ø7.2)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "120° O关节 螺母侧工具通道畅通(Ø17)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "120° O关节 抽销通道畅通(Ø9.2)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "120° B关节 螺母侧工具通道畅通(Ø14)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "120° B关节 抽销通道畅通(Ø7.2)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "120° D关节 螺母侧工具通道畅通(Ø14)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "120° D关节 抽销通道畅通(Ø7.2)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "O关节轴向浮动≥1mm/侧",
+      "pass": true,
+      "detail": "耳内档16 − 轴套14 = 1mm/侧"
+    },
+    {
+      "name": "B关节轴向浮动≥1mm/侧",
+      "pass": true,
+      "detail": "叉耳内档10 − 连杆8 = 1mm/侧"
+    },
+    {
+      "name": "D关节轴向浮动≥1mm/侧",
+      "pass": true,
+      "detail": "凸台内档10 − 连杆8 = 1mm/侧"
+    },
+    {
+      "name": "电机轴向抽出通道畅通(Ø31, 缸体上方30mm)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "电机法兰螺栓(12,13) 工具通道畅通",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "电机法兰螺栓(12,-13) 工具通道畅通",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "电机法兰螺栓(44,13) 工具通道畅通",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "电机法兰螺栓(44,-13) 工具通道畅通",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "抱箍为轴向装入式（包角300°+60°开口朝臂侧，无需弹性撑开）",
+      "pass": true,
+      "detail": "包角300°"
+    },
+    {
+      "name": "抱箍内径留有夹持间隙",
+      "pass": true,
+      "detail": "内径Ø36.4 / 缸体Ø36"
+    },
+    {
+      "name": "抱箍M4螺栓(y=184) 两侧工具通道畅通",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "抱箍M4螺栓(y=209) 两侧工具通道畅通",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "连杆为等宽长条（杆身=端环=15mm）",
+      "pass": true,
+      "detail": "杆身15.00 / 端环15.00mm"
+    },
+    {
+      "name": "连杆全长=中心距+宽度（85+15=100mm）",
+      "pass": true,
+      "detail": "杆身长76.4mm（=中心距85−孔径8.6），两端孔环外缘至±50 → 全长100mm"
+    },
+    {
+      "name": "全机无铆接/胶接永久连接（v4肩铆钉已取消）",
+      "pass": true,
+      "detail": "102个实体网格全部可拆"
+    },
+    {
+      "name": "elbow关节 BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "elbow关节 BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "elbow关节 BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "elbow关节 BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "elbow关节 BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "b关节 BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "b关节 BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "b关节 BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "b关节 BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "b关节 BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "d关节 BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "d关节 BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "d关节 BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "d关节 BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "d关节 BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "B推杆沉龛螺母(bRodNut)在位",
+      "pass": true,
+      "detail": "推杆端部M6螺母由六角沉龛防转、底板承推"
+    },
+    {
+      "name": "装配逻辑：关节沿Z装配（所有销轴孔轴沿Z）",
+      "pass": true,
+      "detail": "O/B/D抽销→连杆/轴套沿Z滑出，全程无需拆臂身"
+    }
+  ]
+}
