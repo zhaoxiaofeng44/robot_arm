@@ -1,0 +1,339 @@
+{
+  "unit": "mm",
+  "model": "finger print-ready v5-two-unit",
+  "generated_from": "finger_mechanism_3d.html",
+  "note": "三节手指=两套肘关节机构拼接。每个STL为一个独立打印件，已按打印姿态摆放（销轴孔轴=Z竖直，落地z=0）。两单元通用件可互换。",
+  "purchased_parts_bom": [
+    {
+      "part": "shoulderBoltO10x26",
+      "spec": "肩螺栓（塞打螺丝）Ø10 h9×26，端部螺纹M8",
+      "qty": 2,
+      "used": "关节1/关节2 转动副（O1/O2）"
+    },
+    {
+      "part": "shoulderBoltB8x18",
+      "spec": "肩螺栓 Ø8 h9×18，端部螺纹M6",
+      "qty": 2,
+      "used": "两单元 B 推杆叉头销轴"
+    },
+    {
+      "part": "shoulderBoltD8x20",
+      "spec": "肩螺栓 Ø8 h9×20，端部螺纹M6",
+      "qty": 2,
+      "used": "两单元 D 连杆销轴"
+    },
+    {
+      "part": "rodNutM6",
+      "spec": "M6六角螺母（沉入B叉头沉龛）",
+      "qty": 2,
+      "used": "推杆端部夹持"
+    },
+    {
+      "part": "washerO",
+      "spec": "平垫 Ø10.5/Ø16×1.6",
+      "qty": 2,
+      "used": "O1/O2 螺母侧"
+    },
+    {
+      "part": "washerBD",
+      "spec": "平垫 Ø8.4/Ø12×1.6",
+      "qty": 4,
+      "used": "B/D 螺母侧"
+    },
+    {
+      "part": "nylocNutM8",
+      "spec": "M8尼龙自锁螺母（AF13）",
+      "qty": 2,
+      "used": "O1/O2 肩螺栓"
+    },
+    {
+      "part": "nylocNutM6",
+      "spec": "M6尼龙自锁螺母（AF10）",
+      "qty": 4,
+      "used": "B/D 肩螺栓"
+    },
+    {
+      "part": "boltM4x22",
+      "spec": "M4×22 内六角 + 平垫 + M4尼龙自锁螺母",
+      "qty": 4,
+      "used": "两电机后抱箍贯穿指节"
+    },
+    {
+      "part": "boltM4x16",
+      "spec": "M4×16 内六角",
+      "qty": 8,
+      "used": "两电机前法兰旋入安装板（建议配M4热熔螺母）"
+    },
+    {
+      "part": "boltM4x36",
+      "spec": "M4×36 + 平垫 + M4尼龙自锁螺母",
+      "qty": 12,
+      "used": "P1/P2/P3 三段拼接凸台贯穿"
+    }
+  ],
+  "parts": [
+    {
+      "part": "p1_proximal",
+      "kind": "printed",
+      "note": "近节·掌端段（含肩座+电机1法兰安装板）",
+      "pose": "flipX",
+      "triangles": 2344,
+      "bounding_box_mm": [
+        59,
+        182,
+        37
+      ],
+      "source_meshes": [
+        "p1BodyProximal",
+        "p1PalmBase",
+        "p1FlangePlateNeck",
+        "p1FlangePlate",
+        "p1PSplicePadTop",
+        "p1PSplicePadBottom",
+        "p1PSplicePadTopFoot",
+        "p1PSplicePadBottomFoot"
+      ]
+    },
+    {
+      "part": "p1_distal",
+      "kind": "printed",
+      "note": "近节·关节1段（含一体化叉耳）",
+      "pose": "as-modeled",
+      "triangles": 1900,
+      "bounding_box_mm": [
+        22,
+        158.2,
+        26
+      ],
+      "source_meshes": [
+        "p1BodyDistal",
+        "p1EarBaseL",
+        "p1YokeWebL",
+        "p1EarBaseR",
+        "p1YokeWebR",
+        "p1ForkL",
+        "p1ForkLRib",
+        "p1ForkR",
+        "p1ForkRRib",
+        "p1DSplicePadTop",
+        "p1DSplicePadBottom"
+      ]
+    },
+    {
+      "part": "p2_proximal",
+      "kind": "printed",
+      "note": "中节·关节1端段（含袖套/毂+D侧板叉耳，拼接y=-170）",
+      "pose": "flipX",
+      "triangles": 3372,
+      "bounding_box_mm": [
+        32,
+        188.2,
+        20
+      ],
+      "source_meshes": [
+        "p2BodyWaist",
+        "p2BodyHeel",
+        "p2SleeveBody",
+        "p2SleeveHub",
+        "p2DClevisArmL",
+        "p2DClevisArmR",
+        "p2DClevisBossL",
+        "p2DClevisBossR",
+        "p2PSplicePadTop",
+        "p2PSplicePadBottom"
+      ]
+    },
+    {
+      "part": "p2_distal",
+      "kind": "printed",
+      "note": "中节·关节2端段（含一体化叉耳+电机2法兰安装板）",
+      "pose": "as-modeled",
+      "triangles": 3012,
+      "bounding_box_mm": [
+        58,
+        163,
+        37
+      ],
+      "source_meshes": [
+        "p2BodyDistal",
+        "p2EarBaseL",
+        "p2YokeWebL",
+        "p2EarBaseR",
+        "p2YokeWebR",
+        "p2ForkL",
+        "p2ForkLRib",
+        "p2ForkR",
+        "p2ForkRRib",
+        "p2FlangePlateNeck",
+        "p2FlangePlate",
+        "p2DSplicePadTop",
+        "p2DSplicePadBottom",
+        "p2DSplicePadTopFoot",
+        "p2DSplicePadBottomFoot"
+      ]
+    },
+    {
+      "part": "p3_proximal",
+      "kind": "printed",
+      "note": "远节·关节2端段（含袖套/毂+D侧板叉耳，拼接y=-125）",
+      "pose": "flipX",
+      "triangles": 3172,
+      "bounding_box_mm": [
+        32,
+        143.2,
+        20
+      ],
+      "source_meshes": [
+        "p3BodyWaist",
+        "p3BodyHeel",
+        "p3SleeveBody",
+        "p3SleeveHub",
+        "p3DClevisArmL",
+        "p3DClevisArmR",
+        "p3DClevisBossL",
+        "p3DClevisBossR",
+        "p3PSplicePadTop",
+        "p3PSplicePadBottom"
+      ]
+    },
+    {
+      "part": "p3_distal",
+      "kind": "printed",
+      "note": "远节·指尖段（含末端法兰与指尖圆头）",
+      "pose": "as-modeled",
+      "triangles": 1860,
+      "bounding_box_mm": [
+        24,
+        153,
+        28
+      ],
+      "source_meshes": [
+        "p3BodyDistal",
+        "p3FingerTip",
+        "p3FingerTipPad",
+        "p3DSplicePadTop",
+        "p3DSplicePadBottom",
+        "p3DSplicePadTopFoot",
+        "p3DSplicePadBottomFoot"
+      ]
+    },
+    {
+      "part": "motor1_collar",
+      "kind": "printed",
+      "note": "电机1后抱箍（开口300°，已绕X转90°导出）",
+      "pose": "rotX90",
+      "triangles": 1780,
+      "bounding_box_mm": [
+        51.2,
+        42.4,
+        42
+      ],
+      "source_meshes": [
+        "m1CollarRing",
+        "m1CollarTabA",
+        "m1CollarTabB"
+      ]
+    },
+    {
+      "part": "motor2_collar",
+      "kind": "printed",
+      "note": "电机2后抱箍（开口300°，已绕X转90°导出）",
+      "pose": "rotX90",
+      "triangles": 1780,
+      "bounding_box_mm": [
+        51.2,
+        42.4,
+        42
+      ],
+      "source_meshes": [
+        "m2CollarRing",
+        "m2CollarTabA",
+        "m2CollarTabB"
+      ]
+    },
+    {
+      "part": "b_clevis_1",
+      "kind": "printed",
+      "note": "B推杆叉头1（双耳+M6螺母沉龛夹持桥）",
+      "pose": "as-modeled",
+      "triangles": 1132,
+      "bounding_box_mm": [
+        21.2,
+        24,
+        21.8
+      ],
+      "source_meshes": [
+        "m1BridgeFloor",
+        "m1BridgeWallZP",
+        "m1BridgeWallZN",
+        "m1BridgeWallXP",
+        "m1BridgeWallXN",
+        "m1BridgeRibL",
+        "m1BridgeRibR",
+        "m1ClevisArmL",
+        "m1ClevisArmR",
+        "m1ClevisPlateL",
+        "m1ClevisPlateR"
+      ]
+    },
+    {
+      "part": "b_clevis_2",
+      "kind": "printed",
+      "note": "B推杆叉头2（与1同规格，可互换）",
+      "pose": "as-modeled",
+      "triangles": 1132,
+      "bounding_box_mm": [
+        21.2,
+        24,
+        21.8
+      ],
+      "source_meshes": [
+        "m2BridgeFloor",
+        "m2BridgeWallZP",
+        "m2BridgeWallZN",
+        "m2BridgeWallXP",
+        "m2BridgeWallXN",
+        "m2BridgeRibL",
+        "m2BridgeRibR",
+        "m2ClevisArmL",
+        "m2ClevisArmR",
+        "m2ClevisPlateL",
+        "m2ClevisPlateR"
+      ]
+    },
+    {
+      "part": "link_1",
+      "kind": "printed",
+      "note": "BD等宽长条连杆1 100×15×8（长轴已摆正）",
+      "pose": "as-modeled+alignLink(-9.48deg)",
+      "triangles": 780,
+      "bounding_box_mm": [
+        15,
+        100,
+        8
+      ],
+      "source_meshes": [
+        "t1TendonWeb",
+        "t1TendonEyeB",
+        "t1TendonEyeD"
+      ]
+    },
+    {
+      "part": "link_2",
+      "kind": "printed",
+      "note": "BD等宽长条连杆2（与1同规格，可互换备件，长轴已摆正）",
+      "pose": "as-modeled+alignLink(-9.48deg)",
+      "triangles": 780,
+      "bounding_box_mm": [
+        15,
+        100,
+        8
+      ],
+      "source_meshes": [
+        "t2TendonWeb",
+        "t2TendonEyeB",
+        "t2TendonEyeD"
+      ]
+    }
+  ]
+}
