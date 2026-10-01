@@ -1,0 +1,386 @@
+{
+  "version": "finger-v5-two-unit",
+  "status": "三节手指双单元串联：闭合/碰撞/配合区/可拆装性核验",
+  "parameters": {
+    "upperArmLen": 300,
+    "phalanx2Len": 300,
+    "forearmLen": 250,
+    "motorMountY": 213,
+    "motorMountX": 28,
+    "motorBodyLen": 80,
+    "motorRearOverhang": 4,
+    "motorBodyRadius": 18,
+    "tendonLinkLen": 85,
+    "tendonEffLen": 85,
+    "forearmAttachDist": 31,
+    "forearmAttachOffset": 14,
+    "elbowPinRadius": 5,
+    "linkPinRadius": 4,
+    "scale": 0.35,
+    "print": {
+      "radialClearance": 0.3,
+      "axialClearance": 1,
+      "chamfer": 1,
+      "wallMin": 3,
+      "layerHeight": 0.2,
+      "linkWidth": 15,
+      "linkThickness": 8,
+      "earPlateThickness": 5,
+      "earBossRadius": 10,
+      "sleeveOuterDia": 20,
+      "sleeveThickness": 14,
+      "clevisPlateZ": 7,
+      "bridgeY0": 9,
+      "bridgeY1": 16,
+      "nutPocketAF": 10,
+      "rodTipAboveB": 11.5,
+      "rodThreadLen": 12,
+      "dBossOD": 16,
+      "dBossT": 1,
+      "flangePlateY0": 141,
+      "flangePlateT": 8,
+      "flangeBoltXZ": [
+        [
+          12,
+          13
+        ],
+        [
+          12,
+          -13
+        ],
+        [
+          44,
+          13
+        ],
+        [
+          44,
+          -13
+        ]
+      ],
+      "collarY0": 175,
+      "collarY1": 217,
+      "collarWall": 3,
+      "collarGapDeg": 60,
+      "ringClearance": 0.2,
+      "collarBoltY": [
+        184,
+        209
+      ],
+      "boltElbow": {
+        "shank": 10,
+        "shoulder": 26,
+        "thread": 8,
+        "head": 16,
+        "headT": 3,
+        "washer": 16,
+        "nutAF": 13,
+        "nutH": 6.5
+      },
+      "boltB": {
+        "shank": 8,
+        "shoulder": 18,
+        "thread": 6,
+        "head": 14,
+        "headT": 3,
+        "washer": 12,
+        "nutAF": 10,
+        "nutH": 5
+      },
+      "boltD": {
+        "shank": 8,
+        "shoulder": 20,
+        "thread": 6,
+        "head": 14,
+        "headT": 3,
+        "washer": 12,
+        "nutAF": 10,
+        "nutH": 5
+      },
+      "collarBolt": {
+        "shank": 4,
+        "shoulder": 22,
+        "thread": 4,
+        "head": 7.2,
+        "headT": 3.6,
+        "washer": 8,
+        "nutAF": 7,
+        "nutH": 3.2
+      },
+      "spliceYUpper": 140,
+      "spliceYForearm": -125,
+      "spliceFlangeT": 4,
+      "splicePadLen": 30,
+      "spliceLapPast": 5,
+      "spliceTongueLen": 15,
+      "spliceBoltDia": 4.4,
+      "spliceBoltInset": 5,
+      "spliceBoltOff": 6
+    },
+    "boreElbow": 10.6,
+    "boreLink": 8.6,
+    "motorFrontY": 137,
+    "s_extended": 160.1608683251073,
+    "s_contracted": 100.76757660987928,
+    "strokeMax": 59.393291715228
+  },
+  "results": {
+    "collision_count": 0,
+    "fine_sweep_step_deg": 0.05,
+    "allowance_mm": 0.349,
+    "min_non_mating_clearance_mm": 14.876,
+    "continuous_lower_bound_mm": 14.527,
+    "tested_pairs": 13137,
+    "physical_meshes": 184,
+    "closure_error_mm": 4.263256414560601e-14,
+    "svc_pass": 39,
+    "svc_total": 39
+  },
+  "collisions": [],
+  "closest": [
+    {
+      "pair": "m2bBoltHead / p2DSpliceBoltNutR",
+      "min_clearance_mm": 14.876
+    },
+    {
+      "pair": "m2bBoltNut / p2DSpliceBoltHeadR",
+      "min_clearance_mm": 16.316
+    },
+    {
+      "pair": "m2bBoltWasher / p2DSpliceBoltHeadR",
+      "min_clearance_mm": 16.444
+    },
+    {
+      "pair": "m2bBoltHead / p2DSpliceBoltR",
+      "min_clearance_mm": 16.792
+    },
+    {
+      "pair": "m2bBoltWasher / p2DSpliceBoltR",
+      "min_clearance_mm": 17.797
+    },
+    {
+      "pair": "m2bBoltNut / p2DSpliceBoltR",
+      "min_clearance_mm": 18.024
+    },
+    {
+      "pair": "m2bBoltShank / p2DSpliceBoltNutR",
+      "min_clearance_mm": 18.446
+    },
+    {
+      "pair": "m2bBoltShank / p2DSpliceBoltHeadR",
+      "min_clearance_mm": 18.776
+    },
+    {
+      "pair": "m2bBoltThread / p2DSpliceBoltHeadR",
+      "min_clearance_mm": 19.103
+    },
+    {
+      "pair": "m2bBoltShank / p2DSpliceBoltR",
+      "min_clearance_mm": 19.807
+    },
+    {
+      "pair": "m2bBoltThread / p2DSpliceBoltR",
+      "min_clearance_mm": 20.811
+    },
+    {
+      "pair": "m2bBoltHead / p2DSpliceBoltNutL",
+      "min_clearance_mm": 24.024
+    }
+  ],
+  "serviceability": [
+    {
+      "name": "无铆接/永久连接",
+      "pass": true,
+      "detail": "184网格"
+    },
+    {
+      "name": "m1 BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m1 BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m1 BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m1 BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m1 BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m2 BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m2 BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m2 BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m2 BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m2 BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m1b BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m1b BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m1b BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m1b BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m1b BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m2b BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m2b BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m2b BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m2b BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m2b BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o1 BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o1 BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o1 BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o1 BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o1 BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p2d BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p2d BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p2d BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p2d BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p2d BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p3d BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p3d BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p3d BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p3d BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p3d BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "B叉头沉龛螺母×2 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "两单元轴向浮动=1mm/侧（几何同肘版v5）",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "两单元连杆为等宽长条（几何同肘版v5，实测见verify_print_geometry）",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}
