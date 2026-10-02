@@ -25,7 +25,9 @@ const PRINTS={
   b_clevis_1:{note:'B推杆叉头1（双耳+M6螺母沉龛夹持桥）',pose:null,meshes:['m1BridgeFloor','m1BridgeWallZP','m1BridgeWallZN','m1BridgeWallXP','m1BridgeWallXN','m1BridgeRibL','m1BridgeRibR','m1ClevisArmL','m1ClevisArmR','m1ClevisPlateL','m1ClevisPlateR']},
   b_clevis_2:{note:'B推杆叉头2（与1同规格，可互换）',pose:null,meshes:['m2BridgeFloor','m2BridgeWallZP','m2BridgeWallZN','m2BridgeWallXP','m2BridgeWallXN','m2BridgeRibL','m2BridgeRibR','m2ClevisArmL','m2ClevisArmR','m2ClevisPlateL','m2ClevisPlateR']},
   link_1:{note:'BD等宽长条连杆1 100×15×8（长轴已摆正）',pose:null,unrotateGroup:'t1Tendon',meshes:['t1TendonWeb','t1TendonEyeB','t1TendonEyeD']},
-  link_2:{note:'BD等宽长条连杆2（与1同规格，可互换备件，长轴已摆正）',pose:null,unrotateGroup:'t2Tendon',meshes:['t2TendonWeb','t2TendonEyeB','t2TendonEyeD']},
+  link_2:{note:'BD等宽长条连杆2（与1同规格，可互换备件，腹板3×Ø6减重孔，长轴已摆正）',pose:null,unrotateGroup:'t2Tendon',meshes:['t2TendonWeb','t2TendonEyeB','t2TendonEyeD']},
+  palm_mount:{note:'掌骨安装法兰（56×56圆角方板+Ø22h7定位止口，4×M5+Ø9穿线孔）',pose:'rotX90',meshes:['p1PalmFlangeBase','p1PalmPilot','p1PalmBoss']},
+  grip_pad:{note:'指尖防滑抓握垫（22×18垫板+3条横向防滑棱，TPU95A柔性更佳）',pose:'flipX',meshes:['p3GripPad','p3GripRib1','p3GripRib2','p3GripRib3']},
 };
 // 外购件BOM（两单元合计）
 const PURCHASED_BOM=[
@@ -40,6 +42,7 @@ const PURCHASED_BOM=[
   {part:'boltM4x22',spec:'M4×22 内六角 + 平垫 + M4尼龙自锁螺母',qty:4,used:'两电机后抱箍贯穿指节'},
   {part:'boltM4x16',spec:'M4×16 内六角',qty:8,used:'两电机前法兰旋入安装板（建议配M4热熔螺母）'},
   {part:'boltM4x36',spec:'M4×36 + 平垫 + M4尼龙自锁螺母',qty:12,used:'P1/P2/P3 三段拼接凸台贯穿'},
+  {part:'boltM5x16',spec:'M5×16 内六角（沉头）',qty:4,used:'掌骨安装法兰固定于手掌'},
 ];
 
 function stlBinary(tris){

@@ -1,7 +1,7 @@
 {
   "version": "finger-v5-two-unit-print",
-  "pass": 94,
-  "total": 94,
+  "pass": 96,
+  "total": 96,
   "checks": [
     {
       "name": "打印件45°斜排最小外接正方形≤220mm",
@@ -65,6 +65,16 @@
     },
     {
       "name": "link_2 已落地(z_min=0)",
+      "pass": true,
+      "detail": "z_min=0.000"
+    },
+    {
+      "name": "palm_mount 已落地(z_min=0)",
+      "pass": true,
+      "detail": "z_min=0.000"
+    },
+    {
+      "name": "grip_pad 已落地(z_min=0)",
       "pass": true,
       "detail": "z_min=0.000"
     },
@@ -386,7 +396,7 @@
     {
       "name": "全机无铆接/胶接永久连接",
       "pass": true,
-      "detail": "184个实体网格"
+      "detail": "199个实体网格"
     },
     {
       "name": "m1 bBoltHead 在位",

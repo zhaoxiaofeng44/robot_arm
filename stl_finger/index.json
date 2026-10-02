@@ -69,6 +69,12 @@
       "spec": "M4×36 + 平垫 + M4尼龙自锁螺母",
       "qty": 12,
       "used": "P1/P2/P3 三段拼接凸台贯穿"
+    },
+    {
+      "part": "boltM5x16",
+      "spec": "M5×16 内六角（沉头）",
+      "qty": 4,
+      "used": "掌骨安装法兰固定于手掌"
     }
   ],
   "parts": [
@@ -306,7 +312,7 @@
       "kind": "printed",
       "note": "BD等宽长条连杆1 100×15×8（长轴已摆正）",
       "pose": "as-modeled+alignLink(-9.48deg)",
-      "triangles": 780,
+      "triangles": 1368,
       "bounding_box_mm": [
         15,
         100,
@@ -321,9 +327,9 @@
     {
       "part": "link_2",
       "kind": "printed",
-      "note": "BD等宽长条连杆2（与1同规格，可互换备件，长轴已摆正）",
+      "note": "BD等宽长条连杆2（与1同规格，可互换备件，腹板3×Ø6减重孔，长轴已摆正）",
       "pose": "as-modeled+alignLink(-9.48deg)",
-      "triangles": 780,
+      "triangles": 1368,
       "bounding_box_mm": [
         15,
         100,
@@ -333,6 +339,41 @@
         "t2TendonWeb",
         "t2TendonEyeB",
         "t2TendonEyeD"
+      ]
+    },
+    {
+      "part": "palm_mount",
+      "kind": "printed",
+      "note": "掌骨安装法兰（56×56圆角方板+Ø22h7定位止口，4×M5+Ø9穿线孔）",
+      "pose": "rotX90",
+      "triangles": 2048,
+      "bounding_box_mm": [
+        56,
+        56,
+        14
+      ],
+      "source_meshes": [
+        "p1PalmFlangeBase",
+        "p1PalmPilot",
+        "p1PalmBoss"
+      ]
+    },
+    {
+      "part": "grip_pad",
+      "kind": "printed",
+      "note": "指尖防滑抓握垫（22×18垫板+3条横向防滑棱，TPU95A柔性更佳）",
+      "pose": "flipX",
+      "triangles": 48,
+      "bounding_box_mm": [
+        22,
+        25.5,
+        5.6
+      ],
+      "source_meshes": [
+        "p3GripPad",
+        "p3GripRib1",
+        "p3GripRib2",
+        "p3GripRib3"
       ]
     }
   ]

@@ -37,8 +37,8 @@ node verify_all.cjs --quick  # 快速自查（0.5° 步进）
 | 肘·可拆装性 `verify_serviceability.cjs` | **50/50** |
 | 肘·3D打印适配性 `verify_print_geometry.cjs` | **28/28** |
 | 肘·STL 完整性 `check_stl.cjs` | 0 问题文件 |
-| 手指·双单元碰撞与闭合 `verify_finger.cjs` | 碰撞 **0**，下限 14.5mm，闭合误差 **4.3e-14mm** |
-| 手指·打印与拆装 `verify_finger_print.cjs` | **94/94** |
+| 手指·双单元碰撞与闭合 `verify_finger.cjs` | 碰撞 **0**（15290配对），下限 14.5mm，闭合误差 **4.3e-14mm** |
+| 手指·打印与拆装 `verify_finger_print.cjs` | **96/96** |
 
 ## 文件索引
 
@@ -61,7 +61,7 @@ node verify_all.cjs --quick  # 快速自查（0.5° 步进）
 
 **出档与预览**
 - `export_print_stl.cjs` → `stl/`（肘版 7 打印件 + 11 项外购 BOM）
-- `export_finger_stl.cjs` → `stl_finger/`（手指 12 打印件 + 11 项外购 BOM）
+- `export_finger_stl.cjs` → `stl_finger/`（手指 14 打印件 + 12 项外购 BOM）
 - `render_print_preview.cjs` / `render_finger_preview.cjs` → `preview/`（软件渲染多视角 PNG，无 GPU 依赖）
 - `arm_near_joint_params.json` / `finger_verify_report.json` / `finger_print_report.json` / `serviceability_report.json` — 校验报告
 

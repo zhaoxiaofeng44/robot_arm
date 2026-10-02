@@ -129,8 +129,8 @@
     "allowance_mm": 0.349,
     "min_non_mating_clearance_mm": 14.876,
     "continuous_lower_bound_mm": 14.527,
-    "tested_pairs": 13137,
-    "physical_meshes": 184,
+    "tested_pairs": 15290,
+    "physical_meshes": 199,
     "closure_error_mm": 4.263256414560601e-14,
     "svc_pass": 39,
     "svc_total": 39
@@ -190,7 +190,7 @@
     {
       "name": "无铆接/永久连接",
       "pass": true,
-      "detail": "184网格"
+      "detail": "199网格"
     },
     {
       "name": "m1 BoltHead 在位",

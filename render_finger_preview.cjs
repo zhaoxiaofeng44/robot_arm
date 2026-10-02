@@ -173,6 +173,18 @@ renderNear(path.join(out,'finger_07_motor_mount.png'),1000,900,[0.35,-0.4,0.85],
   const c=rot(28,-170);
   renderNear(path.join(out,'finger_08_motor2_mount.png'),1000,900,[0.35,-0.4,0.85],[c[0],c[1],0],70);
 }
+// ---- (11) 掌部安装法兰特写：P1掌端(0,325) 邻域 80mm ----
+renderNear(path.join(out,'finger_11_palm_mount.png'),1000,900,[0.45,-0.35,0.83],[0,325,0],75);
+// ---- (12) 指尖防滑抓握垫特写：直接取 p3GripPad 世界坐标（卷曲态） 邻域 65mm ----
+{
+  api.updateMechanism(80,50); scene.updateMatrixWorld(true);
+  const pad=scene.getObjectByName('p3GripPad');
+  pad.geometry.computeBoundingBox();
+  const cLocal=pad.geometry.boundingBox.getCenter(new THREE.Vector3());
+  const cw=cLocal.applyMatrix4(pad.matrixWorld);
+  renderNear(path.join(out,'finger_12_grip_tip.png'),1000,900,[0.3,-0.35,0.89],
+    [cw.x/s,cw.y/s,cw.z/s],60);
+}
 // ---- (9) 伸直态 θ1=θ2=0 ----
 api.updateMechanism(0,0);
 renderAuto(path.join(out,'finger_09_straight_iso.png'),1000,1300,ISO,ALL,1.05);
