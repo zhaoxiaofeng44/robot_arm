@@ -61,8 +61,8 @@
     {
       "part": "boltM4x16",
       "spec": "M4×16 内六角",
-      "qty": 8,
-      "used": "两电机前法兰旋入安装板（建议配M4热熔螺母）"
+      "qty": 12,
+      "used": "两电机前法兰旋入安装板 ×8 + 掌骨法兰板旋入指根方块 ×4（建议配M4热熔螺母）"
     },
     {
       "part": "boltM4x36",
@@ -74,7 +74,7 @@
       "part": "boltM5x16",
       "spec": "M5×16 内六角（沉头）",
       "qty": 4,
-      "used": "掌骨安装法兰固定于手掌"
+      "used": "掌骨安装法兰外圈 Ø5.5 → 手掌球窝（对侧零件未建模）"
     }
   ],
   "parts": [
@@ -83,7 +83,7 @@
       "kind": "printed",
       "note": "近节·掌端段（含肩座+电机1法兰安装板）",
       "pose": "flipX",
-      "triangles": 2344,
+      "triangles": 3328,
       "bounding_box_mm": [
         59,
         182,
@@ -105,7 +105,7 @@
       "kind": "printed",
       "note": "近节·关节1段（含一体化叉耳）",
       "pose": "as-modeled",
-      "triangles": 1900,
+      "triangles": 1904,
       "bounding_box_mm": [
         22,
         158.2,
@@ -130,7 +130,7 @@
       "kind": "printed",
       "note": "中节·关节1端段（含袖套/毂+D侧板叉耳，拼接y=-170）",
       "pose": "flipX",
-      "triangles": 3372,
+      "triangles": 3592,
       "bounding_box_mm": [
         32,
         188.2,
@@ -154,10 +154,10 @@
       "kind": "printed",
       "note": "中节·关节2端段（含一体化叉耳+电机2法兰安装板）",
       "pose": "as-modeled",
-      "triangles": 3012,
+      "triangles": 3428,
       "bounding_box_mm": [
         58,
-        163,
+        159,
         37
       ],
       "source_meshes": [
@@ -183,7 +183,7 @@
       "kind": "printed",
       "note": "远节·关节2端段（含袖套/毂+D侧板叉耳，拼接y=-125）",
       "pose": "flipX",
-      "triangles": 3172,
+      "triangles": 3392,
       "bounding_box_mm": [
         32,
         143.2,
@@ -207,7 +207,7 @@
       "kind": "printed",
       "note": "远节·指尖段（含末端法兰与指尖圆头）",
       "pose": "as-modeled",
-      "triangles": 1860,
+      "triangles": 2276,
       "bounding_box_mm": [
         24,
         153,
@@ -226,9 +226,9 @@
     {
       "part": "motor1_collar",
       "kind": "printed",
-      "note": "电机1后抱箍（开口300°，已绕X转90°导出）",
+      "note": "电机1后抱箍（开口300°，双侧耳板±z，已绕X转90°导出）",
       "pose": "rotX90",
-      "triangles": 1780,
+      "triangles": 2788,
       "bounding_box_mm": [
         51.2,
         42.4,
@@ -237,15 +237,17 @@
       "source_meshes": [
         "m1CollarRing",
         "m1CollarTabA",
-        "m1CollarTabB"
+        "m1CollarTabAN",
+        "m1CollarTabB",
+        "m1CollarTabBN"
       ]
     },
     {
       "part": "motor2_collar",
       "kind": "printed",
-      "note": "电机2后抱箍（开口300°，已绕X转90°导出）",
+      "note": "电机2后抱箍（开口300°，双侧耳板±z，已绕X转90°导出）",
       "pose": "rotX90",
-      "triangles": 1780,
+      "triangles": 2788,
       "bounding_box_mm": [
         51.2,
         42.4,
@@ -254,7 +256,9 @@
       "source_meshes": [
         "m2CollarRing",
         "m2CollarTabA",
-        "m2CollarTabB"
+        "m2CollarTabAN",
+        "m2CollarTabB",
+        "m2CollarTabBN"
       ]
     },
     {
@@ -264,9 +268,9 @@
       "pose": "as-modeled",
       "triangles": 1132,
       "bounding_box_mm": [
-        21.2,
-        24,
-        21.8
+        18,
+        24.5,
+        18
       ],
       "source_meshes": [
         "m1BridgeFloor",
@@ -289,9 +293,9 @@
       "pose": "as-modeled",
       "triangles": 1132,
       "bounding_box_mm": [
-        21.2,
-        24,
-        21.8
+        18,
+        24.5,
+        18
       ],
       "source_meshes": [
         "m2BridgeFloor",
@@ -344,18 +348,16 @@
     {
       "part": "palm_mount",
       "kind": "printed",
-      "note": "掌骨安装法兰（56×56圆角方板+Ø22h7定位止口，4×M5+Ø9穿线孔）",
+      "note": "掌骨安装法兰（56×56 R8圆角方板，板底坐在指根方块顶面 y=320；内圈4×M4接方块、外圈4×Ø5.5接手掌、Ø9穿线孔）",
       "pose": "rotX90",
-      "triangles": 2048,
+      "triangles": 2544,
       "bounding_box_mm": [
         56,
         56,
-        14
+        6
       ],
       "source_meshes": [
-        "p1PalmFlangeBase",
-        "p1PalmPilot",
-        "p1PalmBoss"
+        "p1PalmFlangeBase"
       ]
     },
     {

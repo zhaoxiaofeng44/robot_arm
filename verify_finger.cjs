@@ -16,17 +16,19 @@ const main=script.slice(0,script.lastIndexOf('\ninitScene();'));
 const api=new Function('THREE','document',main+'\nscene=new THREE.Scene();showLabels=false;buildMechanism();updateMechanism(0);return {P,s,scene,updateMechanism,getJoints,angleToStroke,getStrokeFromAngle,getForceData,transmissionAngle};')(THREE,document);
 const {P,s,scene}=api;
 function classify(mesh){
-  // 注意：P3嵌套在P2内、单元子件嵌套在指节内 → 先查最深/最内层
+  // 注意：P3嵌套在P2内、单元子件嵌套在指节内 → 先查最深/最内层。
+  // v7 修正：电机判定必须先于 phalanx（motor2 嵌在 phalanx2 内），否则电机被归为 P2，
+  //   同轴滑动副(m*ExposedRod/m*MotorBody)的免检规则永远不触发，min_clearance 恒为 0。
   const n=[];for(let p=mesh;p;p=p.parent)n.push(p.name);
   if(n.includes('m1Rod'))return'm1Slider';
   if(n.includes('m2Rod'))return'm2Slider';
   if(n.includes('t1Tendon'))return'T1';
   if(n.includes('t2Tendon'))return'T2';
+  if(n.some(x=>/^motor1/.test(x)))return'm1Fixed';
+  if(n.some(x=>/^motor2/.test(x)))return'm2Fixed';
   if(n.includes('phalanx3'))return'P3';
   if(n.includes('phalanx2'))return'P2';
   if(n.includes('phalanx1'))return'P1';
-  if(n.includes('motor1'))return'm1Fixed';
-  if(n.includes('motor2'))return'm2Fixed';
   return'other';
 }
 const meshes=[];
@@ -55,7 +57,7 @@ function projection({mesh,assembly,local,hull2,circle}){
   const e=mesh.matrixWorld.elements,cx=e[12]/s,cy=e[13]/s;
   let xy;
   if(circle&&Math.abs(e[6])>0.9){const r=circle.r;xy=Array.from({length:32},(_,i)=>[cx+r*Math.cos(2*Math.PI*i/32),cy+r*Math.sin(2*Math.PI*i/32)]);}
-  else xy=hull(hull2.map(p=>[(e[0]*p[0]+e[4]*p[1]+e[8]*p[2]+e[12])/s,(e[1]*p[0]+e[5]*p[1]+e[9]*p[2]+e[13])/s]));
+  else xy=hull(hull2.map(p=>[(e[0]*p[0]+e[4]*p[1]+e[8]*(p[2]||0)+e[12])/s,(e[1]*p[0]+e[5]*p[1]+e[9]*(p[2]||0)+e[13])/s]));
   let zmin=Infinity,zmax=-Infinity;
   for(const p of local){const z=(e[2]*p[0]+e[6]*p[1]+e[10]*p[2]+e[14])/s;zmin=Math.min(zmin,z);zmax=Math.max(zmax,z);}
   return{name:mesh.name,assembly,xy,zmin,zmax};
@@ -68,7 +70,9 @@ function skip(a,b){
   for(const [ph,mf] of [['P1','m1'],['P2','m2']]){
     if(set.has(ph)&&set.has(mf+'Fixed')){
       if(names.some(n=>new RegExp('^'+mf+'(Collar|FlangeBolt)').test(n)))return'电机抱箍/法兰螺栓与所在指节固定连接';
-      if(names.some(n=>new RegExp('^'+mf+'FlangePlate').test(n)))return'电机法兰安装板与电机的设计配合（板含Ø36.4导向孔，凸包代理不可表达）';
+      // 安装板按"指节"命名（p1FlangePlate / p2FlangePlate），不是按电机命名；
+      // 旧写法 ^m1FlangePlate 永远匹配不到 → 电机前法兰与安装板的零间隙设计接触被当成非配合零间距。
+      if(names.some(n=>new RegExp('^'+ph.toLowerCase()+'FlangePlate').test(n)))return'电机法兰安装板与电机的设计配合（板含Ø36.4导向孔，凸包代理不可表达）';
     }
   }
   for(const [mf,sl] of [['m1Fixed','m1Slider'],['m2Fixed','m2Slider']]){
@@ -158,7 +162,7 @@ console.log(JSON.stringify({collisions:collisions.slice(0,20),collision_count:co
 assert(closure<1e-6,'双单元闭合误差');
 assert(strokeErr<=P.strokeMax+1e-9,'行程范围');
 assert.equal(collisions.length,0,'扫描到配合区之外的接触');
-assert(lb>0,'细扫连续下限非正');
+assert(lb>0,'细扫连续下限非正: '+JSON.stringify(regular.slice(0,4)));
 assert(pass===svc.length,'可拆装性基础项');
 if(!process.argv.includes('--no-write'))fs.writeFileSync(path.join(root,'finger_verify_report.json'),JSON.stringify(summary,null,2)+'\n');
 module.exports={api,summary};

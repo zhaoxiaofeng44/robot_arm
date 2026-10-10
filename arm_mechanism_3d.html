@@ -133,7 +133,7 @@ const P = {
     spliceLapPast: 5,
     spliceTongueLen: 15,
     spliceBoltDia: 4.4,
-    spliceBoltInset: 5,
+    spliceBoltInset: 4.5,          // 4.5+2.2=6.7 < 7（前臂段半宽）→ 通孔完整落在实体内（5.0 会切到侧边，三角化会吃掉半个孔）
     spliceBoltOff: 6,
   },
 };
@@ -429,8 +429,10 @@ function buildMechanism() {
     // 端部收窄至y=13起（对角半径13.3 > 轴套回转半径10），让开Ø20轴套扫掠区
     { name: 'upperArmBodyDistal',   pts: [[-3,13],[3,13],[8,22],[8,syU],[-8,syU],[-8,22]], holes: [] },
     { name: 'upperArmBodyProximal', pts: [[-8,syU],[8,syU],[8,P.upperArmLen],[-8,P.upperArmLen]],
-      // 抱箍2×M4贯穿孔（孔轴沿Z，真实通孔）
-      holes: pr.collarBoltY.map(y => [2, y, pr.collarBolt.shank / 2 + 0.2]) },
+      // 抱箍2×M4贯穿孔 + 拼接M4贯穿孔（螺栓穿过臂身，必须留孔；孔轴沿Z，真实通孔）
+      holes: pr.collarBoltY.map(y => [2, y, pr.collarBolt.shank / 2 + 0.2])
+             .concat([[pr.spliceBoltInset, syU + pr.spliceBoltOff, pr.spliceBoltDia / 2],
+                      [-pr.spliceBoltInset, syU + pr.spliceBoltOff, pr.spliceBoltDia / 2]]) },
   ];
   for (const seg of upperSegments) {
     const sh = new THREE.Shape();
@@ -454,10 +456,11 @@ function buildMechanism() {
   // 电机前法兰安装板（与近端段一体，电机前法兰承推于其下面141平面）：
   //   颈部（贴臂身，z=±7内，避开拼接凸台z=±7..15）+ 宽板（x=9..47，包住Ø36.4导向孔与4×M4）
   const fpY0 = pr.flangePlateY0, fpT = pr.flangePlateT;
+  const plateMidY = fpY0 + fpT / 2;                 // 板占 [fpY0, fpY0+fpT]：底面 fpY0=141 = 电机法兰承推面
   const neck = createPlateWithHoles(18, 14, fpT, [], MAT.base);           // x:-8..10, z:-7..7（右缘10=电机包络左缘，留2mm名义间隙）
   neck.name = 'motorFlangePlateNeck';
   neck.rotation.x = Math.PI / 2;                    // 板面法线沿Y（挤出0..T → 世界-y）
-  neck.position.set(1*s, (fpY0 + fpT)*s, 0);
+  neck.position.set(1*s, plateMidY*s, 0);
   upperArmGroup.add(neck);
   // 宽板：x=9..47、z=±18.5，含Ø36.4推杆导向孔与4×M4螺栓孔（x≥9避开拼接凸台x=±8）
   const wideHoles = [[28, 0, P.motorBodyRadius + pr.radialClearance + 0.2]];           // Ø36.4推杆导向孔
@@ -472,7 +475,7 @@ function buildMechanism() {
   widePlate.name = 'motorFlangePlate';
   widePlate.castShadow = widePlate.receiveShadow = true;
   widePlate.rotation.x = Math.PI / 2;
-  widePlate.position.set(0, (fpY0 + fpT)*s, 0);
+  widePlate.position.set(0, plateMidY*s, 0);
   upperArmGroup.add(widePlate);
 
   // 一体化肘叉耳（沿用v4布局，配合Ø20轴套与Ø10可拆肩螺栓）
@@ -532,6 +535,9 @@ function buildMechanism() {
   const gFdShape = new THREE.Shape();
   [[-7,syF],[7,syF],[7,-P.forearmLen],[-7,-P.forearmLen]].forEach(([x,y],i)=>{ if(i===0) gFdShape.moveTo(x*s,y*s); else gFdShape.lineTo(x*s,y*s); });
   gFdShape.closePath();
+  for (const hx of [pr.spliceBoltInset, -pr.spliceBoltInset]) {   // 拼接M4贯穿孔（螺栓穿过臂身）
+    const p = new THREE.Path(); p.absarc(hx*s, (syF - pr.spliceBoltOff)*s, pr.spliceBoltDia/2*s, 0, Math.PI*2, true); gFdShape.holes.push(p);
+  }
   const gFd = new THREE.ExtrudeGeometry(gFdShape, { depth:12*s, bevelEnabled:false, steps:1 });
   gFd.translate(0,0,-6*s);
   const mFd = new THREE.Mesh(gFd, MAT.forearm);
@@ -586,11 +592,17 @@ function buildMechanism() {
   frontCap.name = 'motorFrontCap';
   frontCap.position.set(P.motorMountX*s, (frontY + 2)*s, 0);
   motorGroup.add(frontCap);
-  // 电机前法兰（Ø39×4，承推于安装板下面，4×M4向上旋入安装板）
-  const flange = createDiscWithHoles(19, pr.flangeBoltXZ.map(([bx,bz]) => [bx - P.motorMountX, bz, 2.3]), 4, MAT.base);
+  // 电机前法兰（38×37×4 方形法兰板；承推面 y[frontY,frontY+4]，顶面贴合安装板底 y=141）
+  //   ※ v7 修正：原实现是 Ø38 圆盘却把 4×M4 孔放在 r=20.6（完全落在盘外）→ earcut 对"外置孔"
+  //     生成自交碎片，工具通道射线被幽灵面挡住（可拆装性校验 FAIL）；物理上 M4 头也压在盘外、
+  //     法兰实际没被夹紧。现改为方形法兰板 x=9..47 / z=±18.5（与安装板宽板同足迹，左侧仍留
+  //     1mm 让开臂身 x=±8），4×Ø4.4 完整落在板内，中心 Ø10 供推杆穿出。
+  const flangeHoles = pr.flangeBoltXZ.map(([bx, bz]) => [bx - P.motorMountX, bz, pr.spliceBoltDia / 2]);
+  flangeHoles.push([0, 0, 5]);                                            // Ø10 推杆通孔
+  const flange = createPlateWithHoles(38, 37, 4, flangeHoles, MAT.base);
   flange.name = 'motorFlange';
   flange.rotation.x = Math.PI / 2;
-  flange.position.set(P.motorMountX*s, (frontY + 4)*s, 0);
+  flange.position.set(P.motorMountX*s, (frontY + 2)*s, 0);   // 法兰占[frontY,frontY+4]，顶面=安装板底面141
   motorGroup.add(flange);
   pr.flangeBoltXZ.forEach(([bx,bz],i) => {
     const n = String(i+1);
@@ -633,15 +645,19 @@ function buildMechanism() {
     sh.holes.push(p);
     return sh;
   }
-  [['Left', pr.collarBoltY[0] + 6], ['Right', pr.collarBoltY[1] + 6]].forEach(([tag, yTop]) => {
-    const tabGeo = new THREE.ExtrudeGeometry(collarTabShape(), { depth: 12, bevelEnabled: false, steps: 1, curveSegments: 32 });
-    tabGeo.scale(s, s, s);
-    const tab = new THREE.Mesh(tabGeo, MAT.clamp);
-    tab.name = 'collarTab' + tag;
-    tab.castShadow = tab.receiveShadow = true;
-    tab.rotation.x = Math.PI / 2;
-    tab.position.set(P.motorMountX*s, yTop*s, 0);
-    motorGroup.add(tab);
+  pr.collarBoltY.forEach((y, i) => {
+    const tag = ['Left','Right'][i];
+    // 双侧耳板：z=+7..11 与 z=-7..-11（镜像）。2×耳板4 + 臂身14 = 22 = M4×22 光杆，两侧都夹实
+    for (const side of [1,-1]) {
+      const tabGeo = new THREE.ExtrudeGeometry(collarTabShape(), { depth: 12, bevelEnabled: false, steps: 1, curveSegments: 32 });
+      tabGeo.scale(s, s, s);
+      const tab = new THREE.Mesh(tabGeo, MAT.clamp);
+      tab.name = 'collarTab' + tag + (side>0 ? '' : 'N');
+      tab.castShadow = tab.receiveShadow = true;
+      tab.rotation.x = side>0 ? Math.PI/2 : -Math.PI/2;
+      tab.position.set(P.motorMountX*s, (y + side*6)*s, 0);
+      motorGroup.add(tab);
+    }
   });
   pr.collarBoltY.forEach((y, i) => {
     const tag = ['A','B'][i];
@@ -678,16 +694,19 @@ function buildMechanism() {
   //   夹持桥位于B点上方y=9..16，完全避开连杆端部R7.5扫掠圆（间隙1.5mm）。
   const bClevis = new THREE.Group();
   bClevis.name = 'bClevis';
-  const pocketX = 5.8, pocketZ = 5.2, by0 = pr.bridgeY0, by1 = pr.bridgeY1;
+  // 沉龛：内档 X±5.4 / Z±6.2（M6螺母对边10、对角11.55；原 ±5.8/±5.2 会把六角顶点挤进 Z 向粉墙）
+  // 螺母坐在底板顶面 [by0+2, by0+7]；围壁加高到 by0+7.5 完整包住螺母六角面 → 防转
+  // （推杆受拉时靠"螺母防转+推杆不自转"传力；受压时螺母底面直接压底板）
+  const pocketX = 5.4, pocketZ = 6.2, by0 = pr.bridgeY0, by1 = pr.bridgeY1;
   const mmBox = (w, h, d) => createBox(w * s, h * s, d * s, MAT.clamp);
   const addB = (mesh, name, x, y, z) => { mesh.name = name; mesh.position.set(x*s, y*s, z*s); bClevis.add(mesh); };
-  addB(mmBox(18, 2, 18), 'bClevisBridgeFloor', 0, (by0 + 1), 0);                 // 螺母承推底板
-  addB(mmBox(18, 5, 2*(9 - pocketZ)), 'bClevisBridgeWallZP', 0, (by0+by1)/2 + 0.5, (pocketZ + 9)/2);
-  addB(mmBox(18, 5, 2*(9 - pocketZ)), 'bClevisBridgeWallZN', 0, (by0+by1)/2 + 0.5, -(pocketZ + 9)/2);
-  addB(mmBox(2*(9 - pocketX), 5, 2*pocketZ), 'bClevisBridgeWallXP', (pocketX + 9)/2, (by0+by1)/2 + 0.5, 0);
-  addB(mmBox(2*(9 - pocketX), 5, 2*pocketZ), 'bClevisBridgeWallXN', -(pocketX + 9)/2, (by0+by1)/2 + 0.5, 0);
-  addB(mmBox(2, 2.5, 2*pocketZ), 'bClevisBridgeRibL', -3.5, by0 + 1.25, 0);      // 底板加强肋（底8.5，距连杆扫掠1.0）
-  addB(mmBox(2, 2.5, 2*pocketZ), 'bClevisBridgeRibR', 3.5, by0 + 1.25, 0);
+  addB(mmBox(18, 2, 18), 'bClevisBridgeFloor', 0, (by0 + 1), 0);                 // 螺母承推底板（顶面 by0+2）
+  addB(mmBox(18, 6, 9 - pocketZ), 'bClevisBridgeWallZP', 0, by0 + 4.5, (pocketZ + 9)/2);
+  addB(mmBox(18, 6, 9 - pocketZ), 'bClevisBridgeWallZN', 0, by0 + 4.5, -(pocketZ + 9)/2);
+  addB(mmBox(9 - pocketX, 6, 2*pocketZ), 'bClevisBridgeWallXP', (pocketX + 9)/2, by0 + 4.5, 0);
+  addB(mmBox(9 - pocketX, 6, 2*pocketZ), 'bClevisBridgeWallXN', -(pocketX + 9)/2, by0 + 4.5, 0);
+  addB(mmBox(2, 2, 2*pocketZ), 'bClevisBridgeRibL', -3.5, by0 + 1, 0);           // 底板加劲肋（与底板同厚，不侵入龛内）
+  addB(mmBox(2, 2, 2*pocketZ), 'bClevisBridgeRibR', 3.5, by0 + 1, 0);
   for (const [tag,z] of [['Left', pr.clevisPlateZ],['Right', -pr.clevisPlateZ]]) {
     const arm = createPlateWithHoles(16, 11.5, 4, [], MAT.clamp);
     arm.name = 'bClevisArm' + tag;
@@ -698,10 +717,10 @@ function buildMechanism() {
     plate.position.z = z*s;
     bClevis.add(plate);
   }
-  // 沉龛内的M6螺母（对边10，六角面朝±z防转；底面承推于y=11底板）
+  // 沉龛内的M6螺母（对边10、对角11.55，六角面被围壁防转；坐在底板顶面 by0+2，占[by0+2,by0+7]）
   const bRodNut = createCylinder(pr.nutPocketAF / Math.sqrt(3) * s, 5*s, MAT.fastener, 6);
   bRodNut.name = 'bRodNut';
-  bRodNut.position.set(0, (by0 + 2.5)*s, 0);
+  bRodNut.position.set(0, (by0 + 4.5)*s, 0);
   bClevis.add(bRodNut);
   // B关节：Ø8×18可拆肩螺栓
   bClevis.add(createShoulderBolt('b', pr.boltB, MAT.fastener));

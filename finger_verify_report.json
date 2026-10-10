@@ -66,6 +66,35 @@
         184,
         209
       ],
+      "basePlateC": 28,
+      "basePlateRC": 8,
+      "basePlateT": 6,
+      "basePlateHoleDia": 4.4,
+      "basePlatePalmHoleR": 2.75,
+      "basePlateBolt": {
+        "shank": 4,
+        "len": 16,
+        "head": 7.2,
+        "headT": 4
+      },
+      "rootBoltXZ": [
+        [
+          8,
+          7
+        ],
+        [
+          8,
+          -7
+        ],
+        [
+          -8,
+          7
+        ],
+        [
+          -8,
+          -7
+        ]
+      ],
       "boltElbow": {
         "shank": 10,
         "shoulder": 26,
@@ -113,7 +142,7 @@
       "spliceLapPast": 5,
       "spliceTongueLen": 15,
       "spliceBoltDia": 4.4,
-      "spliceBoltInset": 5,
+      "spliceBoltInset": 4.5,
       "spliceBoltOff": 6
     },
     "boreElbow": 10.6,
@@ -127,10 +156,10 @@
     "collision_count": 0,
     "fine_sweep_step_deg": 0.05,
     "allowance_mm": 0.349,
-    "min_non_mating_clearance_mm": 14.876,
-    "continuous_lower_bound_mm": 14.527,
-    "tested_pairs": 15290,
-    "physical_meshes": 199,
+    "min_non_mating_clearance_mm": 1,
+    "continuous_lower_bound_mm": 0.651,
+    "tested_pairs": 15686,
+    "physical_meshes": 201,
     "closure_error_mm": 4.263256414560601e-14,
     "svc_pass": 39,
     "svc_total": 39
@@ -138,59 +167,59 @@
   "collisions": [],
   "closest": [
     {
-      "pair": "m2bBoltHead / p2DSpliceBoltNutR",
-      "min_clearance_mm": 14.876
+      "pair": "m1MotorFlange / p1BodyDistal",
+      "min_clearance_mm": 1
     },
     {
-      "pair": "m2bBoltNut / p2DSpliceBoltHeadR",
-      "min_clearance_mm": 16.316
+      "pair": "m1MotorFlange / p1DSplicePadTop",
+      "min_clearance_mm": 1
     },
     {
-      "pair": "m2bBoltWasher / p2DSpliceBoltHeadR",
-      "min_clearance_mm": 16.444
+      "pair": "m1MotorFlange / p1DSplicePadBottom",
+      "min_clearance_mm": 1
     },
     {
-      "pair": "m2bBoltHead / p2DSpliceBoltR",
-      "min_clearance_mm": 16.792
+      "pair": "m1MotorFlange / p1PSplicePadTop",
+      "min_clearance_mm": 1
     },
     {
-      "pair": "m2bBoltWasher / p2DSpliceBoltR",
-      "min_clearance_mm": 17.797
+      "pair": "m1MotorFlange / p1PSplicePadBottom",
+      "min_clearance_mm": 1
     },
     {
-      "pair": "m2bBoltNut / p2DSpliceBoltR",
-      "min_clearance_mm": 18.024
+      "pair": "m1MotorFlange / p1BodyProximal",
+      "min_clearance_mm": 1.414
     },
     {
-      "pair": "m2bBoltShank / p2DSpliceBoltNutR",
-      "min_clearance_mm": 18.446
+      "pair": "m1MotorBody / p1PSpliceBoltNutR",
+      "min_clearance_mm": 1.439
     },
     {
-      "pair": "m2bBoltShank / p2DSpliceBoltHeadR",
-      "min_clearance_mm": 18.776
+      "pair": "m1MotorBody / p1PSpliceBoltHeadR",
+      "min_clearance_mm": 1.782
     },
     {
-      "pair": "m2bBoltThread / p2DSpliceBoltHeadR",
-      "min_clearance_mm": 19.103
+      "pair": "m2MotorFlange / p2BodyHeel",
+      "min_clearance_mm": 2
     },
     {
-      "pair": "m2bBoltShank / p2DSpliceBoltR",
-      "min_clearance_mm": 19.807
+      "pair": "m2MotorFlange / p2PSplicePadTop",
+      "min_clearance_mm": 2
     },
     {
-      "pair": "m2bBoltThread / p2DSpliceBoltR",
-      "min_clearance_mm": 20.811
+      "pair": "m2MotorFlange / p2PSplicePadBottom",
+      "min_clearance_mm": 2
     },
     {
-      "pair": "m2bBoltHead / p2DSpliceBoltNutL",
-      "min_clearance_mm": 24.024
+      "pair": "m1MotorBody / p1BodyDistal",
+      "min_clearance_mm": 2
     }
   ],
   "serviceability": [
     {
       "name": "无铆接/永久连接",
       "pass": true,
-      "detail": "199网格"
+      "detail": "201网格"
     },
     {
       "name": "m1 BoltHead 在位",

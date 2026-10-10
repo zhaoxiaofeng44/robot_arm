@@ -76,7 +76,7 @@
       "part": "upperArmProximal",
       "kind": "printed",
       "note": "含电机法兰安装板（一体）",
-      "triangles": 2344,
+      "triangles": 2544,
       "bounding_box_mm": [
         59,
         182,
@@ -97,7 +97,7 @@
       "part": "upperArmDistal",
       "kind": "printed",
       "note": "含一体化肘叉耳",
-      "triangles": 1900,
+      "triangles": 1904,
       "bounding_box_mm": [
         22,
         158.2,
@@ -121,7 +121,7 @@
       "part": "forearmProximal",
       "kind": "printed",
       "note": "含肘轴套/毂与D侧板叉耳；建议绕X翻转180°打印（D侧板朝下落床）",
-      "triangles": 3172,
+      "triangles": 3392,
       "bounding_box_mm": [
         32,
         143.2,
@@ -144,7 +144,7 @@
       "part": "forearmDistal",
       "kind": "printed",
       "note": "含末端法兰",
-      "triangles": 756,
+      "triangles": 1172,
       "bounding_box_mm": [
         24,
         139,
@@ -181,9 +181,9 @@
       "note": "B推杆叉头（双耳+螺母沉龛夹持桥）",
       "triangles": 1132,
       "bounding_box_mm": [
-        21.2,
-        24,
-        21.8
+        18,
+        24.5,
+        18
       ],
       "source_meshes": [
         "bClevisBridgeFloor",

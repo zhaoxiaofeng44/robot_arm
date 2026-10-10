@@ -32,7 +32,10 @@ function skip(a,b){
   const names=[a.name,b.name];
   if(set.has('upperArm')&&set.has('motorFixed')&&names.some(n=>/^(collarRing|collarTab|collarBolt|flangeBolt)/.test(n)))return'电机后抱箍/法兰螺栓与上臂固定连接';
   if(set.has('upperArm')&&set.has('motorFixed')&&names.some(n=>/^motorFlangePlate/.test(n)))return'电机法兰安装板与电机/抱箍的设计配合（板上有Ø36.4导向孔，凸包代理无法表达孔洞）';
-  if([key('exposedRod','motorFrontCap'),key('exposedRod','motorBody'),key('rodThreadStub','motorFrontCap'),key('rodThreadStub','motorBody'),key('exposedRod','motorFlangePlate'),key('rodThreadStub','motorFlangePlate')].includes(key(a.name,b.name)))return'推杆与电机前端/安装板导向孔滑动配合';
+  // 推杆穿过电机前端/前法兰/安装板的导向孔：凸包代理无法表达孔洞（Ø8 杆穿 Ø10 孔 = 1mm 径向间隙）。
+  // v7：motorFlange 由 Ø38 圆盘改为 38×37 方板后成为干净凸包，杆端面与法兰外端面齐平 → 2D 零面积贴合，
+  //   必须与 motorFrontCap / motorFlangePlate 一样列入滑配豁免，否则非配合下限恒为 0。
+  if([key('exposedRod','motorFrontCap'),key('exposedRod','motorBody'),key('rodThreadStub','motorFrontCap'),key('rodThreadStub','motorBody'),key('exposedRod','motorFlangePlate'),key('rodThreadStub','motorFlangePlate'),key('exposedRod','motorFlange'),key('rodThreadStub','motorFlange')].includes(key(a.name,b.name)))return'推杆与电机前端/前法兰/安装板导向孔滑动配合';
   return null;
 }
 // v5：销轴局部配合区收紧为“孔半径+0.6mm” —— 连杆端部圆盘(R7.5)与任何跨接件的重叠都会被记为碰撞

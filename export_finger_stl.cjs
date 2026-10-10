@@ -20,13 +20,13 @@ const PRINTS={
   p2_distal:{note:'中节·关节2端段（含一体化叉耳+电机2法兰安装板）',pose:null,meshes:['p2BodyDistal','p2EarBaseL','p2YokeWebL','p2EarBaseR','p2YokeWebR','p2ForkL','p2ForkLRib','p2ForkR','p2ForkRRib','p2FlangePlateNeck','p2FlangePlate','p2DSplicePadTop','p2DSplicePadBottom','p2DSplicePadTopFoot','p2DSplicePadBottomFoot']},
   p3_proximal:{note:'远节·关节2端段（含袖套/毂+D侧板叉耳，拼接y=-125）',pose:'flipX',meshes:['p3BodyWaist','p3BodyHeel','p3SleeveBody','p3SleeveHub','p3DClevisArmL','p3DClevisArmR','p3DClevisBossL','p3DClevisBossR','p3PSplicePadTop','p3PSplicePadBottom']},
   p3_distal:{note:'远节·指尖段（含末端法兰与指尖圆头）',pose:null,meshes:['p3BodyDistal','p3FingerTip','p3FingerTipPad','p3DSplicePadTop','p3DSplicePadBottom','p3DSplicePadTopFoot','p3DSplicePadBottomFoot']},
-  motor1_collar:{note:'电机1后抱箍（开口300°，已绕X转90°导出）',pose:'rotX90',meshes:['m1CollarRing','m1CollarTabA','m1CollarTabB']},
-  motor2_collar:{note:'电机2后抱箍（开口300°，已绕X转90°导出）',pose:'rotX90',meshes:['m2CollarRing','m2CollarTabA','m2CollarTabB']},
+  motor1_collar:{note:'电机1后抱箍（开口300°，双侧耳板±z，已绕X转90°导出）',pose:'rotX90',meshes:['m1CollarRing','m1CollarTabA','m1CollarTabAN','m1CollarTabB','m1CollarTabBN']},
+  motor2_collar:{note:'电机2后抱箍（开口300°，双侧耳板±z，已绕X转90°导出）',pose:'rotX90',meshes:['m2CollarRing','m2CollarTabA','m2CollarTabAN','m2CollarTabB','m2CollarTabBN']},
   b_clevis_1:{note:'B推杆叉头1（双耳+M6螺母沉龛夹持桥）',pose:null,meshes:['m1BridgeFloor','m1BridgeWallZP','m1BridgeWallZN','m1BridgeWallXP','m1BridgeWallXN','m1BridgeRibL','m1BridgeRibR','m1ClevisArmL','m1ClevisArmR','m1ClevisPlateL','m1ClevisPlateR']},
   b_clevis_2:{note:'B推杆叉头2（与1同规格，可互换）',pose:null,meshes:['m2BridgeFloor','m2BridgeWallZP','m2BridgeWallZN','m2BridgeWallXP','m2BridgeWallXN','m2BridgeRibL','m2BridgeRibR','m2ClevisArmL','m2ClevisArmR','m2ClevisPlateL','m2ClevisPlateR']},
   link_1:{note:'BD等宽长条连杆1 100×15×8（长轴已摆正）',pose:null,unrotateGroup:'t1Tendon',meshes:['t1TendonWeb','t1TendonEyeB','t1TendonEyeD']},
   link_2:{note:'BD等宽长条连杆2（与1同规格，可互换备件，腹板3×Ø6减重孔，长轴已摆正）',pose:null,unrotateGroup:'t2Tendon',meshes:['t2TendonWeb','t2TendonEyeB','t2TendonEyeD']},
-  palm_mount:{note:'掌骨安装法兰（56×56圆角方板+Ø22h7定位止口，4×M5+Ø9穿线孔）',pose:'rotX90',meshes:['p1PalmFlangeBase','p1PalmPilot','p1PalmBoss']},
+  palm_mount:{note:'掌骨安装法兰（56×56 R8圆角方板，板底坐在指根方块顶面 y=320；内圈4×M4接方块、外圈4×Ø5.5接手掌、Ø9穿线孔）',pose:'rotX90',meshes:['p1PalmFlangeBase']},
   grip_pad:{note:'指尖防滑抓握垫（22×18垫板+3条横向防滑棱，TPU95A柔性更佳）',pose:'flipX',meshes:['p3GripPad','p3GripRib1','p3GripRib2','p3GripRib3']},
 };
 // 外购件BOM（两单元合计）
@@ -40,9 +40,9 @@ const PURCHASED_BOM=[
   {part:'nylocNutM8',spec:'M8尼龙自锁螺母（AF13）',qty:2,used:'O1/O2 肩螺栓'},
   {part:'nylocNutM6',spec:'M6尼龙自锁螺母（AF10）',qty:4,used:'B/D 肩螺栓'},
   {part:'boltM4x22',spec:'M4×22 内六角 + 平垫 + M4尼龙自锁螺母',qty:4,used:'两电机后抱箍贯穿指节'},
-  {part:'boltM4x16',spec:'M4×16 内六角',qty:8,used:'两电机前法兰旋入安装板（建议配M4热熔螺母）'},
+  {part:'boltM4x16',spec:'M4×16 内六角',qty:12,used:'两电机前法兰旋入安装板 ×8 + 掌骨法兰板旋入指根方块 ×4（建议配M4热熔螺母）'},
   {part:'boltM4x36',spec:'M4×36 + 平垫 + M4尼龙自锁螺母',qty:12,used:'P1/P2/P3 三段拼接凸台贯穿'},
-  {part:'boltM5x16',spec:'M5×16 内六角（沉头）',qty:4,used:'掌骨安装法兰固定于手掌'},
+  {part:'boltM5x16',spec:'M5×16 内六角（沉头）',qty:4,used:'掌骨安装法兰外圈 Ø5.5 → 手掌球窝（对侧零件未建模）'},
 ];
 
 function stlBinary(tris){

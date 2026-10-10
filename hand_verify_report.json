@@ -1,0 +1,304 @@
+{
+  "version": "hand-v9-index-baseplate",
+  "status": "仿生食指（单指复位版）：2×（每关节直线电机 + BD连杆）+ 指根简化底板",
+  "scope": "仅食指；多指扇形布局暂时下线",
+  "scale": 0.35,
+  "parameters": {
+    "upperArmLen": 300,
+    "phalanx2Len": 300,
+    "forearmLen": 250,
+    "motorMountX": 28,
+    "motorMountY": 213,
+    "motorBodyDia": 36,
+    "motorBodyLen": 80,
+    "tendonLinkLen": 85,
+    "strokeMax": 59.393
+  },
+  "root_junction": {
+    "gap_plate_to_block_mm": 0,
+    "bolt_engagement_into_block_mm": 10,
+    "bolt_spans_plate": true,
+    "head_seat_offset_mm": 0,
+    "bolt_holes_in_both": true,
+    "bearing_area_mm2": 528,
+    "plate_face_area_mm2": 3136,
+    "block_Y": [
+      -570,
+      -550
+    ],
+    "plate_Y": [
+      -576,
+      -570
+    ],
+    "plate_XZ": [
+      [
+        -28,
+        28
+      ],
+      [
+        -28,
+        28
+      ]
+    ]
+  },
+  "results": {
+    "closure_error_mm": 1.4210854715202004e-14,
+    "stroke_used_mm": 0,
+    "stroke_max_mm": 59.393,
+    "collision_count": 0,
+    "fine_sweep_step_deg": 0.1,
+    "allowance_mm": 0.698,
+    "min_non_mating_clearance_mm": 1,
+    "continuous_lower_bound_mm": 0.302,
+    "tested_pairs": 950,
+    "physical_meshes": 201,
+    "swept_meshes": 116,
+    "motor_min_clearance_mm": 220,
+    "motor_required_mm": 38,
+    "svc_pass": 38,
+    "svc_total": 38
+  },
+  "closest": [
+    {
+      "pair": "m1MotorFlange / p1DSplicePadTop",
+      "min_clearance_mm": 1
+    },
+    {
+      "pair": "m1MotorFlange / p1DSplicePadBottom",
+      "min_clearance_mm": 1
+    },
+    {
+      "pair": "m1MotorFlange / p1PSplicePadTop",
+      "min_clearance_mm": 1
+    },
+    {
+      "pair": "m1MotorFlange / p1PSplicePadBottom",
+      "min_clearance_mm": 1
+    },
+    {
+      "pair": "m1MotorFlange / p1BodyDistal",
+      "min_clearance_mm": 1
+    },
+    {
+      "pair": "p1BodyProximal / p1PalmFlangeBase",
+      "min_clearance_mm": 1.215
+    },
+    {
+      "pair": "m1MotorFlange / p1BodyProximal",
+      "min_clearance_mm": 1.414
+    },
+    {
+      "pair": "m1ExposedRod / m1MotorFlange",
+      "min_clearance_mm": 1.633
+    },
+    {
+      "pair": "m2ExposedRod / m2MotorFlange",
+      "min_clearance_mm": 1.633
+    },
+    {
+      "pair": "m1MotorBody / p1DSplicePadTop",
+      "min_clearance_mm": 2
+    },
+    {
+      "pair": "m1MotorBody / p1DSplicePadBottom",
+      "min_clearance_mm": 2
+    },
+    {
+      "pair": "m1MotorFrontCap / p1PSplicePadTop",
+      "min_clearance_mm": 2
+    }
+  ],
+  "collisions": [],
+  "serviceability": [
+    {
+      "name": "无铆接/永久连接",
+      "pass": true,
+      "detail": "201 网格"
+    },
+    {
+      "name": "m1b BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m1b BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m1b BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m1b BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m1b BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m2b BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m2b BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m2b BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m2b BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m2b BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o1 BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o1 BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o1 BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o1 BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o1 BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p2d BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p2d BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p2d BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p2d BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p2d BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p3d BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p3d BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p3d BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p3d BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p3d BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "B叉头沉龛螺母×2 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "两单元轴向浮动≥1mm/侧",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "两单元连杆为等宽长条",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "指根底板与方块顶面贴合（无悬空）",
+      "pass": true,
+      "detail": "0 mm"
+    },
+    {
+      "name": "4×M4 指根螺栓齐套",
+      "pass": true,
+      "detail": "M4×4"
+    },
+    {
+      "name": "指根螺栓杆身贯穿底板",
+      "pass": true,
+      "detail": "杆 Y[-576.0,-560.0]"
+    },
+    {
+      "name": "指根螺栓旋入方块有效啮合 > 3mm",
+      "pass": true,
+      "detail": "10 mm"
+    },
+    {
+      "name": "指根螺栓头部坐在板面上",
+      "pass": true,
+      "detail": "头底面 y=-570.00"
+    },
+    {
+      "name": "螺栓孔位同时落在底板与方块内",
+      "pass": true,
+      "detail": "孔距 8×7, 8×-7, -8×7, -8×-7"
+    },
+    {
+      "name": "指根方块对底板有承压面",
+      "pass": true,
+      "detail": "528 mm²（板上表面 3136 mm²）"
+    },
+    {
+      "name": "每关节 1 台直线电机（无欠驱动）",
+      "pass": true,
+      "detail": "2 台 / 2 个主动关节"
+    },
+    {
+      "name": "电机仓无干涉（轴线间距 ≥ 外径+2mm）",
+      "pass": true,
+      "detail": "220 ≥ 38"
+    }
+  ]
+}

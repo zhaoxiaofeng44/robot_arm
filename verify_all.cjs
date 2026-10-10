@@ -28,6 +28,10 @@ const jobs=[
     return (c?('碰撞 '+c[1]):'')+(lb?(' / 下限 '+lb[1]+'mm'):'')+(cl?(' / 闭合 '+Number(cl[1]).toExponential(1)):'');
   }},
   {name:'手指·打印与拆装',file:'verify_finger_print.cjs',extract:out=>(out.match(/通过 (\d+\/\d+)/)||[])[1]||''},
+  {name:'整手·单指反根闭合与碰撞',file:'verify_hand.cjs',extract:out=>{
+    const c=out.match(/"collisions":\s*(\d+)/),lb=out.match(/"continuous_lower_bound_mm":\s*(-?[\d.]+)/),sv=out.match(/"svc_pass":\s*"(\d+\/\d+)"/);
+    return (c?('碰撞 '+c[1]):'')+(lb?(' / 下限 '+lb[1]+'mm'):'')+(sv?(' / 可拆装 '+sv[1]):'');
+  }},
 ];
 const rows=[];let allOk=true;
 for(const j of jobs){
