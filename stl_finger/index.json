@@ -1,74 +1,74 @@
 {
   "unit": "mm",
-  "model": "finger print-ready v5-two-unit",
+  "model": "finger print-ready v7-three-unit",
   "generated_from": "finger_mechanism_3d.html",
-  "note": "三节手指=两套肘关节机构拼接。每个STL为一个独立打印件，已按打印姿态摆放（销轴孔轴=Z竖直，落地z=0）。两单元通用件可互换。",
+  "note": "掌+三节手指=掌(载电机0)+三套同构关节单元(肘关节机构)串联。每个STL为一个独立打印件，已按打印姿态摆放（销轴孔轴=Z竖直，落地z=0）。三单元通用件可互换。",
   "purchased_parts_bom": [
     {
       "part": "shoulderBoltO10x26",
       "spec": "肩螺栓（塞打螺丝）Ø10 h9×26，端部螺纹M8",
-      "qty": 2,
-      "used": "关节1/关节2 转动副（O1/O2）"
+      "qty": 3,
+      "used": "关节0/1/2 转动副（O0/O1/O2）"
     },
     {
       "part": "shoulderBoltB8x18",
       "spec": "肩螺栓 Ø8 h9×18，端部螺纹M6",
-      "qty": 2,
-      "used": "两单元 B 推杆叉头销轴"
+      "qty": 3,
+      "used": "三单元 B 推杆叉头销轴"
     },
     {
       "part": "shoulderBoltD8x20",
       "spec": "肩螺栓 Ø8 h9×20，端部螺纹M6",
-      "qty": 2,
-      "used": "两单元 D 连杆销轴"
+      "qty": 3,
+      "used": "三单元 D 连杆销轴"
     },
     {
       "part": "rodNutM6",
       "spec": "M6六角螺母（沉入B叉头沉龛）",
-      "qty": 2,
+      "qty": 3,
       "used": "推杆端部夹持"
     },
     {
       "part": "washerO",
       "spec": "平垫 Ø10.5/Ø16×1.6",
-      "qty": 2,
-      "used": "O1/O2 螺母侧"
+      "qty": 3,
+      "used": "O0/O1/O2 螺母侧"
     },
     {
       "part": "washerBD",
       "spec": "平垫 Ø8.4/Ø12×1.6",
-      "qty": 4,
+      "qty": 6,
       "used": "B/D 螺母侧"
     },
     {
       "part": "nylocNutM8",
       "spec": "M8尼龙自锁螺母（AF13）",
-      "qty": 2,
-      "used": "O1/O2 肩螺栓"
+      "qty": 3,
+      "used": "O0/O1/O2 肩螺栓"
     },
     {
       "part": "nylocNutM6",
       "spec": "M6尼龙自锁螺母（AF10）",
-      "qty": 4,
+      "qty": 6,
       "used": "B/D 肩螺栓"
     },
     {
       "part": "boltM4x22",
       "spec": "M4×22 内六角 + 平垫 + M4尼龙自锁螺母",
-      "qty": 4,
-      "used": "两电机后抱箍贯穿指节"
+      "qty": 6,
+      "used": "三电机后抱箍贯穿所在段"
     },
     {
       "part": "boltM4x16",
       "spec": "M4×16 内六角",
-      "qty": 12,
-      "used": "两电机前法兰旋入安装板 ×8 + 掌骨法兰板旋入指根方块 ×4（建议配M4热熔螺母）"
+      "qty": 16,
+      "used": "三电机前法兰旋入安装板 ×12 + 掌骨法兰板旋入指根方块 ×4（建议配M4热熔螺母）"
     },
     {
       "part": "boltM4x36",
       "spec": "M4×36 + 平垫 + M4尼龙自锁螺母",
-      "qty": 12,
-      "used": "P1/P2/P3 三段拼接凸台贯穿"
+      "qty": 6,
+      "used": "掌/P1/P2 三处拼接凸台贯穿（每处2根）"
     },
     {
       "part": "boltM5x16",
@@ -79,9 +79,9 @@
   ],
   "parts": [
     {
-      "part": "p1_proximal",
+      "part": "palm_proximal",
       "kind": "printed",
-      "note": "近节·掌端段（含肩座+电机1法兰安装板）",
+      "note": "掌·法兰端段（含指根方块+电机0法兰安装板，拼接y=140）",
       "pose": "flipX",
       "triangles": 3328,
       "bounding_box_mm": [
@@ -90,26 +90,75 @@
         37
       ],
       "source_meshes": [
-        "p1BodyProximal",
-        "p1PalmBase",
-        "p1FlangePlateNeck",
-        "p1FlangePlate",
-        "p1PSplicePadTop",
-        "p1PSplicePadBottom",
-        "p1PSplicePadTopFoot",
-        "p1PSplicePadBottomFoot"
+        "palmBodyProximal",
+        "palmBase",
+        "palmFlangePlateNeck",
+        "palmFlangePlate",
+        "palmPSplicePadTop",
+        "palmPSplicePadBottom",
+        "palmPSplicePadTopFoot",
+        "palmPSplicePadBottomFoot"
       ]
     },
     {
-      "part": "p1_distal",
+      "part": "palm_distal",
       "kind": "printed",
-      "note": "近节·关节1段（含一体化叉耳）",
+      "note": "掌·关节0段（含一体化叉耳，接P1）",
       "pose": "as-modeled",
       "triangles": 1904,
       "bounding_box_mm": [
         22,
         158.2,
         26
+      ],
+      "source_meshes": [
+        "palmBodyDistal",
+        "palmEarBaseL",
+        "palmYokeWebL",
+        "palmEarBaseR",
+        "palmYokeWebR",
+        "palmForkL",
+        "palmForkLRib",
+        "palmForkR",
+        "palmForkRRib",
+        "palmDSplicePadTop",
+        "palmDSplicePadBottom"
+      ]
+    },
+    {
+      "part": "p1_proximal",
+      "kind": "printed",
+      "note": "近节·关节0端段（含袖套/毂+D侧板叉耳，拼接y=-170）",
+      "pose": "flipX",
+      "triangles": 3592,
+      "bounding_box_mm": [
+        32,
+        188.2,
+        20
+      ],
+      "source_meshes": [
+        "p1BodyWaist",
+        "p1BodyHeel",
+        "p1SleeveBody",
+        "p1SleeveHub",
+        "p1DClevisArmL",
+        "p1DClevisArmR",
+        "p1DClevisBossL",
+        "p1DClevisBossR",
+        "p1PSplicePadTop",
+        "p1PSplicePadBottom"
+      ]
+    },
+    {
+      "part": "p1_distal",
+      "kind": "printed",
+      "note": "近节·关节1端段（含一体化叉耳+电机1法兰安装板）",
+      "pose": "as-modeled",
+      "triangles": 3428,
+      "bounding_box_mm": [
+        58,
+        159,
+        37
       ],
       "source_meshes": [
         "p1BodyDistal",
@@ -121,14 +170,18 @@
         "p1ForkLRib",
         "p1ForkR",
         "p1ForkRRib",
+        "p1FlangePlateNeck",
+        "p1FlangePlate",
         "p1DSplicePadTop",
-        "p1DSplicePadBottom"
+        "p1DSplicePadBottom",
+        "p1DSplicePadTopFoot",
+        "p1DSplicePadBottomFoot"
       ]
     },
     {
       "part": "p2_proximal",
       "kind": "printed",
-      "note": "中节·关节1端段（含袖套/毂+D侧板叉耳，拼接y=-170）",
+      "note": "中节·关节1端段（含袖套/毂+D侧板叉耳，拼接y=-170；与近节同件，可互换）",
       "pose": "flipX",
       "triangles": 3592,
       "bounding_box_mm": [
@@ -152,7 +205,7 @@
     {
       "part": "p2_distal",
       "kind": "printed",
-      "note": "中节·关节2端段（含一体化叉耳+电机2法兰安装板）",
+      "note": "中节·关节2端段（含一体化叉耳+电机2法兰安装板；与近节同件，可互换）",
       "pose": "as-modeled",
       "triangles": 3428,
       "bounding_box_mm": [
@@ -224,9 +277,28 @@
       ]
     },
     {
+      "part": "motor0_collar",
+      "kind": "printed",
+      "note": "电机0后抱箍（开口300°，双侧耳板±z，已绕X转90°导出）",
+      "pose": "rotX90",
+      "triangles": 2788,
+      "bounding_box_mm": [
+        51.2,
+        42.4,
+        42
+      ],
+      "source_meshes": [
+        "m0CollarRing",
+        "m0CollarTabA",
+        "m0CollarTabAN",
+        "m0CollarTabB",
+        "m0CollarTabBN"
+      ]
+    },
+    {
       "part": "motor1_collar",
       "kind": "printed",
-      "note": "电机1后抱箍（开口300°，双侧耳板±z，已绕X转90°导出）",
+      "note": "电机1后抱箍（与0同规格，可互换）",
       "pose": "rotX90",
       "triangles": 2788,
       "bounding_box_mm": [
@@ -245,7 +317,7 @@
     {
       "part": "motor2_collar",
       "kind": "printed",
-      "note": "电机2后抱箍（开口300°，双侧耳板±z，已绕X转90°导出）",
+      "note": "电机2后抱箍（与0同规格，可互换）",
       "pose": "rotX90",
       "triangles": 2788,
       "bounding_box_mm": [
@@ -262,9 +334,34 @@
       ]
     },
     {
+      "part": "b_clevis_0",
+      "kind": "printed",
+      "note": "B推杆叉头0（双耳+M6螺母沉龛夹持桥）",
+      "pose": "as-modeled",
+      "triangles": 1132,
+      "bounding_box_mm": [
+        18,
+        24.5,
+        18
+      ],
+      "source_meshes": [
+        "m0BridgeFloor",
+        "m0BridgeWallZP",
+        "m0BridgeWallZN",
+        "m0BridgeWallXP",
+        "m0BridgeWallXN",
+        "m0BridgeRibL",
+        "m0BridgeRibR",
+        "m0ClevisArmL",
+        "m0ClevisArmR",
+        "m0ClevisPlateL",
+        "m0ClevisPlateR"
+      ]
+    },
+    {
       "part": "b_clevis_1",
       "kind": "printed",
-      "note": "B推杆叉头1（双耳+M6螺母沉龛夹持桥）",
+      "note": "B推杆叉头1（与0同规格，可互换）",
       "pose": "as-modeled",
       "triangles": 1132,
       "bounding_box_mm": [
@@ -289,7 +386,7 @@
     {
       "part": "b_clevis_2",
       "kind": "printed",
-      "note": "B推杆叉头2（与1同规格，可互换）",
+      "note": "B推杆叉头2（与0同规格，可互换）",
       "pose": "as-modeled",
       "triangles": 1132,
       "bounding_box_mm": [
@@ -312,9 +409,26 @@
       ]
     },
     {
+      "part": "link_0",
+      "kind": "printed",
+      "note": "BD等宽长条连杆0 100×15×8（长轴已摆正）",
+      "pose": "as-modeled+alignLink(-9.48deg)",
+      "triangles": 1368,
+      "bounding_box_mm": [
+        15,
+        100,
+        8
+      ],
+      "source_meshes": [
+        "t0TendonWeb",
+        "t0TendonEyeB",
+        "t0TendonEyeD"
+      ]
+    },
+    {
       "part": "link_1",
       "kind": "printed",
-      "note": "BD等宽长条连杆1 100×15×8（长轴已摆正）",
+      "note": "BD等宽长条连杆1（与0同规格，可互换备件，腹板3×Ø6减重孔）",
       "pose": "as-modeled+alignLink(-9.48deg)",
       "triangles": 1368,
       "bounding_box_mm": [
@@ -331,7 +445,7 @@
     {
       "part": "link_2",
       "kind": "printed",
-      "note": "BD等宽长条连杆2（与1同规格，可互换备件，腹板3×Ø6减重孔，长轴已摆正）",
+      "note": "BD等宽长条连杆2（与0同规格，可互换备件）",
       "pose": "as-modeled+alignLink(-9.48deg)",
       "triangles": 1368,
       "bounding_box_mm": [
@@ -357,7 +471,7 @@
         6
       ],
       "source_meshes": [
-        "p1PalmFlangeBase"
+        "palmFlangeBase"
       ]
     },
     {

@@ -9,7 +9,7 @@ function loadModel(file){
   const script=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].find(m=>m[1].includes('const P ='))[1];
   const nodes=new Map(),document={getElementById(id){if(!nodes.has(id))nodes.set(id,{});return nodes.get(id);}};
   const main=script.slice(0,script.lastIndexOf('\ninitScene();'));
-  return new Function('THREE','document',main+'\nscene=new THREE.Scene();showLabels=false;buildMechanism();updateMechanism(0);return {P,s,scene,updateMechanism,getJoints,angleToStroke};')(THREE,document);
+  return new Function('THREE','document',main+'\nscene=new THREE.Scene();showLabels=false;buildMechanism();updateMechanism(0,0,0);return {P,s,scene,updateMechanism,getJoints,angleToStroke};')(THREE,document);
 }
 const api=loadModel('finger_mechanism_3d.html');
 const {P,s,scene}=api;
@@ -142,52 +142,58 @@ function renderAuto(file,W,H,eyeDir,nameRe,margin){
   render(file,W,H,eyeDir,cen,half);
 }
 
-// 视角：eyeDir 为相机方向；自动取景按"由正则选出的部件集合"框住画面
+// 视角：eyeDir 为相机方向；自动取景按"由正则选出的部件集合"框住画面（掌+三节指骨三单元）
 const ISO=[0.55,-0.5,0.67], ISO2=[-0.5,-0.55,0.67], TOPZ=[0,0,-1];
-const ALL=/phalanx1|phalanx2|phalanx3|motor1|motor2|t1Tendon|t2Tendon/;
+const ALL=/palm|phalanx1|phalanx2|phalanx3|motor0|motor1|motor2|t0Tendon|t1Tendon|t2Tendon/;
+const A0=75, A1=75, A2=55;   // 卷曲演示姿态（在安全包络 90/90/70 内）
 
-// ---- (1)(2)(3) 卷曲态 θ1=80° θ2=50°：整体 ----
-api.updateMechanism(80,50);
+// ---- (1)(2)(3) 卷曲态：整体 ----
+api.updateMechanism(A0,A1,A2);
 renderAuto(path.join(out,'finger_01_iso_curl.png'),1400,1000,ISO,ALL,1.06);
 renderAuto(path.join(out,'finger_02_main_curl.png'),1400,900,TOPZ,ALL,1.06);
 renderAuto(path.join(out,'finger_03_iso2_curl.png'),1400,1000,ISO2,ALL,1.06);
-// ---- (4) 关节1 特写：世界(0,0) 邻域 150mm ----
-renderNear(path.join(out,'finger_04_joint1.png'),1000,1000,[0.4,-0.35,0.85],[0,0,0],95);
-// ---- (5) 关节2 + 指尖 特写：O2(80°,50°)≈(295,-52) 邻域 170mm ----
+// ---- (4) 关节0(MCP) 特写：O0 世界(0,0) 邻域 ----
+renderNear(path.join(out,'finger_04_joint0_mcp.png'),1000,1000,[0.4,-0.35,0.85],[0,0,0],95);
+// ---- (5) 关节1(PIP) 特写 ----
 {
-  const J=api.getJoints(80,50);
-  renderNear(path.join(out,'finger_05_joint2_tip.png'),1000,1000,[0.45,-0.3,0.84],[J.O2.x,J.O2.y,0],105);
+  const J=api.getJoints(A0,A1,A2);
+  renderNear(path.join(out,'finger_05_joint1_pip.png'),1000,1000,[0.45,-0.3,0.84],[J.O1.x,J.O1.y,0],105);
 }
-// ---- (6) 连杆1 + B/D 叉头特写：连杆中点 邻域 70mm ----
+// ---- (6) 关节2(DIP) + 指尖 特写 ----
 {
-  const J=api.getJoints(80,50);
-  const mx=(J.B1.x+J.D1.x)/2, my=(J.B1.y+J.D1.y)/2;
-  renderNear(path.join(out,'finger_06_link.png'),1000,900,[0.3,-0.25,0.92],[mx,my,0],60);
+  const J=api.getJoints(A0,A1,A2);
+  renderNear(path.join(out,'finger_06_joint2_tip.png'),1000,1000,[0.45,-0.3,0.84],[J.O2.x,J.O2.y,0],105);
 }
-// ---- (7) 电机1 安装特写：抱箍中心(28,196) 邻域 75mm ----
-renderNear(path.join(out,'finger_07_motor_mount.png'),1000,900,[0.35,-0.4,0.85],[28,196,0],60);
-// ---- (8) 电机2 安装特写：P2局部(28,-170)→世界 邻域 90mm ----
+// ---- (7) 连杆0 + B/D 叉头特写：连杆中点 邻域 ----
 {
-  const t=80*Math.PI/180;
+  const J=api.getJoints(A0,A1,A2);
+  const mx=(J.B0.x+J.D0.x)/2, my=(J.B0.y+J.D0.y)/2;
+  renderNear(path.join(out,'finger_07_link.png'),1000,900,[0.3,-0.25,0.92],[mx,my,0],60);
+}
+// ---- (8) 电机0 安装特写（掌段）：抱箍中心(28,196) 邻域 ----
+renderNear(path.join(out,'finger_08_motor0_mount.png'),1000,900,[0.35,-0.4,0.85],[28,196,0],60);
+// ---- (9) 电机1 安装特写（P1 段，随 P1 旋转）：P1局部(28,-170)→世界 邻域 ----
+{
+  const t=A0*Math.PI/180;
   const rot=(x,y)=>[x*Math.cos(t)-y*Math.sin(t), x*Math.sin(t)+y*Math.cos(t)];
   const c=rot(28,-170);
-  renderNear(path.join(out,'finger_08_motor2_mount.png'),1000,900,[0.35,-0.4,0.85],[c[0],c[1],0],70);
+  renderNear(path.join(out,'finger_09_motor1_mount.png'),1000,900,[0.35,-0.4,0.85],[c[0],c[1],0],70);
 }
-// ---- (11) 掌部安装法兰特写：P1掌端(0,325) 邻域 80mm ----
-renderNear(path.join(out,'finger_11_palm_mount.png'),1000,900,[0.45,-0.35,0.83],[0,325,0],75);
-// ---- (12) 指尖防滑抓握垫特写：直接取 p3GripPad 世界坐标（卷曲态） 邻域 65mm ----
+// ---- (10) 掌骨安装法兰特写：掌端(0,325) 邻域 ----
+renderNear(path.join(out,'finger_10_palm_mount.png'),1000,900,[0.45,-0.35,0.83],[0,325,0],75);
+// ---- (11) 指尖防滑抓握垫特写：取 p3GripPad 世界坐标（卷曲态） 邻域 ----
 {
-  api.updateMechanism(80,50); scene.updateMatrixWorld(true);
+  api.updateMechanism(A0,A1,A2); scene.updateMatrixWorld(true);
   const pad=scene.getObjectByName('p3GripPad');
   pad.geometry.computeBoundingBox();
   const cLocal=pad.geometry.boundingBox.getCenter(new THREE.Vector3());
   const cw=cLocal.applyMatrix4(pad.matrixWorld);
-  renderNear(path.join(out,'finger_12_grip_tip.png'),1000,900,[0.3,-0.35,0.89],
+  renderNear(path.join(out,'finger_11_grip_tip.png'),1000,900,[0.3,-0.35,0.89],
     [cw.x/s,cw.y/s,cw.z/s],60);
 }
-// ---- (9) 伸直态 θ1=θ2=0 ----
-api.updateMechanism(0,0);
-renderAuto(path.join(out,'finger_09_straight_iso.png'),1000,1300,ISO,ALL,1.05);
-// ---- (10) 全屈极限 θ1=θ2=120° ----
-api.updateMechanism(120,120);
-renderAuto(path.join(out,'finger_10_fullflex_iso.png'),1300,1000,ISO,ALL,1.06);
+// ---- (12) 伸直态 θ0=θ1=θ2=0 ----
+api.updateMechanism(0,0,0);
+renderAuto(path.join(out,'finger_12_straight_iso.png'),1000,1300,ISO,ALL,1.05);
+// ---- (13) 安全包络极限 90/90/70 ----
+api.updateMechanism(90,90,70);
+renderAuto(path.join(out,'finger_13_envelope_iso.png'),1300,1000,ISO,ALL,1.06);

@@ -1,5 +1,5 @@
 'use strict';
-// 一键全量校验：肘关节机构(v5) + 三节手指机构，顺序执行全部校验器并输出总表。
+// 一键全量校验：肘关节机构(v5) + 掌+三节手指机构(v7三个同构关节单元)，顺序执行全部校验器并输出总表。
 // 用法: node verify_all.cjs [--quick]
 //   --quick: 肘版碰撞扫描用 0.5° 步进（快速自查）；默认 0.05° 完整校验（数分钟）。
 const {spawnSync}=require('child_process');
@@ -23,7 +23,9 @@ const jobs=[
   {name:'肘·可拆装性',file:'verify_serviceability.cjs',extract:out=>(out.match(/通过 (\d+\/\d+)/)||[])[1]||''},
   {name:'肘·3D打印适配性',file:'verify_print_geometry.cjs',extract:out=>(out.match(/通过 (\d+\/\d+)/)||[])[1]||''},
   {name:'肘·STL完整性',file:'check_stl.cjs',extract:out=>(out.match(/问题文件:\s*(\d+)/)||[])[0]||''},
-  {name:'手指·双单元碰撞与闭合',file:'verify_finger.cjs',extract:out=>{
+  {name:'手指·三关节碰撞与闭合',file:'verify_finger.cjs',
+   args:quick?['--quick','--no-write']:[],
+   extract:out=>{
     const c=out.match(/"collision_count":\s*(\d+)/),lb=out.match(/"continuous_lower_bound_mm":\s*(-?[\d.]+)/),cl=out.match(/"closure":\s*([\d.eE+-]+)/);
     return (c?('碰撞 '+c[1]):'')+(lb?(' / 下限 '+lb[1]+'mm'):'')+(cl?(' / 闭合 '+Number(cl[1]).toExponential(1)):'');
   }},

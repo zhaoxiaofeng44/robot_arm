@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>仿生手指机构 — 两台直线电机驱动三节指骨（v5可拆关节×2拼接）</title>
+<title>仿生手指机构 — 三台直线电机驱动掌+三节指骨（v5可拆关节×3同构单元）</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; }
@@ -39,14 +39,16 @@
 <div id="canvas-container"></div>
 <div id="loading">加载中...</div>
 <div id="control-panel" style="display:none;">
-  <h2>三节手指 · 两个可拆关节单元拼接 · 双电机驱动</h2>
+  <h2>三节手指 · 三个可拆关节单元（掌指/近指/远指） · 三电机驱动</h2>
   <div class="panel-section">
-    <h3>运动控制 · 回缩屈臂，伸出伸直</h3>
-    <div class="slider-group"><label>近端关节角 PIP <span class="value" id="angle1-val">0.0°</span></label><input type="range" id="angle1-slider" min="0" max="120" value="0" step="0.5"></div>
-    <div class="slider-group"><label>远端关节角 DIP <span class="value" id="angle2-val">0.0°</span></label><input type="range" id="angle2-slider" min="0" max="120" value="0" step="0.5"></div>
+    <h3>运动控制 · 屈指回缩，伸指张开（安全包络 90°/90°/70°）</h3>
+    <!-- θ0 掌指 MCP / θ1 近指 PIP / θ2 远指 DIP：上限由 verify_finger.cjs 扫描确定 -->
+    <div class="slider-group"><label>掌指关节角 MCP θ0 <span class="value" id="angle0-val">0.0°</span></label><input type="range" id="angle0-slider" min="0" max="90" value="0" step="0.5"></div>
+    <div class="slider-group"><label>近指关节角 PIP θ1 <span class="value" id="angle1-val">0.0°</span></label><input type="range" id="angle1-slider" min="0" max="90" value="0" step="0.5"></div>
+    <div class="slider-group"><label>远指关节角 DIP θ2 <span class="value" id="angle2-val">0.0°</span></label><input type="range" id="angle2-slider" min="0" max="70" value="0" step="0.5"></div>
     <div class="slider-group"><label>动画速度 <span class="value" id="speed-val">1.0x</span></label><input type="range" id="speed-slider" min="0.1" max="3.0" value="1.0" step="0.1"></div>
     <div class="btn-group"><button id="btn-play">▶ 播放</button><button id="btn-reset">⏹ 重置</button></div>
-    <div class="btn-group"><button id="btn-preset-straight">伸直 0°/0°</button><button id="btn-preset-half">半屈 60°/40°</button><button id="btn-preset-flex">全屈 120°/80°</button></div>
+    <div class="btn-group"><button id="btn-preset-straight">伸直 0/0/0</button><button id="btn-preset-half">半屈 45/45/35</button><button id="btn-preset-flex">全屈 90/90/70</button></div>
     <div class="btn-group" style="margin-top:8px;"><button id="btn-view-iso">等轴视图</button><button id="btn-view-front">正面视图</button><button id="btn-view-side">侧面视图</button></div>
   </div>
   <div class="panel-section">
@@ -65,22 +67,23 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
 // ============================================================
-// 仿生三节手指 — 两个"当前肘关节机构"单元首尾拼接
-//   单元k = 基节(带电机,叉耳) + 被动节(袖套+D侧板) + BD长条连杆，几何完全同v5
-//   P1近节(300,接掌) ─关节1─ P2中节(300,=单元1前臂+单元2上臂的拼接件,载电机2) ─关节2─ P3远节(250,指尖)
-//   电机2相对关节2的几何 = 电机1相对关节1（安装臂在指尖一侧逐级前移）
-//   运动学零改动：每单元 A=(28,213)相对自身关节、BD=85、D=(14,-31)、行程59.393mm、0~120°
+// 仿生手指 — 掌 + 三节指骨 = 三个"肘关节机构"单元串联（关节方式与现有两节完全一致）
+//   单元k = 上级段(带电机k + 远端叉耳) + 本级段(近端袖套+D侧板) + BD长条连杆，几何完全同v5
+//   掌(300,固定,载电机0,顶端掌骨法兰) ─O0─ P1近节(300) ─O1─ P2中节(300) ─O2─ P3远节(250,指尖)
+//   电机k 装在本单元上级段上并随之运动，推杆经BD连杆驱动下一级段绕 Ok 转动（三个单元逐件同构）
+//   运动学零改动：每单元 A=(28,213)相对自身关节、BD=85、D=(14,-31)、行程59.393mm
+//   安全包络 90°/90°/70°：由 verify_finger.cjs 三维姿态扫描确定（再卷则指尖回到掌段内）
 // ============================================================
 //   · B叉头：开放双耳+夹持桥（M6螺母沉龛），连杆沿Z落入、销轴沿Z插入
 //   · D叉耳：侧板贴前臂侧面（在连杆Z带之外），取消跨连杆的桥
-//   · 电机：前法兰承推（安装板与上臂一体）+ 后部开口抱箍（2×M4锁臂侧）
-//   · 运动学零改动：A=(28,213)、BD=85、D(θ)、行程59.39mm全部不变
+//   · 电机：前法兰承推（安装板与所在段一体）+ 后部开口抱箍（2×M4锁段侧）
 // ============================================================
 
 // --- 机构参数 ---
 const P = {
-  upperArmLen: 300,
-  phalanx2Len: 300,          // P2中节：单元1前臂+单元2上臂的拼接件（载电机2）
+  upperArmLen: 300,          // 掌段长（固定基节：载电机0，远端=关节0叉耳）
+  phalanx1Len: 300,          // P1近节：单元0的被驱动段（与P2同构同长，载电机1）
+  phalanx2Len: 300,          // P2中节：单元1的被驱动段（载电机2）
   forearmLen: 250,
   motorMountY: 213,          // A点：行程基准（拉压反力由前法兰承担）
   motorMountX: 28,
@@ -218,18 +221,22 @@ function transmissionAngle(thetaDeg) {
 
 // --- Three.js ---
 let scene, camera, renderer, controls;
-let p1Group, p2Group, p3Group, motor1Group, motor2Group, tendon1Group, tendon2Group;
+let palmGroup, p1Group, p2Group, p3Group, motor0Group, motor1Group, motor2Group, tendon0Group, tendon1Group, tendon2Group;
 let trailLine, labels = [], bodyOutline;
 let isPlaying = false, animDir = 1, animSpeed = 1.0, animCoupled = false;
-function setPose(a1, a2) {
-  angle1 = Math.max(0, Math.min(120, a1));
-  angle2 = Math.max(0, Math.min(120, a2));
+// 安全行程上限（由 verify_finger.cjs 三维姿态扫描确定；见 finger_design_spec.md）
+const LIMITS = { mcp: 90, pip: 90, dip: 70 };
+function setPose(a0, a1, a2) {
+  angle0 = Math.max(0, Math.min(LIMITS.mcp, a0));
+  angle1 = Math.max(0, Math.min(LIMITS.pip, a1));
+  angle2 = Math.max(0, Math.min(LIMITS.dip, a2));
+  document.getElementById('angle0-slider').value = angle0;
   document.getElementById('angle1-slider').value = angle1;
   document.getElementById('angle2-slider').value = angle2;
-  updateMechanism(angle1, angle2);
+  updateMechanism(angle0, angle1, angle2);
   updateSliderLabels();
 }
-let angle1 = 0, angle2 = 0;
+let angle0 = 0, angle1 = 0, angle2 = 0;
 let showGrid = true, showLabels = true, showTrail = true, showBody = true;
 
 const MAT = {
@@ -459,7 +466,7 @@ function buildMechanism() {
   function buildPalmMount(parent, pfx) {
     const py = P.upperArmLen + 20;   // = 320：指根方块顶面 = 板底面（零间隙贴合）
     const t  = pr.basePlateT;        // 板厚 6
-    const g = new THREE.Group(); g.name = pfx + 'PalmMount';
+    const g = new THREE.Group(); g.name = pfx + 'Mount';
     const c = pr.basePlateC, rc = pr.basePlateRC;   // 56×56 R8 圆角方板
     const shp = new THREE.Shape();   // 圆角方板（XY为世界XZ，挤出沿local Z=世界−Y）
     shp.moveTo(-c + rc, -c); shp.lineTo(c - rc, -c); shp.absarc(c - rc, -c + rc, rc, -Math.PI / 2, 0, false);
@@ -480,18 +487,18 @@ function buildMechanism() {
     const bg = new THREE.ExtrudeGeometry(shp, { depth: t, bevelEnabled: false, steps: 1, curveSegments: 24 });
     bg.scale(s, s, s);
     const base = new THREE.Mesh(bg, MAT.base);
-    base.name = pfx + 'PalmFlangeBase'; base.castShadow = base.receiveShadow = true;
+    base.name = pfx + 'FlangeBase'; base.castShadow = base.receiveShadow = true;
     base.rotation.x = Math.PI / 2; base.position.y = (py + t) * s;   // 挤出沿 −Y：板占 y[py, py+t]=[320,326]，底面坐方块顶面
     g.add(base);
     // 4×M4×16 内六角：头在 y[326,330]，杆 y[310,326]（穿板6 + 旋入方块10）
     const bl = pr.basePlateBolt;
     pr.rootBoltXZ.forEach(([bx, bz], i) => {
       const bolt = createCylinder(bl.shank / 2 * s, bl.len * s, MAT.fastener, 16);   // 轴沿Y（竖直穿板入方块）
-      bolt.name = pfx + 'PalmBolt' + (i + 1);
+      bolt.name = pfx + 'MountBolt' + (i + 1);
       bolt.position.set(bx * s, (py + t - bl.len / 2) * s, bz * s);
       g.add(bolt);
       const head = createCylinder(bl.head / 2 * s, bl.headT * s, MAT.fastener, 20);
-      head.name = pfx + 'PalmBoltHead' + (i + 1);
+      head.name = pfx + 'MountBoltHead' + (i + 1);
       head.position.set(bx * s, (py + t + bl.headT / 2) * s, bz * s);
       g.add(head);
     });
@@ -668,18 +675,55 @@ function buildMechanism() {
     return g;
   }
 
-  // ============ P1 近节（基节300mm = v5上臂几何）：掌端=肩座，远端=关节1叉耳，电机1原位 ============
-  p1Group = new THREE.Group(); p1Group.name = 'phalanx1';
+  // ============ 通用：被驱动指节段（三个关节单元同构） ============
+  // 近端 = 袖套+毂+D侧板叉耳（绕上一级叉耳转动）；远端 = 叉耳 + 电机安装板 + 电机 + BD连杆。
+  // P1/P2 因此逐件相同（同长同构、可互换），只有命名前缀与所处链条位置不同。
+  function buildDrivenPhalanx(parent, pfx, segLen, mPfx, tPfx) {
+    const sy = -170;                       // 拼接缝：让开本段电机抱箍(y=-125..-83)与耳片(-282..)
+    parent.add(waistShape(pfx+'BodyWaist',-46,5.5));
+    {
+      const sh2 = new THREE.Shape();
+      [[-7,-46],[7,-46],[7,sy],[-7,sy]].forEach(([x,y],i)=>{ if(i===0)sh2.moveTo(x*s,y*s);else sh2.lineTo(x*s,y*s); });
+      sh2.closePath();
+      for (const y of [-116,-91]) { const p=new THREE.Path(); p.absarc(2*s,y*s,2.2*s,0,Math.PI*2,true); sh2.holes.push(p); }
+      const g2 = new THREE.ExtrudeGeometry(sh2,{depth:12*s,bevelEnabled:false,steps:1});
+      g2.translate(0,0,-6*s);
+      const mh = new THREE.Mesh(g2,MAT.forearm);
+      mh.name=pfx+'BodyHeel'; mh.castShadow=mh.receiveShadow=true;
+      parent.add(mh);
+    }
+    // v7 让位：远端躯体止于 -segLen+13，避开下一级 Ø20 袖套/毂（否则整块躯体插入轴套 ~127mm²）
+    parent.add(rectSegment(pfx+'BodyDistal',sy,-segLen+13,7,MAT.forearm,
+      [[pr.spliceBoltInset, sy-pr.spliceBoltOff, pr.spliceBoltDia/2],[-pr.spliceBoltInset, sy-pr.spliceBoltOff, pr.spliceBoltDia/2]]));
+    addIntegralSplice(parent,pfx+'P','lead',sy,-1,7,6,MAT.forearm);
+    addIntegralSplice(parent,pfx+'D','lag',sy,-1,7,6,MAT.forearm);
+    buildDrivenJoint(parent,pfx);                              // 近端关节接口（局部 0,-31）
+    buildForkEars(parent,pfx,-segLen,MAT.base);                // 远端叉耳（下一关节）
+    const oBolt = createShoulderBolt('o'+pfx.slice(1),pr.boltElbow,MAT.fastener);  // 本段远端关节肩螺栓（O1/O2）
+    oBolt.position.y = -segLen*s;                                                // 肩螺栓轴线须落在远端关节轴上
+    parent.add(oBolt);
+    buildFlangePlate(parent,pfx,-segLen+pr.flangePlateY0);     // 本段所载电机的安装板
+    const mg = new THREE.Group(); mg.name = 'motor'+mPfx.slice(1);
+    parent.add(mg);                                           // 电机随本段运动
+    buildMotorSet(mg,mPfx,-segLen+P.motorFrontY,-segLen+P.motorMountY+P.motorRearOverhang,
+                  -segLen+pr.collarY1,[-segLen+pr.collarBoltY[0],-segLen+pr.collarBoltY[1]]);
+    const tg = buildTendon(parent,tPfx);
+    return {motor:mg,tendon:tg};
+  }
+
+  // ============ 掌（固定基节 300mm + 指根方块）：载电机0，远端 = 关节0 的叉耳 ============
+  // 几何 = 原 P1 逐件对应（本体两段 + 拼接 + 指根方块 + 掌骨安装法兰 + 电机0 + 叉耳）
+  palmGroup = new THREE.Group(); palmGroup.name = 'palm';
   const syU = pr.spliceYUpper;
-  const segs1 = [
-    { name:'p1BodyDistal', pts:[[-3,13],[3,13],[8,22],[8,syU],[-8,syU],[-8,22]], holes:[] },
-    { name:'p1BodyProximal', pts:[[-8,syU],[8,syU],[8,P.upperArmLen],[-8,P.upperArmLen]],
+  const segsP = [
+    { name:'palmBodyDistal', pts:[[-3,13],[3,13],[8,22],[8,syU],[-8,syU],[-8,22]], holes:[] },
+    { name:'palmBodyProximal', pts:[[-8,syU],[8,syU],[8,P.upperArmLen],[-8,P.upperArmLen]],
       // 抱箍2×M4贯穿孔 + 拼接M4贯穿孔（螺栓穿过臂身，必须留孔）
       holes: pr.collarBoltY.map(y => [2, y, pr.collarBolt.shank/2 + 0.2])
              .concat([[pr.spliceBoltInset, syU+pr.spliceBoltOff, pr.spliceBoltDia/2],
                       [-pr.spliceBoltInset, syU+pr.spliceBoltOff, pr.spliceBoltDia/2]]) },
   ];
-  for (const seg of segs1) {
+  for (const seg of segsP) {
     const sh = new THREE.Shape();
     seg.pts.forEach(([x,y],i)=>{ if(i===0) sh.moveTo(x*s,y*s); else sh.lineTo(x*s,y*s); });
     sh.closePath();
@@ -688,54 +732,35 @@ function buildMechanism() {
     g.translate(0,0,-7*s);
     const m = new THREE.Mesh(g,MAT.upperArm);
     m.name = seg.name; m.castShadow=m.receiveShadow=true;
-    p1Group.add(m);
+    palmGroup.add(m);
   }
-  addIntegralSplice(p1Group,'p1D','lead',syU,1,8,7,MAT.upperArm);
-  addIntegralSplice(p1Group,'p1P','lag',syU,1,8,7,MAT.upperArm);
+  addIntegralSplice(palmGroup,'palmD','lead',syU,1,8,7,MAT.upperArm);
+  addIntegralSplice(palmGroup,'palmP','lag',syU,1,8,7,MAT.upperArm);
   // 指根方块 24×22×20，顶面 y=320 = 法兰板底面；4×M4 螺纹底孔 Ø3.4（实物攻丝或热熔螺母）
-  const palm = createPlateWithHoles(24, 22, 20, pr.rootBoltXZ.map(([hx,hz])=>[hx,hz,1.7]), MAT.base);
-  palm.name='p1PalmBase'; palm.rotation.x = Math.PI/2;
-  palm.position.y=(P.upperArmLen+10)*s;          // 方块占 y[300,320]
-  p1Group.add(palm);
-  buildPalmMount(p1Group,'p1');
-  buildFlangePlate(p1Group,'p1',pr.flangePlateY0);
-  buildForkEars(p1Group,'p1',0,MAT.base);
-  p1Group.add(createShoulderBolt('o1',pr.boltElbow,MAT.fastener));
-  scene.add(p1Group);
-  motor1Group = new THREE.Group(); motor1Group.name = 'motor1';
-  buildMotorSet(motor1Group,'m1',P.motorFrontY,P.motorMountY+P.motorRearOverhang,pr.collarY1,pr.collarBoltY);
-  scene.add(motor1Group);
-  tendon1Group = buildTendon(scene,'t1');
+  const palmBlock = createPlateWithHoles(24, 22, 20, pr.rootBoltXZ.map(([hx,hz])=>[hx,hz,1.7]), MAT.base);
+  palmBlock.name='palmBase'; palmBlock.rotation.x = Math.PI/2;
+  palmBlock.position.y=(P.upperArmLen+10)*s;          // 方块占 y[300,320]
+  palmGroup.add(palmBlock);
+  buildPalmMount(palmGroup,'palm');
+  buildFlangePlate(palmGroup,'palm',pr.flangePlateY0);
+  buildForkEars(palmGroup,'palm',0,MAT.base);
+  palmGroup.add(createShoulderBolt('o0',pr.boltElbow,MAT.fastener));
+  scene.add(palmGroup);
+  motor0Group = new THREE.Group(); motor0Group.name = 'motor0';
+  buildMotorSet(motor0Group,'m0',P.motorFrontY,P.motorMountY+P.motorRearOverhang,pr.collarY1,pr.collarBoltY);
+  scene.add(motor0Group);                                  // 掌固定 → 电机0/连杆0 可挂世界系
+  tendon0Group = buildTendon(scene,'t0');
 
-  // ============ P2 中节（300mm 拼接件）：关节1端=袖套+D侧板（承接单元1），远端=关节2叉耳+电机2 ============
+  // ============ P1 近节（=单元0的被驱动段 300mm）：绕 O0 转动，载电机1 ============
+  p1Group = new THREE.Group(); p1Group.name = 'phalanx1';
+  { const u = buildDrivenPhalanx(p1Group,'p1',P.phalanx1Len,'m1','t1'); motor1Group = u.motor; tendon1Group = u.tendon; }
+  palmGroup.add(p1Group);
+
+  // ============ P2 中节（=单元1的被驱动段 300mm）：绕 O1 转动，载电机2 ============
   p2Group = new THREE.Group(); p2Group.name = 'phalanx2';
-  const sy2 = -170;                              // P2拼接线：让开电机2抱箍(y=-125..-83)与耳片(-282..)
-  // 近端段两块（与肘版一致：腰身矩形±5.5使凸包核验真实；跟部±7带抱箍2×M4贯穿孔）
-  p2Group.add(waistShape('p2BodyWaist',-46,5.5));
-  {
-    const sh2 = new THREE.Shape();
-    [[-7,-46],[7,-46],[7,sy2],[-7,sy2]].forEach(([x,y],i)=>{ if(i===0)sh2.moveTo(x*s,y*s);else sh2.lineTo(x*s,y*s); });
-    sh2.closePath();
-    for (const y of [-116,-91]) { const p=new THREE.Path(); p.absarc(2*s,y*s,2.2*s,0,Math.PI*2,true); sh2.holes.push(p); }
-    const g2 = new THREE.ExtrudeGeometry(sh2,{depth:12*s,bevelEnabled:false,steps:1});
-    g2.translate(0,0,-6*s);
-    const m2h = new THREE.Mesh(g2,MAT.forearm);
-    m2h.name='p2BodyHeel'; m2h.castShadow=m2h.receiveShadow=true;
-    p2Group.add(m2h);
-  }
-  // v7 让位：P2 远端躯体止于 -300+13，避开 P3 的 Ø20 袖套/毂（否则整块躯体插入 O2 轴套 ~127mm²）
-  p2Group.add(rectSegment('p2BodyDistal',sy2,-P.phalanx2Len+13,7,MAT.forearm,
-    [[pr.spliceBoltInset, sy2-pr.spliceBoltOff, pr.spliceBoltDia/2],[-pr.spliceBoltInset, sy2-pr.spliceBoltOff, pr.spliceBoltDia/2]]));
-  addIntegralSplice(p2Group,'p2P','lead',sy2,-1,7,6,MAT.forearm);
-  addIntegralSplice(p2Group,'p2D','lag',sy2,-1,7,6,MAT.forearm);
-  buildDrivenJoint(p2Group,'p2');                       // 关节1接口：袖套+D侧板（局部0,-31）
-  buildForkEars(p2Group,'p2',-P.phalanx2Len,MAT.base);  // 关节2叉耳
-  buildFlangePlate(p2Group,'p2',-P.phalanx2Len+pr.flangePlateY0);  // 电机2安装板（-159..-151）
-  motor2Group = new THREE.Group(); motor2Group.name = 'motor2';
-  p2Group.add(motor2Group);                             // 电机2随中节运动（安装臂在指尖一侧）
-  buildMotorSet(motor2Group,'m2',-P.phalanx2Len+P.motorFrontY,-P.phalanx2Len+P.motorMountY+P.motorRearOverhang,
-                -P.phalanx2Len+pr.collarY1,[-P.phalanx2Len+pr.collarBoltY[0],-P.phalanx2Len+pr.collarBoltY[1]]);
-  tendon2Group = buildTendon(p2Group,'t2');
+  p2Group.position.set(0,-P.phalanx1Len*s,0);          // O1 位于 P1 局部 (0,-300)
+  { const u = buildDrivenPhalanx(p2Group,'p2',P.phalanx2Len,'m2','t2'); motor2Group = u.motor; tendon2Group = u.tendon; }
+  p1Group.add(p2Group);
 
   // ============ P3 远节（250mm + 指尖）：关节2端=袖套+D侧板（承接单元2），末端=指尖圆头 ============
   p3Group = new THREE.Group(); p3Group.name = 'phalanx3';
@@ -767,7 +792,7 @@ function buildMechanism() {
       p3Group.add(rib);
     }
   }
-  scene.add(p2Group);
+  // 链条：palm(固定) ─O0→ p1Group ─O1→ p2Group ─O2→ p3Group
 
   updateTrail();
 }
@@ -799,13 +824,15 @@ function updateLabels() {
   });
   labels = [];
   if (!showLabels) return;
-  const J = getJoints(angle1, angle2);
+  const J = getJoints(angle0, angle1, angle2);
   const put=(txt,color,x,y)=>{ const l=createTextSprite(txt,color); l.position.set(x*s+15,y*s,15); scene.add(l); labels.push(l); };
-  put('P1 近节(基节)','#ff8844',20,P.upperArmLen-40);
-  put('关节1 PIP','#ffaa44',20,10);
-  put('关节2 DIP','#44ff88',J.O2.x+20,J.O2.y+10);
-  put('P3 远节·指尖','#ff66aa',J.O2.x+20,J.O2.y-120);
-  put('θ1='+angle1.toFixed(1)+'° θ2='+angle2.toFixed(1)+'°','#7c8aff',-40,-60);
+  put('掌（固定基节·载电机0）','#66ddaa',20,P.upperArmLen-60);
+  put('关节0 MCP','#ffaa44',20,10);
+  put('P1 近节','#ff8844',J.O1.x+20,J.O1.y+30);
+  put('关节1 PIP','#ffaa44',J.O1.x+20,J.O1.y-60);
+  put('关节2 DIP','#44ff88',J.O2.x+20,J.O2.y-60);
+  put('P3 远节·指尖','#ff66aa',J.O2.x+20,J.O2.y-160);
+  put('θ0='+angle0.toFixed(1)+'° θ1='+angle1.toFixed(1)+'° θ2='+angle2.toFixed(1)+'°','#7c8aff',-40,-60);
 }
 
 function updateTrail() {
@@ -813,7 +840,7 @@ function updateTrail() {
   if (!showTrail) return;
   const points = [];
   for (let a = 0; a <= 120; a += 3) {
-    const J = getJoints(a, a);
+    const J = getJoints(a, a, a);
     points.push(new THREE.Vector3(J.D2.x * s, J.D2.y * s, 0));
   }
   const geo = new THREE.BufferGeometry().setFromPoints(points);
@@ -822,20 +849,31 @@ function updateTrail() {
 }
 
 // --- 关节中心（模型mm，世界系）与位置更新 ---
-function getJoints(a1,a2){
-  const t1=a1*Math.PI/180, t2=a2*Math.PI/180;
-  const s1=angleToStroke(a1), s2=angleToStroke(a2);
+function getJoints(a0,a1,a2){
+  const t0=a0*Math.PI/180, t1=a1*Math.PI/180, t2=a2*Math.PI/180;
+  const s0=angleToStroke(a0), s1=angleToStroke(a1), s2=angleToStroke(a2);
   const rot=(x,y,t)=>({x:x*Math.cos(t)-y*Math.sin(t), y:x*Math.sin(t)+y*Math.cos(t)});
-  const O1={x:0,y:0};
-  const B1={x:P.motorMountX,y:P.motorMountY-s1};
-  const D1=rot(P.forearmAttachOffset,-P.forearmAttachDist,t1);
-  const O2=rot(0,-P.phalanx2Len,t1);
-  const B2l={x:P.motorMountX,y:-P.phalanx2Len+P.motorMountY-s2};   // P2局部
-  const D2r=rot(P.forearmAttachOffset,-P.forearmAttachDist,t2);
-  const D2l={x:D2r.x, y:D2r.y-P.phalanx2Len};                      // P2局部
-  const B2=rot(B2l.x,B2l.y,t1);                                     // 世界（标注用）
-  const D2=rot(D2l.x,D2l.y,t1);
-  return {O1,B1,D1,O2,B2,D2,B2l,D2l,s1,s2};
+  // D点：相对自身关节 O 的 (14,-31) 绕该关节转 θ
+  const Dloc=t=>({x:P.forearmAttachOffset*Math.cos(t)+P.forearmAttachDist*Math.sin(t),
+                  y:P.forearmAttachOffset*Math.sin(t)-P.forearmAttachDist*Math.cos(t)});
+  // ---- 掌系（=世界系）：关节0 在 (0,0) ----
+  const O0={x:0,y:0};
+  const B0={x:P.motorMountX,y:P.motorMountY-s0};
+  const D0=Dloc(t0);
+  // ---- P1 局部系（原点=O0，未旋转，+y 指向掌侧）----
+  const O1l={x:0,y:-P.phalanx1Len};
+  const B1l={x:P.motorMountX,y:-P.phalanx1Len+P.motorMountY-s1};
+  const d1=Dloc(t1), D1l={x:d1.x,y:d1.y-P.phalanx1Len};
+  // ---- P2 局部系（原点=O1，未旋转）----
+  const O2l={x:0,y:-P.phalanx2Len};
+  const B2l={x:P.motorMountX,y:-P.phalanx2Len+P.motorMountY-s2};
+  const d2=Dloc(t2), D2l={x:d2.x,y:d2.y-P.phalanx2Len};
+  // ---- 逐级复合到世界系 ----
+  const up1=p=>rot(p.x,p.y,t0);
+  const up2=p=>{const q=rot(p.x,p.y,t1);return up1({x:q.x+O1l.x,y:q.y+O1l.y});};
+  const O1=up1(O1l), B1=up1(B1l), D1=up1(D1l);
+  const O2=up2(O2l), B2=up2(B2l), D2=up2(D2l);
+  return {O0,B0,D0,O1,B1,D1,O2,B2,D2,B1l,D1l,B2l,D2l,s0,s1,s2};
 }
 function updateRodUnit(motorGroup,pfx,noseY,Bx,By){
   const pr=P.print;
@@ -861,62 +899,66 @@ function updateTendon(group,B,D){
   group.rotation.z=Math.atan2(D.x-B.x,-(D.y-B.y));
   group.scale.set(1,1,1);
 }
-function updateMechanism(angleDeg1,angleDeg2){
-  angle1 = Math.max(0, Math.min(120, Number(angleDeg1)));
-  angle2 = Math.max(0, Math.min(120, Number(angleDeg2===undefined?0:angleDeg2)));
-  p2Group.rotation.z = angle1*Math.PI/180;
-  p3Group.rotation.z = angle2*Math.PI/180;
-  const J = getJoints(angle1,angle2);
-  // 单元1（世界系）
-  updateRodUnit(motor1Group,'m1',P.motorFrontY,P.motorMountX,J.B1.y);
-  updateTendon(tendon1Group,J.B1,J.D1);
-  // 单元2（P2局部系：关节2=局部(0,-300)）
-  const B2l={x:P.motorMountX,y:-P.phalanx2Len+P.motorMountY-J.s2};
-  updateRodUnit(motor2Group,'m2',-P.phalanx2Len+P.motorFrontY,B2l.x,B2l.y);
-  const t2=angle2*Math.PI/180;
-  const D2l={x:P.forearmAttachOffset*Math.cos(t2)+P.forearmAttachDist*Math.sin(t2),
-             y:P.forearmAttachOffset*Math.sin(t2)-P.forearmAttachDist*Math.cos(t2)};
-  updateTendon(tendon2Group,B2l,{x:D2l.x, y:D2l.y-P.phalanx2Len});
+function updateMechanism(angleDeg0,angleDeg1,angleDeg2){
+  angle0 = Math.max(0, Math.min(LIMITS.mcp, Number(angleDeg0===undefined?0:angleDeg0)));
+  angle1 = Math.max(0, Math.min(LIMITS.pip, Number(angleDeg1===undefined?0:angleDeg1)));
+  angle2 = Math.max(0, Math.min(LIMITS.dip, Number(angleDeg2===undefined?0:angleDeg2)));
+  p1Group.rotation.z = angle0*Math.PI/180;   // P1 绕 O0（掌系）
+  p2Group.rotation.z = angle1*Math.PI/180;   // P2 绕 O1（相对 P1）
+  p3Group.rotation.z = angle2*Math.PI/180;   // P3 绕 O2（相对 P2）
+  const J = getJoints(angle0,angle1,angle2);
+  // 单元0（掌系=世界系：关节0 在 (0,0)）
+  updateRodUnit(motor0Group,'m0',P.motorFrontY,P.motorMountX,J.B0.y);
+  updateTendon(tendon0Group,J.B0,J.D0);
+  // 单元1（P1局部系：关节1 在局部 (0,-300)）
+  updateRodUnit(motor1Group,'m1',-P.phalanx1Len+P.motorFrontY,J.B1l.x,J.B1l.y);
+  updateTendon(tendon1Group,J.B1l,J.D1l);
+  // 单元2（P2局部系：关节2 在局部 (0,-300)）
+  updateRodUnit(motor2Group,'m2',-P.phalanx2Len+P.motorFrontY,J.B2l.x,J.B2l.y);
+  updateTendon(tendon2Group,J.B2l,J.D2l);
   updateLabels();
   updateLiveData();
 }
 
 function updateLiveData() {
-  const J = getJoints(angle1,angle2);
-  const f1 = getForceData(angle1), f2 = getForceData(angle2);
+  const J = getJoints(angle0,angle1,angle2);
+  const f0 = getForceData(angle0), f1 = getForceData(angle1), f2 = getForceData(angle2);
+  const all = [angle0,angle1,angle2];
   document.getElementById('live-data').innerHTML =
-    '<b>近端关节 θ1</b>: <span class="highlight">' + angle1.toFixed(1) + '°</span> / 120°<br>' +
-    '<b>远端关节 θ2</b>: <span class="highlight">' + angle2.toFixed(1) + '°</span> / 120°<br>' +
-    '<b>单元行程</b>: ' + (P.s_extended-J.s1).toFixed(2) + ' / ' + (P.s_extended-J.s2).toFixed(2) + ' mm（各自' + P.strokeMax.toFixed(2) + '）<br>' +
-    '<b>传动角</b>: ' + transmissionAngle(angle1).toFixed(1) + '° / ' + transmissionAngle(angle2).toFixed(1) + '°<br>' +
-    '<b>理想静载力</b>: ' + f1.forceN.toFixed(1) + ' / ' + f2.forceN.toFixed(1) + ' N<br>' +
-    '<b>状态</b>: ' + (angle1<=1&&angle2<=1 ? '伸直' : angle1>=119&&angle2>=119 ? '全屈' : '运动中') + '<br>' +
-    '<b>关节</b>: 关节1/2 全部可拆肩螺栓+自锁螺母';
+    '<b>关节0 掌指 MCP θ0</b>: <span class="highlight">' + angle0.toFixed(1) + '°</span> / ' + LIMITS.mcp + '°<br>' +
+    '<b>关节1 近指 PIP θ1</b>: <span class="highlight">' + angle1.toFixed(1) + '°</span> / ' + LIMITS.pip + '°<br>' +
+    '<b>关节2 远指 DIP θ2</b>: <span class="highlight">' + angle2.toFixed(1) + '°</span> / ' + LIMITS.dip + '°<br>' +
+    '<b>单元行程</b>: ' + (P.s_extended-J.s0).toFixed(2) + ' / ' + (P.s_extended-J.s1).toFixed(2) + ' / ' + (P.s_extended-J.s2).toFixed(2) + ' mm（各自' + P.strokeMax.toFixed(2) + '）<br>' +
+    '<b>传动角</b>: ' + transmissionAngle(angle0).toFixed(1) + '° / ' + transmissionAngle(angle1).toFixed(1) + '° / ' + transmissionAngle(angle2).toFixed(1) + '°<br>' +
+    '<b>理想静载力</b>: ' + f0.forceN.toFixed(1) + ' / ' + f1.forceN.toFixed(1) + ' / ' + f2.forceN.toFixed(1) + ' N<br>' +
+    '<b>状态</b>: ' + (all.every(a=>a<=1) ? '伸直' : (angle0>=LIMITS.mcp-1&&angle1>=LIMITS.pip-1&&angle2>=LIMITS.dip-1) ? '全屈' : '运动中') + '<br>' +
+    '<b>关节</b>: 关节0/1/2 全部可拆肩螺栓+自锁螺母（三单元同构）';
 }
 
 function updateBioInfo() {
   document.getElementById('bio-info').innerHTML =
-    '<span class="biological">P1 近节指骨</span> = 掌骨类比（固定基节，300mm，载电机1）<br>' +
-    '<span class="biological">P2 中节指骨</span> = 两单元拼接件（单元1前臂+单元2上臂，载电机2）<br>' +
+    '<span class="biological">掌（固定基节）</span> = 掌骨类比（300mm，载电机0；顶面 4×M5 法兰接真实手掌）<br>' +
+    '<span class="biological">P1 近节指骨</span> = 单元0的被驱动段（300mm，载电机1）<br>' +
+    '<span class="biological">P2 中节指骨</span> = 单元1的被驱动段（300mm，载电机2）<br>' +
     '<span class="biological">P3 远节指骨</span> = 指尖（250mm+圆头，只含被动接口）<br>' +
-    '<span class="biological">两台圆柱直线电机</span> = 指深/指浅屈肌类比（各驱动一个关节）<br>' +
-    '<span class="biological">关节1/2</span> = 同一可拆叉耳+肩螺栓单元（几何零差异）';
+    '<span class="biological">三台圆柱直线电机</span> = 指深/指浅屈肌 + 掌骨间肌类比（每关节 1 只，全独立驱动）<br>' +
+    '<span class="biological">关节0/1/2</span> = 同一可拆叉耳+肩螺栓单元（几何零差异，三段指节件可互换）';
 }
 
 function updateParamInfo() {
   const pr = P.print;
   document.getElementById('param-info').innerHTML =
-    '<b>构型</b>: <span class="highlight">三节指骨 · 2×（正向圆柱电机+BD长条连杆）单元串联</span><br>' +
-    '<b>指节长</b>: P1 ' + P.upperArmLen + ' / P2 ' + P.phalanx2Len + ' / P3 ' + P.forearmLen + ' mm（机构几何与肘版本完全一致）<br>' +
-    '<b>电机</b>: 2× Ø' + (2*P.motorBodyRadius) + ' × ' + P.motorBodyLen + ' mm；电机1随P1（基节），电机2随P2（中节=指尖一侧）<br>' +
+    '<b>构型</b>: <span class="highlight">掌 + 三节指骨 · 3×（圆柱电机+BD长条连杆）同构单元串联</span><br>' +
+    '<b>段长</b>: 掌 ' + P.upperArmLen + ' / P1 ' + P.phalanx1Len + ' / P2 ' + P.phalanx2Len + ' / P3 ' + P.forearmLen + ' mm（三单元机构几何与肘版本完全一致）<br>' +
+    '<b>电机</b>: 3× Ø' + (2*P.motorBodyRadius) + ' × ' + P.motorBodyLen + ' mm；电机0随掌（驱动P1），电机1随P1（驱动P2），电机2随P2（驱动P3）<br>' +
     '<b>电机固定</b>: 各自前法兰4×M4承推于安装板 + 后部300°开口抱箍2×M4（全可拆）<br>' +
     '<b>行程基准</b>: 每单元A=(28,213)相对自身关节；BD中心距 ' + P.tendonLinkLen + ' mm；D=(14,-31)<br>' +
-    '<b>连杆</b>: 2× ' + (P.tendonLinkLen + pr.linkWidth) + '×' + pr.linkWidth + '×' + pr.linkThickness + ' mm 等宽长条（通用备件，腹板含3×Ø6减重孔）<br>' +
-    '<b>掌部接口</b>: P1肩座内置 4×M5 掌骨安装法兰 + Ø22h7定位止口（独立打印件）<br>' +
+    '<b>连杆</b>: 3× ' + (P.tendonLinkLen + pr.linkWidth) + '×' + pr.linkWidth + '×' + pr.linkThickness + ' mm 等宽长条（通用备件，腹板含3×Ø6减重孔）<br>' +
+    '<b>手掌接口</b>: 掌段顶端 4×M5 掌骨安装法兰 + Ø22h7定位止口（独立打印件）<br>' +
     '<b>指尖</b>: P3远端 Ø24圆柱 + 半球垫 + 8条防滑抓握棱（R0.8圆角凸筋）<br>' +
-    '<b>关节衔接</b>: 关节1/2 同为 耳内档16−袖套14、耳内档10−连杆8 → 轴向浮动 ' + pr.axialClearance + ' mm/侧<br>' +
-    '<b>紧固件</b>: 2×Ø10×26（O1/O2）+ 2×Ø8×18（B）+ 2×Ø8×20（D）+ 平垫/自锁螺母，全可拆<br>' +
-    '<b>工作行程</b>: 每关节 <span class="highlight">' + P.strokeMax.toFixed(2) + ' mm</span> / 0～120°（独立控制）<br>' +
+    '<b>关节衔接</b>: 关节0/1/2 同为 耳内档16−袖套14、耳内档10−连杆8 → 轴向浮动 ' + pr.axialClearance + ' mm/侧<br>' +
+    '<b>紧固件</b>: 3×Ø10×26（O0/O1/O2）+ 3×Ø8×18（B）+ 3×Ø8×20（D）+ 平垫/自锁螺母，全可拆<br>' +
+    '<b>工作行程</b>: 每关节 <span class="highlight">' + P.strokeMax.toFixed(2) + ' mm</span> / 安全包络 ' + LIMITS.mcp + '°/' + LIMITS.pip + '°/' + LIMITS.dip + '°（独立控制）<br>' +
     '<b>提示</b>: 机构未缩放（与肘验证模型1:1）；实物按指节尺寸整体缩放机构参数即可。';
 }
 
@@ -924,9 +966,9 @@ function updatePrintInfo() {
   const pr = P.print;
   document.getElementById('print-info').innerHTML =
     '<b>工艺</b>: FDM 0.4mm喷嘴 · 层高' + pr.layerHeight + 'mm · 全部孔轴沿Z竖直免支撑<br>' +
-    '<b>打印件</b>: P1近/远段、P2近/远段、P3近/远段、抱箍×2、B叉头×2、连杆×2、掌骨安装法兰、指尖防滑垫（几何同肘版，通用模具）<br>' +
-    '<b>拼接</b>: P1 y=' + pr.spliceYUpper + '、P2 y=-170（避开电机2抱箍）、P3 y=-125；凸台+2×M4竖向贯穿<br>' +
-    '<b>拆装</b>: 任一关节旋下自锁螺母→抽肩螺栓→连杆/指节沿Z滑出；电机卸4×M4上抽；两单元零件可互换<br>' +
+    '<b>打印件</b>: 掌近/远段、P1近/远段、P2近/远段、P3近/远段、抱箍×3、B叉头×3、连杆×3、掌骨安装法兰、指尖防滑垫（几何同肘版，通用模具）<br>' +
+    '<b>拼接</b>: 掌 y=' + pr.spliceYUpper + '、P1/P2 y=-170（避开本段电机抱箍）、P3 y=-125；凸台+2×M4竖向贯穿<br>' +
+    '<b>拆装</b>: 任一关节旋下自锁螺母→抽肩螺栓→连杆/指节沿Z滑出；电机卸4×M4上抽；三单元零件可互换<br>' +
     '<b>打印姿态</b>: P2/P3近端段绕X翻转180°（D侧板落床）；抱箍绕X转90°（孔轴竖直）<br>' +
     '<b>材料</b>: 指节/叉头/抱箍 PETG或PLA+；连杆PETG/PA-CF；指尖垫/掌部法兰 TPU95A/PETG；紧固件外购304不锈钢<br>' +
     '<b>注意</b>: 沉龛顶10mm桥接；机构为名义刚性概念设计，实物需按指节载荷重新校核。';
@@ -935,24 +977,30 @@ function updatePrintInfo() {
 function animate() {
   requestAnimationFrame(animate);
   if (isPlaying) {
-    angle1 += animDir * animSpeed * 0.5;
-    if (angle1 >= 120) { angle1 = 120; animDir = -1; }
-    if (angle1 <= 0) { angle1 = 0; animDir = 1; }
-    angle2 = Math.min(angle1, 120 - angle1 * 0.5); // 播放演示：远端跟随卷曲（避免指尖与近节干涉的包络）
+    angle0 += animDir * animSpeed * 0.5;
+    if (angle0 >= LIMITS.mcp) { angle0 = LIMITS.mcp; animDir = -1; }
+    if (angle0 <= 0) { angle0 = 0; animDir = 1; }
+    // 播放演示：三关节按安全包络的同一比例联动（指尖不会卷回掌内）
+    const u = angle0 / LIMITS.mcp;
+    angle1 = LIMITS.pip * u;
+    angle2 = LIMITS.dip * u;
+    document.getElementById('angle0-slider').value = angle0;
     document.getElementById('angle1-slider').value = angle1;
     document.getElementById('angle2-slider').value = angle2;
-    updateMechanism(angle1, angle2);
+    updateMechanism(angle0, angle1, angle2);
     updateSliderLabels();
   } else if (animCoupled) {
-    // PIP+DIP 联动演示：4秒往复正弦，θ2 = 0.8θ1（指尖垫保持与近节平行收拢）
+    // MCP+PIP+DIP 联动演示：4秒往复正弦，三关节同比（指尖垫保持与掌面平行收拢）
     const ph = (Date.now() / 4000) * Math.PI * 2 * animSpeed;
-    setPose(60 - 60 * Math.cos(ph), 0.8 * (60 - 60 * Math.cos(ph)));
+    const u = 0.5 - 0.5 * Math.cos(ph);
+    setPose(LIMITS.mcp * u, LIMITS.pip * u, LIMITS.dip * u);
   }
   controls.update();
   renderer.render(scene, camera);
 }
 
 function updateSliderLabels() {
+  document.getElementById('angle0-val').textContent = angle0.toFixed(1) + '°';
   document.getElementById('angle1-val').textContent = angle1.toFixed(1) + '°';
   document.getElementById('angle2-val').textContent = angle2.toFixed(1) + '°';
   document.getElementById('speed-val').textContent = animSpeed.toFixed(1) + 'x';
@@ -964,23 +1012,22 @@ function setupUI() {
   updateBioInfo();
   updateParamInfo();
   updatePrintInfo();
+  const a0 = document.getElementById('angle0-slider');
   const a1 = document.getElementById('angle1-slider');
   const a2 = document.getElementById('angle2-slider');
   const speedSlider = document.getElementById('speed-slider');
-  a1.addEventListener('input', function(e) {
+  const onSlide = function(e, slot) {
     isPlaying = false;
     document.getElementById('btn-play').textContent = '▶ 播放';
-    angle1 = parseFloat(e.target.value);
-    updateMechanism(angle1, angle2);
+    if (slot === 0) angle0 = parseFloat(e.target.value);
+    else if (slot === 1) angle1 = parseFloat(e.target.value);
+    else angle2 = parseFloat(e.target.value);
+    updateMechanism(angle0, angle1, angle2);
     updateSliderLabels();
-  });
-  a2.addEventListener('input', function(e) {
-    isPlaying = false;
-    document.getElementById('btn-play').textContent = '▶ 播放';
-    angle2 = parseFloat(e.target.value);
-    updateMechanism(angle1, angle2);
-    updateSliderLabels();
-  });
+  };
+  a0.addEventListener('input', function(e) { onSlide(e, 0); });
+  a1.addEventListener('input', function(e) { onSlide(e, 1); });
+  a2.addEventListener('input', function(e) { onSlide(e, 2); });
   speedSlider.addEventListener('input', function(e) { animSpeed = parseFloat(e.target.value); updateSliderLabels(); });
   document.getElementById('btn-play').addEventListener('click', function() {
     isPlaying = !isPlaying;
@@ -989,24 +1036,24 @@ function setupUI() {
   document.getElementById('btn-reset').addEventListener('click', function() {
     isPlaying = false;
     document.getElementById('btn-play').textContent = '▶ 播放';
-    angle1 = 0; angle2 = 0;
-    a1.value = 0; a2.value = 0;
-    updateMechanism(0, 0);
+    angle0 = 0; angle1 = 0; angle2 = 0;
+    a0.value = 0; a1.value = 0; a2.value = 0;
+    updateMechanism(0, 0, 0);
     updateSliderLabels();
   });
   document.getElementById('btn-coupled').addEventListener('click', function() {
     isPlaying = false; animCoupled = !animCoupled;
-    document.getElementById('btn-coupled').textContent = animCoupled ? '⏸ 停止联动' : '⇄ PIP+DIP 联动';
+    document.getElementById('btn-coupled').textContent = animCoupled ? '⏸ 停止联动' : '⇄ MCP+PIP+DIP 联动';
     document.getElementById('btn-play').textContent = '▶ 播放';
   });
   document.getElementById('btn-preset-straight').addEventListener('click', function() {
-    isPlaying = false; setPose(0, 0);
+    isPlaying = false; setPose(0, 0, 0);
   });
   document.getElementById('btn-preset-half').addEventListener('click', function() {
-    isPlaying = false; setPose(60, 40);
+    isPlaying = false; setPose(45, 45, 35);
   });
   document.getElementById('btn-preset-flex').addEventListener('click', function() {
-    isPlaying = false; setPose(120, 80);
+    isPlaying = false; setPose(90, 90, 70);
   });
   document.getElementById('btn-view-iso').addEventListener('click', function() { animateCamera(150, 55, 310); });
   document.getElementById('btn-view-front').addEventListener('click', function() { animateCamera(0, 20, 330); });

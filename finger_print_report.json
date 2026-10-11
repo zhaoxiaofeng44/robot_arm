@@ -1,12 +1,22 @@
 {
-  "version": "finger-v5-two-unit-print",
-  "pass": 96,
-  "total": 96,
+  "version": "finger-v7-three-unit-print",
+  "pass": 148,
+  "total": 148,
   "checks": [
     {
       "name": "打印件45°斜排最小外接正方形≤220mm",
       "pass": true,
-      "detail": "最差 p1_proximal 170.4mm（直排182mm）"
+      "detail": "最差 palm_proximal 170.4mm（直排182mm）"
+    },
+    {
+      "name": "palm_proximal 已落地(z_min=0)",
+      "pass": true,
+      "detail": "z_min=0.000"
+    },
+    {
+      "name": "palm_distal 已落地(z_min=0)",
+      "pass": true,
+      "detail": "z_min=0.000"
     },
     {
       "name": "p1_proximal 已落地(z_min=0)",
@@ -39,6 +49,11 @@
       "detail": "z_min=0.000"
     },
     {
+      "name": "motor0_collar 已落地(z_min=0)",
+      "pass": true,
+      "detail": "z_min=0.000"
+    },
+    {
       "name": "motor1_collar 已落地(z_min=0)",
       "pass": true,
       "detail": "z_min=0.000"
@@ -49,12 +64,22 @@
       "detail": "z_min=0.000"
     },
     {
+      "name": "b_clevis_0 已落地(z_min=0)",
+      "pass": true,
+      "detail": "z_min=0.000"
+    },
+    {
       "name": "b_clevis_1 已落地(z_min=0)",
       "pass": true,
       "detail": "z_min=0.000"
     },
     {
       "name": "b_clevis_2 已落地(z_min=0)",
+      "pass": true,
+      "detail": "z_min=0.000"
+    },
+    {
+      "name": "link_0 已落地(z_min=0)",
       "pass": true,
       "detail": "z_min=0.000"
     },
@@ -77,6 +102,21 @@
       "name": "grip_pad 已落地(z_min=0)",
       "pass": true,
       "detail": "z_min=0.000"
+    },
+    {
+      "name": "关节0 叉耳Ø10.6通孔",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "关节0 叉耳孔径实测",
+      "pass": true,
+      "detail": "实测Ø10.60"
+    },
+    {
+      "name": "关节0 叉耳孔壁厚≥3mm",
+      "pass": true,
+      "detail": "实测4.70mm"
     },
     {
       "name": "关节1 叉耳Ø10.6通孔",
@@ -105,6 +145,26 @@
     },
     {
       "name": "关节2 叉耳孔壁厚≥3mm",
+      "pass": true,
+      "detail": "实测4.70mm"
+    },
+    {
+      "name": "关节0 轴套Ø10.6通孔",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "关节0 轴套孔径实测",
+      "pass": true,
+      "detail": "实测Ø10.60"
+    },
+    {
+      "name": "关节0 轴套孔口45°倒角",
+      "pass": true,
+      "detail": "|n.z|=0.705"
+    },
+    {
+      "name": "关节0 轴套壁厚≥3mm",
       "pass": true,
       "detail": "实测4.70mm"
     },
@@ -149,6 +209,16 @@
       "detail": "实测4.70mm"
     },
     {
+      "name": "D0 侧板凸台Ø8.6通孔",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "D0 侧板凸台壁厚≥3mm",
+      "pass": true,
+      "detail": "实测3.70mm"
+    },
+    {
       "name": "D1 侧板凸台Ø8.6通孔",
       "pass": true,
       "detail": ""
@@ -165,6 +235,16 @@
     },
     {
       "name": "D2 侧板凸台壁厚≥3mm",
+      "pass": true,
+      "detail": "实测3.70mm"
+    },
+    {
+      "name": "B0 叉耳板Ø8.6通孔",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "B0 叉耳板壁厚≥3mm",
       "pass": true,
       "detail": "实测3.70mm"
     },
@@ -187,6 +267,36 @@
       "name": "B2 叉耳板壁厚≥3mm",
       "pass": true,
       "detail": "实测3.70mm"
+    },
+    {
+      "name": "t0 连杆B端通孔",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "t0 连杆B端孔口45°倒角",
+      "pass": true,
+      "detail": "|n.z|=0.705"
+    },
+    {
+      "name": "t0 连杆B端孔壁厚≥3mm",
+      "pass": true,
+      "detail": "实测3.19mm"
+    },
+    {
+      "name": "t0 连杆D端通孔",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "t0 连杆D端孔口45°倒角",
+      "pass": true,
+      "detail": "|n.z|=0.705"
+    },
+    {
+      "name": "t0 连杆D端孔壁厚≥3mm",
+      "pass": true,
+      "detail": "实测3.19mm"
     },
     {
       "name": "t1 连杆B端通孔",
@@ -254,6 +364,11 @@
       "detail": "Ø8.6配Ø8 → 单边0.3mm"
     },
     {
+      "name": "t0 连杆等宽长条（杆身=端环=15）",
+      "pass": true,
+      "detail": "杆身15.00 / 端环15.00mm"
+    },
+    {
       "name": "t1 连杆等宽长条（杆身=端环=15）",
       "pass": true,
       "detail": "杆身15.00 / 端环15.00mm"
@@ -264,7 +379,7 @@
       "detail": "杆身15.00 / 端环15.00mm"
     },
     {
-      "name": "可互换：p2SleeveBody ≡ p3SleeveBody",
+      "name": "可互换：p1SleeveBody ≡ p2SleeveBody",
       "pass": true,
       "detail": "几何签名一致"
     },
@@ -284,14 +399,59 @@
       "detail": "几何签名一致"
     },
     {
-      "name": "可互换：p2EarBaseL ≡ p1EarBaseL",
+      "name": "可互换：p1EarBaseL ≡ palmEarBaseL",
       "pass": true,
       "detail": "几何签名一致"
     },
     {
-      "name": "可互换：p2DClevisArmL ≡ p3DClevisArmL",
+      "name": "可互换：p1DClevisArmL ≡ p2DClevisArmL",
       "pass": true,
       "detail": "几何签名一致"
+    },
+    {
+      "name": "可互换：p1BodyWaist ≡ p2BodyWaist",
+      "pass": true,
+      "detail": "几何签名一致"
+    },
+    {
+      "name": "可互换：p1BodyHeel ≡ p2BodyHeel",
+      "pass": true,
+      "detail": "几何签名一致"
+    },
+    {
+      "name": "可互换：p1BodyDistal ≡ p2BodyDistal",
+      "pass": true,
+      "detail": "几何签名一致"
+    },
+    {
+      "name": "可互换：p1SleeveHub ≡ p2SleeveHub",
+      "pass": true,
+      "detail": "几何签名一致"
+    },
+    {
+      "name": "可互换：p1FlangePlate ≡ p2FlangePlate",
+      "pass": true,
+      "detail": "几何签名一致"
+    },
+    {
+      "name": "可互换：t1TendonEyeB ≡ t2TendonEyeB",
+      "pass": true,
+      "detail": "几何签名一致"
+    },
+    {
+      "name": "0° 单元0 O0 螺母侧工具通道",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "0° 单元0 B0 螺母侧工具通道",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "0° 单元0 D0 螺母侧工具通道",
+      "pass": true,
+      "detail": ""
     },
     {
       "name": "0° 单元1 O1 螺母侧工具通道",
@@ -324,62 +484,97 @@
       "detail": ""
     },
     {
-      "name": "60° 单元1 O1 螺母侧工具通道",
+      "name": "45° 单元0 O0 螺母侧工具通道",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "60° 单元1 B1 螺母侧工具通道",
+      "name": "45° 单元0 B0 螺母侧工具通道",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "60° 单元1 D1 螺母侧工具通道",
+      "name": "45° 单元0 D0 螺母侧工具通道",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "60° 单元2 O2 螺母侧工具通道",
+      "name": "45° 单元1 O1 螺母侧工具通道",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "60° 单元2 B2 螺母侧工具通道",
+      "name": "45° 单元1 B1 螺母侧工具通道",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "60° 单元2 D2 螺母侧工具通道",
+      "name": "45° 单元1 D1 螺母侧工具通道",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "120° 单元1 O1 螺母侧工具通道",
+      "name": "45° 单元2 O2 螺母侧工具通道",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "120° 单元1 B1 螺母侧工具通道",
+      "name": "45° 单元2 B2 螺母侧工具通道",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "120° 单元1 D1 螺母侧工具通道",
+      "name": "45° 单元2 D2 螺母侧工具通道",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "120° 单元2 O2 螺母侧工具通道",
+      "name": "90° 单元0 O0 螺母侧工具通道",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "120° 单元2 B2 螺母侧工具通道",
+      "name": "90° 单元0 B0 螺母侧工具通道",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "120° 单元2 D2 螺母侧工具通道",
+      "name": "90° 单元0 D0 螺母侧工具通道",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "90° 单元1 O1 螺母侧工具通道",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "90° 单元1 B1 螺母侧工具通道",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "90° 单元1 D1 螺母侧工具通道",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "90° 单元2 O2 螺母侧工具通道",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "90° 单元2 B2 螺母侧工具通道",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "90° 单元2 D2 螺母侧工具通道",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "电机0 轴向抽出通道(Ø31)",
       "pass": true,
       "detail": ""
     },
@@ -396,7 +591,27 @@
     {
       "name": "全机无铆接/胶接永久连接",
       "pass": true,
-      "detail": "201个实体网格"
+      "detail": "294个实体网格"
+    },
+    {
+      "name": "m0 bBoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m0 bBoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m0 bBoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "m0 RodNut 在位",
+      "pass": true,
+      "detail": ""
     },
     {
       "name": "m1 bBoltHead 在位",
@@ -439,6 +654,21 @@
       "detail": ""
     },
     {
+      "name": "o0 BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o0 BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o0 BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
       "name": "o1 BoltHead 在位",
       "pass": true,
       "detail": ""
@@ -450,6 +680,36 @@
     },
     {
       "name": "o1 BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o2 BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o2 BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o2 BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p1d BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p1d BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p1d BoltNut 在位",
       "pass": true,
       "detail": ""
     },

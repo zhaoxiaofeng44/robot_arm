@@ -1,8 +1,16 @@
 {
-  "version": "finger-v5-two-unit",
-  "status": "三节手指双单元串联：闭合/碰撞/配合区/可拆装性核验",
+  "version": "finger-v7-three-unit",
+  "status": "掌+三节手指三同构单元串联：闭合/行程/配合区/安全包络碰撞/可拆装性核验",
+  "limits_deg": {
+    "mcp": 90,
+    "pip": 90,
+    "dip": 70
+  },
+  "grid_step_deg": 2,
+  "fine_step_deg": 0.05,
   "parameters": {
     "upperArmLen": 300,
+    "phalanx1Len": 300,
     "phalanx2Len": 300,
     "forearmLen": 250,
     "motorMountY": 213,
@@ -155,52 +163,51 @@
   "results": {
     "collision_count": 0,
     "fine_sweep_step_deg": 0.05,
-    "allowance_mm": 0.349,
+    "allowance_mm": 0.262,
+    "radius_max_mm": 300.1,
     "min_non_mating_clearance_mm": 1,
-    "continuous_lower_bound_mm": 0.651,
-    "tested_pairs": 15686,
-    "physical_meshes": 201,
+    "continuous_lower_bound_mm": 0.738,
+    "tested_pairs": 2912,
+    "physical_meshes": 294,
+    "poses_scanned": 81179,
     "closure_error_mm": 4.263256414560601e-14,
-    "svc_pass": 39,
-    "svc_total": 39
+    "stroke_error_mm": 2.5350721761022683,
+    "svc_pass": 54,
+    "svc_total": 54
   },
   "collisions": [],
   "closest": [
     {
-      "pair": "m1MotorFlange / p1BodyDistal",
+      "pair": "m0MotorFlange / palmBodyDistal",
       "min_clearance_mm": 1
     },
     {
-      "pair": "m1MotorFlange / p1DSplicePadTop",
+      "pair": "m0MotorFlange / palmDSplicePadTop",
       "min_clearance_mm": 1
     },
     {
-      "pair": "m1MotorFlange / p1DSplicePadBottom",
+      "pair": "m0MotorFlange / palmDSplicePadBottom",
       "min_clearance_mm": 1
     },
     {
-      "pair": "m1MotorFlange / p1PSplicePadTop",
+      "pair": "m0MotorFlange / palmPSplicePadTop",
       "min_clearance_mm": 1
     },
     {
-      "pair": "m1MotorFlange / p1PSplicePadBottom",
+      "pair": "m0MotorFlange / palmPSplicePadBottom",
       "min_clearance_mm": 1
     },
     {
-      "pair": "m1MotorFlange / p1BodyProximal",
+      "pair": "m0MotorFlange / palmBodyProximal",
       "min_clearance_mm": 1.414
     },
     {
-      "pair": "m1MotorBody / p1PSpliceBoltNutR",
+      "pair": "m0MotorBody / palmPSpliceBoltNutR",
       "min_clearance_mm": 1.439
     },
     {
-      "pair": "m1MotorBody / p1PSpliceBoltHeadR",
+      "pair": "m0MotorBody / palmPSpliceBoltHeadR",
       "min_clearance_mm": 1.782
-    },
-    {
-      "pair": "m2MotorFlange / p2BodyHeel",
-      "min_clearance_mm": 2
     },
     {
       "pair": "m2MotorFlange / p2PSplicePadTop",
@@ -211,7 +218,11 @@
       "min_clearance_mm": 2
     },
     {
-      "pair": "m1MotorBody / p1BodyDistal",
+      "pair": "m2MotorFlange / p2BodyHeel",
+      "min_clearance_mm": 2
+    },
+    {
+      "pair": "m1MotorFlange / p1BodyHeel",
       "min_clearance_mm": 2
     }
   ],
@@ -219,55 +230,30 @@
     {
       "name": "无铆接/永久连接",
       "pass": true,
-      "detail": "201网格"
+      "detail": "294网格"
     },
     {
-      "name": "m1 BoltHead 在位",
+      "name": "m0b BoltHead 在位",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "m1 BoltShank 在位",
+      "name": "m0b BoltShank 在位",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "m1 BoltThread 在位",
+      "name": "m0b BoltThread 在位",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "m1 BoltWasher 在位",
+      "name": "m0b BoltWasher 在位",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "m1 BoltNut 在位",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "m2 BoltHead 在位",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "m2 BoltShank 在位",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "m2 BoltThread 在位",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "m2 BoltWasher 在位",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "m2 BoltNut 在位",
+      "name": "m0b BoltNut 在位",
       "pass": true,
       "detail": ""
     },
@@ -322,6 +308,31 @@
       "detail": ""
     },
     {
+      "name": "o0 BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o0 BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o0 BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o0 BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o0 BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
       "name": "o1 BoltHead 在位",
       "pass": true,
       "detail": ""
@@ -343,6 +354,56 @@
     },
     {
       "name": "o1 BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o2 BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o2 BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o2 BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o2 BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "o2 BoltNut 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p1d BoltHead 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p1d BoltShank 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p1d BoltThread 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p1d BoltWasher 在位",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "p1d BoltNut 在位",
       "pass": true,
       "detail": ""
     },
@@ -397,17 +458,42 @@
       "detail": ""
     },
     {
-      "name": "B叉头沉龛螺母×2 在位",
+      "name": "B叉头沉龛螺母×3 在位",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "两单元轴向浮动=1mm/侧（几何同肘版v5）",
+      "name": "三电机/三连杆齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "两单元连杆为等宽长条（几何同肘版v5，实测见verify_print_geometry）",
+      "name": "掌骨安装法兰4×M4齐套",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "三单元轴向浮动=1mm/侧（几何同肘版v5）",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "三单元连杆为等宽长条（几何同肘版v5）",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "三单元同构：P1单元与P2单元逐件同几何（83件可互换）",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "链条装配：掌→P1→P2→P3 父子关系正确",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "P1 位于掌系 O0、P2 位于 P1 系 O1（局部偏置=段长）",
       "pass": true,
       "detail": ""
     }
