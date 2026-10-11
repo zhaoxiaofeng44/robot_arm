@@ -158,13 +158,14 @@ function bboxCenterOf(pts){
 }
 let orientFail=0;
 function orientCheck(tag,eyeDir,fit,W,H,expectTucked){
-  // expectTucked：满握态指尖本来就收到掌侧（可高于掌骨板中线），不算取景颠倒
+  // expectTucked：抓握/满握态指尖本来就卷到掌侧（可高于掌骨板中线），不算取景颠倒
+  //   反根后“指尖”= 自由端（原指根端，带圆头/防滑垫），掌骨板侧是固定的接掌末端段
   const plate=bboxCenterOf(partPoints(PLATE,true));
   const tip=api.getJoints({})['middle'].tip; const tipMM=[tip.x/s,tip.y/s,tip.z/s];
   const yP=screenY(eyeDir,fit.cen,fit.half,H,plate), yT=screenY(eyeDir,fit.cen,fit.half,H,tipMM);
   const ok=expectTucked?true:(yP<yT-10);
   if(!ok)orientFail++;
-  console.log('   [朝向] '+tag.padEnd(22)+' 掌骨板 screenY='+yP.toFixed(0).padStart(5)+'   中指尖 screenY='+yT.toFixed(0).padStart(5)+'   '+(expectTucked?'满握：指尖已收拢到掌侧（预期）':(ok?'指根在上/指尖在下 OK':'上下颠倒 !!')));
+  console.log('   [朝向] '+tag.padEnd(22)+' 掌骨板 screenY='+yP.toFixed(0).padStart(5)+'   中指尖 screenY='+yT.toFixed(0).padStart(5)+'   '+(expectTucked?'抓握态：自由端（指尖）已卷向掌侧（预期）':(ok?'接掌端在上/指尖在下 OK':'上下颠倒 !!')));
 }
 
 // (1) 伸直态（安全零位）整手等轴
@@ -177,9 +178,9 @@ setU(0);
   const f=renderAuto(path.join(out,'hand_03_mechanism_plane.png'),460,1400,FACE,ALL,1.04);
   orientCheck('hand_03_mechanism_plane',FACE,f,460,1400);
   scene.traverse(o=>{ if(o.isMesh) o.visible=true; }); }
-// (4) 等比抓握 u=0.6
+// (4) 等比抓握 u=0.6（自由端已明显卷向掌侧，故按“抓握态”判定）
 setU(0.6);
-{const f=renderAuto(path.join(out,'hand_04_iso_grip.png'),1200,1400,ISO,ALL,1.05); orientCheck('hand_04_iso_grip',ISO,f,1200,1400);}
+{const f=renderAuto(path.join(out,'hand_04_iso_grip.png'),1200,1400,ISO,ALL,1.05); orientCheck('hand_04_iso_grip',ISO,f,1200,1400,true);}
 // (5) 满握 u=1.0（各指安全包络极值）
 setU(1.0);
 {const f=renderAuto(path.join(out,'hand_05_fist_iso.png'),1200,1300,ISO2,ALL,1.05); orientCheck('hand_05_fist_iso',ISO2,f,1200,1300,true);}
@@ -197,8 +198,11 @@ scene.traverse(o=>{ if(o.isMesh){ let nm='';for(let q=o;q;q=q.parent)nm+=(q.name
 renderAuto(path.join(out,'hand_07_chassis.png'),1400,1000,ISO,/palmPlate|palmSpliceTop|wristBlock|wristBoss|thumbBridge/,1.06);
 for(const o of hidden) o.visible=true;
 // (8) 掌指关节特写（食指 MCP，含电机 0 / 叉耳 / 袖套 / 肩螺栓）
+//     反根后 O0 随自由端运动，必须先把姿态真正下发到场景再取景，否则解析关节与网格错位
 setU(0);
-{ const C=api.getJoints({index:[40,40,25]})['index'];
+{ const pose={}; for(const f of HAND.fingers) pose[f.key]=f.limits.map(()=>0);
+  pose.index=[40,40,25]; api.updateMechanism(pose);
+  const C=api.getJoints({index:[40,40,25]})['index'];
   renderNear(path.join(out,'hand_08_mcp_closeup.png'),1100,1000,[0.40,0.42,0.82],[C.OW[0].x/s,C.OW[0].y/s,C.OW[0].z/s],110); }
 // (9) 指尖抓握垫特写（满握态中指尖）
 setU(1.0);
@@ -207,5 +211,5 @@ setU(1.0);
 // (10) 腕接口 / 掌骨板 / 拇指桥特写
 setU(0);
 renderNear(path.join(out,'hand_10_wrist.png'),1200,900,[0.36,0.44,0.82],[0,352,0],150);
-console.log(orientFail? ('取景朝向自检：'+orientFail+' 张图上下颠倒 ✗') : '取景朝向自检：全部主视图“指根在上、指尖在下” ✓');
+console.log(orientFail? ('取景朝向自检：'+orientFail+' 张图上下颠倒 ✗') : '取景朝向自检：全部主视图“接掌固定端在上、指尖在下” ✓');
 if(orientFail)process.exitCode=1;

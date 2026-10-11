@@ -38,8 +38,11 @@ for (const k of KEYS) {
       && has(k + '_t' + j + 'TendonEyeB') && has(k + '_t' + j + 'TendonEyeD'), '');
   }
   check(lab + ' 掌骨法兰 4×M4 齐套', has(k + '_palmFlangeBase') && [1,2,3,4].every(i => has(k + '_palmMountBolt' + i) && has(k + '_palmMountBoltHead' + i)), '');
-  check(lab + ' 链条父子关系正确（掌段→P1→…→P' + f.n + '）',
-    f.groups[0].parent === f.root && f.groups.slice(1).every((g, i) => g.parent === f.groups[i]), '');
+  // 反根链：P{n}(固定·接掌) → 关节组 n−1 → P{n−1} → … → 关节组 0 → 掌段(自由末端·带指尖配件)
+  const okChain = f.groups[f.n].parent === f.chainRoot && f.chainRoot.parent === f.root &&
+    f.joints.length === f.n &&
+    f.groups.slice(0, f.n).every((g, j) => g.parent === f.joints[j] && f.joints[j].parent === f.groups[j + 1]);
+  check(lab + ' 反根链条父子关系正确（P' + f.n + '(固定·接掌)→…→P1→掌段(自由·指尖)）', okChain, '');
 }
 check('14 个关节单元（四指 3 + 拇指 2）肩螺栓总数 = 42 组', boltUnits === 42, boltUnits + ' 组 O/B/D');
 check('轴向浮动 = ' + P.print.axialClearance + 'mm/侧（耳内档−连杆/袖套，与肘版 v5 相同）',

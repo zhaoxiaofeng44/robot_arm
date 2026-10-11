@@ -138,14 +138,15 @@ for(const mp of motes){
   const a=bboxMM(FL),b=bboxMM(PL); if(!a||!b){bad('缺少 '+FL+' / '+PL);continue;}
   say('   '+FL+'  y=['+f(a.mn[1])+','+f(a.mx[1])+']  外径Ø'+f(a.size[0]));
   say('   '+PL+'  y=['+f(b.mn[1])+','+f(b.mx[1])+']');
-  const gap=b.mn[1]-a.mx[1];
-  if(Math.abs(gap)<0.05)say('   -> 法兰顶面与安装板底面共面：接触 OK');
-  else if(gap>0)bad('法兰顶面 y='+f(a.mx[1])+' 与安装板底面 y='+f(b.mn[1])+' 悬空 '+f(gap)+'mm - 轴向力传不到安装板');
+  // 整手已反根装配：同一对零件的轴向顺序整体倒置，故按“两件相对面”取间隙（与朝向无关）
+  const gap=Math.max(a.mn[1],b.mn[1])-Math.min(a.mx[1],b.mx[1]);
+  if(Math.abs(gap)<0.05)say('   -> 法兰与安装板相对面共面：接触 OK');
+  else if(gap>0)bad('法兰 y=['+f(a.mn[1])+','+f(a.mx[1])+'] 与安装板 y=['+f(b.mn[1])+','+f(b.mx[1])+'] 悬空 '+f(gap)+'mm - 轴向力传不到安装板');
   else bad('法兰与安装板实体重叠 '+f(-gap)+'mm');
   const HD=(target==='arm')?'flangeBoltHead1':M+'FlangeBolt1Head', hd=bboxMM(HD);
-  if(hd){const g2=a.mn[1]-hd.mx[1];
-    if(Math.abs(g2)<0.05)say('   '+HD+' 顶面 y='+f(hd.mx[1])+' 顶住法兰底面 OK');
-    else if(g2>0)bad('螺钉头与法兰底面之间 '+f(g2)+'mm 间隙 - 夹不住法兰');
+  if(hd){const g2=Math.max(a.mn[1],hd.mn[1])-Math.min(a.mx[1],hd.mx[1]);
+    if(Math.abs(g2)<0.05)say('   '+HD+' y=['+f(hd.mn[1])+','+f(hd.mx[1])+'] 顶住法兰 OK');
+    else if(g2>0)bad('螺钉头与法兰之间 '+f(g2)+'mm 间隙 - 夹不住法兰');
     else bad('螺钉头与法兰重叠 '+f(-g2)+'mm');}
   const hs=zHits(PL,P.motorMountX,0);
   say('   安装板导出孔(x='+P.motorMountX+',z=0) 射线命中 '+hs+(hs===0?'  -> 通孔 OK':'  -> 有实体 !!'));

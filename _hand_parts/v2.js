@@ -114,7 +114,8 @@ for (const k of KEYS) {
   for (let j = 0; j < n; j++) {
     const o = J0[k].OW[j], ox = o.x / s, oy = o.y / s;
     let rmax = 0;
-    F.groups[j + 1].traverse(function (m) {
+    // 反根链：绕 Oj 转动的运动件 = 段 j 及其近端所有从属件（反根后父段在远端侧）
+    F.groups[j].traverse(function (m) {
       if (!m.isMesh) return;
       const a = m.geometry.attributes.position;
       for (let i = 0; i < a.count; i++) {

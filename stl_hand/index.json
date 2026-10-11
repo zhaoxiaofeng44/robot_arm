@@ -90,12 +90,12 @@
       "part": "finger_palm_proximal",
       "kind": "printed",
       "qty": 5,
-      "note": "掌段·法兰端段（含指根方块+电机0法兰安装板，与掌段本体在 y=140 拼接）",
+      "note": "掌段·自由末端外段（含电机0法兰安装板 + 反根后的指尖圆头/半球垫；指根方块已随掌部安装件搬到末端段）",
       "pose": "flipX",
-      "triangles": 3328,
+      "triangles": 3764,
       "bounding_box_mm": [
         59,
-        182,
+        188,
         37
       ],
       "fits_220mm_bed": true
@@ -104,7 +104,7 @@
       "part": "finger_palm_distal",
       "kind": "printed",
       "qty": 5,
-      "note": "掌段·关节0端段（含一体化叉耳，接 P1）",
+      "note": "掌段·自由末端段（含一体化叉耳与关节0接口；反根后带 Ø24 指尖圆头+半球垫，即新的指尖）",
       "pose": "as-modeled",
       "triangles": 1904,
       "bounding_box_mm": [
@@ -160,12 +160,12 @@
       "part": "finger_terminal_distal",
       "kind": "printed",
       "qty": 5,
-      "note": "末节·指尖段（Ø24 圆头 + 半球垫，无电机）",
+      "note": "末节 P3/拇指 P2：接掌固定段远端段（无电机；含指根方块，56×56 安装法兰挂其端面）",
       "pose": "as-modeled",
-      "triangles": 2276,
+      "triangles": 1840,
       "bounding_box_mm": [
         24,
-        153,
+        147,
         28
       ],
       "fits_220mm_bed": true
@@ -230,7 +230,7 @@
       "part": "finger_grip_pad",
       "kind": "printed",
       "qty": 5,
-      "note": "指尖防滑抓握垫（TPU95A 柔性更佳）",
+      "note": "指尖防滑抓握垫（反根后位于掌段自由端；TPU95A 柔性更佳）",
       "pose": "flipX",
       "triangles": 48,
       "bounding_box_mm": [

@@ -17,8 +17,12 @@ function createTextSprite(text, color) {
   return sprite;
 }
 
-// --- 单指链：局部关节坐标（根局部系）+ 世界坐标（场景单位 mm×s） ---
-//   单元 k：B/D 在“段 k 局部系”给出（段 k 原点 = 关节 k−1），O 在根局部系
+// --- 反根单指链：局部关节坐标（根局部系）+ 世界坐标（场景单位 mm×s） ---
+//   反根后固定端 = 末端段 Pn（接掌），自由端 = 掌段（原指根端，现为指尖）。
+//   段 j 的原点 = 其近端关节 O(j−1)；段 j+1 的原点即关节 Oj。只有段 n 固定（θn = 0）。
+//   相对转角与正向完全相同（段 j+1 相对段 j 转 +tj），只是累加方向相反：θj = θ(j+1) − tj。
+//   网格原始坐标（“正向坐标”，掌段在上）经 chainRoot 绕 Z 镜像后即装配位；
+//   Ol/Bl/Dl 是段局部系值（与正向逐项一致，供电机/连杆就地摆位），O/B/D 是镜像后的根局部系值。
 function fingerChain(key, angles) {
   const F = FINGERS[key];
   const n = angles.length;
@@ -27,31 +31,40 @@ function fingerChain(key, angles) {
   const rot = function(x,y,th){ return {x:x*Math.cos(th)-y*Math.sin(th), y:x*Math.sin(th)+y*Math.cos(th)}; };
   const Dloc = function(th){ return {x:P.forearmAttachOffset*Math.cos(th)+P.forearmAttachDist*Math.sin(th),
                                    y:P.forearmAttachOffset*Math.sin(th)-P.forearmAttachDist*Math.cos(th)}; };
-  const ups = [function(p){ return {x:p.x, y:p.y}; }];
-  for (let k = 1; k <= n; k++) {
-    const prev = ups[k-1], th = t[k-1], dy = (k === 1 ? 0 : -P.phalanx1Len);
-    ups.push((function(pv, thv, dyv){ return function(p){ const q = rot(p.x, p.y, thv); return pv({x:q.x, y:q.y+dyv}); }; })(prev, th, dy));
-  }
+  const M = (P.upperArmLen - P.phalanx1Len*(n-1) - P.forearmLen)/2;   // 反根镜像面 y=M
+  const mir = function(p){ return {x:-p.x, y:2*M - p.y}; };
+  const th = new Array(n+1); th[n] = 0;
+  for (let k = n-1; k >= 0; k--) th[k] = th[k+1] - t[k];
+  const pos = new Array(n+1);
+  pos[n] = {x:0, y:-P.phalanx1Len*(n-1)};                             // 段 n 原点 = O(n−1)：固定
+  for (let k = n-1; k >= 1; k--) { const o = rot(0, P.phalanx1Len, th[k]); pos[k] = {x:pos[k+1].x+o.x, y:pos[k+1].y+o.y}; }
+  pos[0] = {x:pos[1].x, y:pos[1].y};                                  // 掌段原点 = O0
   const world = function(p){
     const v = new THREE.Vector3(p.x*s, p.y*s, 0);
-    v.applyQuaternion(F.root.quaternion);
-    v.add(F.root.position);
+    v.applyQuaternion(F.chainRoot.quaternion); v.add(F.chainRoot.position);
+    v.applyQuaternion(F.root.quaternion); v.add(F.root.position);
     return v;
   };
   const Ol=[], Bl=[], Dl=[], O=[], B=[], D=[], OW=[], BW=[], DW=[];
   for (let k = 0; k < n; k++) {
     const off = (k === 0 ? 0 : -P.phalanx1Len);
-    const bl = {x:P.motorMountX, y:off + P.motorMountY - st[k]};
+    const bl = {x:P.motorMountX, y:off + P.motorMountY - st[k]};      // 段 k 局部系（与正向逐项一致）
     const d0 = Dloc(t[k]); const dl = {x:d0.x, y:d0.y + off};
     const ol = {x:0, y:off};
+    const o = pos[k+1];                                               // 正向坐标下的关节 Oj
+    const bq = rot(bl.x, bl.y, th[k]);
+    const b = {x:pos[k].x + bq.x, y:pos[k].y + bq.y};                 // B 在段 k 上，随之转 θk
+    const dq = rot(P.forearmAttachOffset, -P.forearmAttachDist, th[k+1]);
+    const d = {x:o.x + dq.x, y:o.y + dq.y};                           // D 在段 k+1 上，随之转 θ(k+1)
     Ol.push(ol); Bl.push(bl); Dl.push(dl);
-    O.push(ups[k](ol)); B.push(ups[k](bl)); D.push(ups[k](dl));
-    OW.push(world(O[k])); BW.push(world(B[k])); DW.push(world(D[k]));
+    O.push(mir(o)); B.push(mir(b)); D.push(mir(d));
+    OW.push(world(o)); BW.push(world(b)); DW.push(world(d));
   }
-  const tipL = {x:0, y:-(P.forearmLen + 14)};
-  const tip = world(ups[n](tipL));
+  const tipL = {x:0, y:P.upperArmLen + 14};                           // 指尖防滑垫中心（掌段局部系）
+  const tq = rot(tipL.x, tipL.y, th[0]);
+  const tip = world({x:pos[0].x + tq.x, y:pos[0].y + tq.y});
   return { key:key, n:n, angles:angles.slice(), Ol:Ol, Bl:Bl, Dl:Dl, O:O, B:B, D:D,
-           OW:OW, BW:BW, DW:DW, tipL:tipL, tip:tip, s:st };
+           OW:OW, BW:BW, DW:DW, tipL:tipL, tip:tip, s:st, th:th, pos:pos };
 }
 function getJoints(pose) {
   const src = pose || currentPose(), out = {};
@@ -127,7 +140,8 @@ function updateMechanism(pose){
   for (const f of HAND.fingers) {
     const F = FINGERS[f.key]; if (!F) continue;
     const A = F.pose, n = F.n;
-    for (let k = 0; k < n; k++) F.groups[k+1].rotation.z = A[k]*Math.PI/180;
+    // 反根链：段 j 绕自身远端关节 Oj 转 −θj（相对转角与正向完全相同，只是父段换成远端段）
+    for (let k = 0; k < n; k++) F.joints[k].rotation.z = -A[k]*Math.PI/180;
     const C = fingerChain(f.key, A);
     // 单元0：电机0/连杆0 挂在根（掌段固定，局部系即根系）
     updateRodUnit(F.motors[0], f.key+'_m0', P.motorFrontY, P.motorMountX, C.Bl[0].y);

@@ -15,29 +15,32 @@ scene.updateMatrixWorld(true);
 const allNames=[]; scene.traverse(o=>{ if(o.isMesh) allNames.push(o.name); });
 
 // 打印件类型表：src = 取几何的基准指；sfx = 该件包含的网格名后缀（不带 <指>_ 前缀）
-const P_PALM_P=['palmBodyProximal','palmBase','palmFlangePlateNeck','palmFlangePlate','palmPSplicePadTop','palmPSplicePadBottom','palmPSplicePadTopFoot','palmPSplicePadBottomFoot'];
+// 反根后掌段是自由末端：指尖圆头/半球垫随掌段自由端近端段打印（原属末端段远端）；
+// 指根方块则随末端段（接掌固定段）远端打印，见 P_TERM_D
+const P_PALM_P=['palmBodyProximal','palmFingerTip','palmFingerTipPad','palmFlangePlateNeck','palmFlangePlate','palmPSplicePadTop','palmPSplicePadBottom','palmPSplicePadTopFoot','palmPSplicePadBottomFoot'];
 const P_PALM_D=['palmBodyDistal','palmEarBaseL','palmYokeWebL','palmEarBaseR','palmYokeWebR','palmForkL','palmForkLRib','palmForkR','palmForkRRib','palmDSplicePadTop','palmDSplicePadBottom'];
 const P_PHAL_P=['p1BodyWaist','p1BodyHeel','p1SleeveBody','p1SleeveHub','p1DClevisArmL','p1DClevisArmR','p1DClevisBossL','p1DClevisBossR','p1PSplicePadTop','p1PSplicePadBottom'];
 const P_PHAL_D=['p1BodyDistal','p1EarBaseL','p1YokeWebL','p1EarBaseR','p1YokeWebR','p1ForkL','p1ForkLRib','p1ForkR','p1ForkRRib','p1FlangePlateNeck','p1FlangePlate','p1DSplicePadTop','p1DSplicePadBottom','p1DSplicePadTopFoot','p1DSplicePadBottomFoot'];
 const P_TERM_P=['p3BodyWaist','p3BodyHeel','p3SleeveBody','p3SleeveHub','p3DClevisArmL','p3DClevisArmR','p3DClevisBossL','p3DClevisBossR','p3PSplicePadTop','p3PSplicePadBottom'];
-const P_TERM_D=['p3BodyDistal','p3FingerTip','p3FingerTipPad','p3DSplicePadTop','p3DSplicePadBottom','p3DSplicePadTopFoot','p3DSplicePadBottomFoot'];
+// 反根后末端段是接掌固定段：指根方块随其远端段打印（指尖圆头/半球垫已搬到掌段，见 P_PALM_P）
+const P_TERM_D=['p3BodyDistal','palmBase','p3DSplicePadTop','p3DSplicePadBottom','p3DSplicePadTopFoot','p3DSplicePadBottomFoot'];
 const P_COLLAR=['m0CollarRing','m0CollarTabA','m0CollarTabAN','m0CollarTabB','m0CollarTabBN'];
 const P_CLEVIS=['m0BridgeFloor','m0BridgeWallZP','m0BridgeWallZN','m0BridgeWallXP','m0BridgeWallXN','m0BridgeRibL','m0BridgeRibR','m0ClevisArmL','m0ClevisArmR','m0ClevisPlateL','m0ClevisPlateR'];
 const P_LINK=['t0TendonWeb','t0TendonEyeB','t0TendonEyeD'];
 const P_MOUNT=['palmFlangeBase'];
-const P_GRIP=['p3GripPad','p3GripRib1','p3GripRib2','p3GripRib3'];
+const P_GRIP=['palmGripPad','palmGripRib1','palmGripRib2','palmGripRib3'];
 const PRINTS=[
-  {file:'finger_palm_proximal', src:'index', sfx:P_PALM_P, pose:'flipX', qty:/^[a-z]+_palmBodyProximal$/, note:'掌段·法兰端段（含指根方块+电机0法兰安装板，与掌段本体在 y=140 拼接）' },
-  {file:'finger_palm_distal', src:'index', sfx:P_PALM_D, pose:null, qty:/^[a-z]+_palmBodyDistal$/, note:'掌段·关节0端段（含一体化叉耳，接 P1）' },
+  {file:'finger_palm_proximal', src:'index', sfx:P_PALM_P, pose:'flipX', qty:/^[a-z]+_palmBodyProximal$/, note:'掌段·自由末端外段（含电机0法兰安装板 + 反根后的指尖圆头/半球垫；指根方块已随掌部安装件搬到末端段）' },
+  {file:'finger_palm_distal', src:'index', sfx:P_PALM_D, pose:null, qty:/^[a-z]+_palmBodyDistal$/, note:'掌段·自由末端段（含一体化叉耳与关节0接口；反根后带 Ø24 指尖圆头+半球垫，即新的指尖）' },
   {file:'finger_phalanx_proximal', src:'index', sfx:P_PHAL_P, pose:'flipX', qty:[/^[a-z]+_p1BodyWaist$/,/^(index|middle|ring|pinky)_p2BodyWaist$/], note:'近节/中节·关节端段（含袖套/毂+D侧板叉耳，拼接 y=-170）；四指 P1≡P2 同件，拇指 P1 亦同件（9 件）' },
   {file:'finger_phalanx_distal', src:'index', sfx:P_PHAL_D, pose:null, qty:[/^[a-z]+_p1BodyDistal$/,/^(index|middle|ring|pinky)_p2BodyDistal$/], note:'近节/中节·远端段（含一体化叉耳+电机法兰安装板）；四指 P1≡P2 同件，拇指 P1 亦同件（9 件）' },
   {file:'finger_terminal_proximal', src:'index', sfx:P_TERM_P, pose:'flipX', qty:[/^[a-z]+_p3BodyWaist$/,/^thumb_p2BodyWaist$/], note:'末节·关节端段（拼接 y=-125）；四指 P3 ≡ 拇指 P2，同件' },
-  {file:'finger_terminal_distal', src:'index', sfx:P_TERM_D, pose:null, qty:[/^[a-z]+_p3BodyDistal$/,/^thumb_p2BodyDistal$/], note:'末节·指尖段（Ø24 圆头 + 半球垫，无电机）' },
+  {file:'finger_terminal_distal', src:'index', sfx:P_TERM_D, pose:null, qty:[/^[a-z]+_p3BodyDistal$/,/^thumb_p2BodyDistal$/], note:'末节 P3/拇指 P2：接掌固定段远端段（无电机；含指根方块，56×56 安装法兰挂其端面）' },
   {file:'finger_motor_collar', src:'index', sfx:P_COLLAR, pose:'rotX90', qty:/^[a-z]+_m[0-2]CollarRing$/, note:'电机后抱箍（开口300°，2×M4 贯穿所在段）；14 台电机通用' },
   {file:'finger_b_clevis', src:'index', sfx:P_CLEVIS, pose:null, qty:/^[a-z]+_m[0-2]BridgeFloor$/, note:'B 推杆叉头（双耳+M6 螺母沉龛夹持桥）；14 个单元通用' },
   {file:'finger_bd_link', src:'index', sfx:P_LINK, pose:null, unrotateGroup:'index_t0Tendon', qty:/^[a-z]+_t[0-2]TendonWeb$/, note:'BD 等宽长条连杆 100×15×8（长轴已摆正）；14 个单元通用' },
   {file:'finger_palm_mount', src:'index', sfx:P_MOUNT, pose:'rotX90', qty:/^[a-z]+_palmFlangeBase$/, note:'掌骨安装法兰 56×56 R8（内圈4×Ø4.4 接指根方块、外圈4×Ø5.5 接掌骨板、Ø9 走线）' },
-  {file:'finger_grip_pad', src:'index', sfx:P_GRIP, pose:'flipX', qty:[/^[a-z]+_p3GripPad$/,/^thumb_p2GripPad$/], note:'指尖防滑抓握垫（TPU95A 柔性更佳）' },
+  {file:'finger_grip_pad', src:'index', sfx:P_GRIP, pose:'flipX', qty:/^[a-z]+_palmGripPad$/, note:'指尖防滑抓握垫（反根后位于掌段自由端；TPU95A 柔性更佳）' },
   {file:'chassis_palmPlateA', src:null, sfx:null, abs:['palmPlateA'], pose:null, qty:/^palmPlateA$/, note:'掌骨板A（66×10 平板，z∈[-253,-55]）：拇指+食指指根接口 + 顶部拼接条 4×M5' },
   {file:'chassis_palmPlateB', src:null, sfx:null, abs:['palmPlateB'], pose:null, qty:/^palmPlateB$/, note:'掌骨板B（66×10 平板，z∈[-55,153]）：中指+无名指+小指指根接口' },
   {file:'chassis_palmSpliceTop', src:null, sfx:null, abs:['palmSpliceTop'], pose:null, qty:/^palmSpliceTop$/, note:'顶部拼接条（6mm，z∈[-80,-30]）：4×M5 自下而上把板A/板B 拉成一体' },
