@@ -72,6 +72,11 @@ class Canvas{
     this.px[o]=this.px[o]*ia+r*a; this.px[o+1]=this.px[o+1]*ia+g*a; this.px[o+2]=this.px[o+2]*ia+b*a;
   }
   // 把 src 缩放到 dw×dh 后贴到 (dx,dy)，带 1px 圆角遮罩
+  drawFit(src,cx,cy,cw,ch){   // 等比缩放居中（防止竖幅被拉伸变形）
+    const k=Math.min(cw/src.w, ch/src.h);
+    const dw=Math.max(1,Math.floor(src.w*k)), dh=Math.max(1,Math.floor(src.h*k));
+    this.drawScaled(src, cx+Math.floor((cw-dw)/2), cy+Math.floor((ch-dh)/2), dw, dh, 4);
+  }
   drawScaled(src,dx,dy,dw,dh,radius=8){
     const sx=src.w/dw, sy=src.h/dh;
     for(let y=0;y<dh;y++){
@@ -132,26 +137,20 @@ class Canvas{
   }
 }
 
-// ---------- 版面（单指复位版：食指 + 指根简化底板）----------
-const SHEET=[['hand_00_orientation','ORIENTATION  -  TIP UP  (LABELLED)'],
-             ['hand_01_straight_iso','STRAIGHT  ISOMETRIC'],
-             ['hand_02_straight_main','STRAIGHT  TOP VIEW'],
-             ['hand_03_straight_full_iso','STRAIGHT  WITH BASE PLATE'],
-             ['hand_16_fullflex_iso','FULL FLEX  120/120'],
-             ['hand_07_curl_iso','CURL  80/50  ISOMETRIC'],
-             ['hand_08_curl_main','CURL  80/50  TOP VIEW'],
-             ['hand_09_curl_iso2','CURL  80/50  REVERSE'],
-             ['hand_17_fullflex_full_iso','FULL FLEX  WITH BASE PLATE'],
-             ['hand_04_root_iso','ROOT  JOINT  ISOMETRIC'],
-             ['hand_05_root_side','ROOT  JOINT  SIDE'],
-             ['hand_06_root_iso2','ROOT  JOINT  REVERSE'],
-             ['hand_11_joint2_tip','JOINT 2  +  FINGERTIP'],
-             ['hand_10_joint1','JOINT 1  DETAIL'],
-             ['hand_12_link1','BD  LINK  1'],
-             ['hand_13_motor1_mount','MOTOR 1  MOUNT'],
-             ['hand_14_motor2_mount','MOTOR 2  MOUNT']];
+// ---------- 版面（整手 v9：五指 = 四指×3 关节 + 拇指×2 关节，共 14 个同构单元）----------
+// 画面统一“指根在上、指尖在下”（与 render_hand_preview.cjs 的 +y 为上一致）。
+const SHEET=[['hand_01_iso_open','伸直·等轴（五指 / 指距 70mm）'],
+             ['hand_02_palm_face','指距视图（沿 +x：五指并列 70mm、指根法兰共面）'],
+             ['hand_03_mechanism_plane','单指机构平面（沿 +z：电机—推杆—BD 连杆共面）'],
+             ['hand_07_chassis','掌体骨架（板A/板B/拼接条/腕块/拇指桥）'],
+             ['hand_04_iso_grip','抓握 u=0.6'],
+             ['hand_05_fist_iso','满握 u=1.0（安全包络极值）'],
+             ['hand_06_pinch','拇指对掌位 + 食指捏合'],
+             ['hand_08_mcp_closeup','掌指关节 MCP 特写'],
+             ['hand_09_tips','指尖抓握垫特写（满握）'],
+             ['hand_10_wrist','腕接口 / 掌骨板 / 拇指桥特写']];
 
-const COLS=4, CELL_W=460, CELL_H=340, GAP=16, PAD=26, TITLE_H=104, CAP_H=34;
+const COLS=4, CELL_W=460, CELL_H=440, GAP=16, PAD=26, TITLE_H=104, CAP_H=34;
 const rows=Math.ceil(SHEET.length/COLS);
 const W=PAD*2+COLS*CELL_W+(COLS-1)*GAP;
 const H=TITLE_H+PAD+rows*(CELL_H+CAP_H)+(rows-1)*GAP+PAD;
@@ -160,9 +159,9 @@ const cv=new Canvas(W,H);
 // 标题区
 cv.rect(0,0,W,TITLE_H,0x1b,0x1e,0x33);
 cv.rect(0,TITLE_H-3,W,3,0x5a,0x6c,0xff);
-cv.text(PAD,22,'MYARM   INDEX FINGER   -   2 JOINTS / 2 LINEAR ACTUATORS   -   FINAL RENDER SHEET',3,0xe6,0xea,0xff);
-cv.text(PAD,58,'EACH JOINT: 1 LINEAR ACTUATOR + 1 BD LINK ROD   -   ROOT SEATED ON SIMPLIFIED BASE PLATE',2,0x8e,0x9c,0xd8);
-cv.text(PAD,80,'RANGE 0-120 DEG   -   STROKE 59.4MM   -   ROOT JOINT GAP 0.00MM   -   COLLISION 0',2,0x6e,0x7c,0xb0);
+cv.text(PAD,22,'MYARM   FIVE-FINGER HAND   -   14 JOINT UNITS (4 FINGERS x 3 + THUMB x 2)   -   RENDER SHEET',3,0xe6,0xea,0xff);
+cv.text(PAD,58,'EACH UNIT: 1 LINEAR ACTUATOR + 1 BD LINK ROD   -   ALL ROOTS BOLTED TO A 66x10 PALM PLATE',2,0x8e,0x9c,0xd8);
+cv.text(PAD,80,'45584 POSES / 12012 PAIRS SCANNED   -   COLLISION 0   -   MIN GAP 1.000MM   -   CLOSURE 8.5e-14MM',2,0x6e,0x7c,0xb0);
 
 let i=0;
 for(let r=0;r<rows;r++){
@@ -174,10 +173,10 @@ for(let r=0;r<rows;r++){
     cv.rect(x-2,y-2,CELL_W+4,CELL_H+4,0x3a,0x44,0x78);
     cv.rect(x,y,CELL_W,CELL_H,0x10,0x12,0x1c);
     const src=decodePNG(path.join(pv,name+'.png'));
-    cv.drawScaled(src,x,y,CELL_W,CELL_H,6);
+    cv.drawFit(src,x,y,CELL_W,CELL_H);
     cv.text(x, y+CELL_H+9, cap, 2, 0xa8,0xb4,0xe8);
   }
 }
-const out=path.join(pv,'FINGER_FINAL_RENDER_SHEET.png');
+const out=path.join(pv,'HAND_FINAL_RENDER_SHEET.png');
 encodePNG(out,W,H,cv.px);
 console.log('已生成',out,W+'x'+H,'('+(fs.statSync(out).size/1048576).toFixed(2)+' MB)');
