@@ -1,10 +1,7 @@
 'use strict';
-// 整手（5 指 + 掌体骨架）：从 hand_mechanism_3d.html 提取网格，按"独立打印件"分组导出二进制 STL。
-//
-// 结构：每根手指 = 与原手指版完全相同的两套肘关节机构（每关节 1 只直线电机 + 1 根 BD 连杆），
-//       按 HAND.scale=0.5 缩放后装到掌体骨架上；掌体负责 5 指根座、10 只电机的分层走位、
-//       侧梁/横撑/腕法兰。5 指机构件互为同规格备件，此处按指分别导出（便于装配对号）。
-//
+// 五指整手：从 hand_mechanism_3d.html 提取网格，按“打印件类型”导出二进制STL（mm，按打印姿态落地）。
+//   整手 = 四指×19 + 拇指×14 + 掌体骨架 5 = 95 个打印件；同规格件几何完全相同（verify_hand.cjs 逐件核验），
+//   因此按类型导出 16 个 STL，每个文件附打印数量与用处（见 index.json）。
 // 用法: node export_hand_stl.cjs
 const fs=require('fs'),path=require('path');
 const THREE=require('./.verification/three-r128.cjs');
@@ -12,79 +9,56 @@ const root=__dirname,html=fs.readFileSync(path.join(root,'hand_mechanism_3d.html
 const script=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].find(m=>m[1].includes('const P ='))[1];
 const nodes=new Map(),document={getElementById(id){if(!nodes.has(id))nodes.set(id,{});return nodes.get(id);}};
 const main=script.slice(0,script.lastIndexOf('\ninitScene();'));
-// v7：hand_mechanism_3d.html 现为单指反根验证版（无 buildPalm/DIGITS 五指布局）。
-//   本脚本保留给五指目标设计；对当前模型给出明确提示而不是 ReferenceError。
-let api;
-try{
-  api=new Function('THREE','document',main+'\nscene=new THREE.Scene();showLabels=false;buildMechanism();buildPalm();updateMechanism(0,0,0,0,0);return {P,s,scene,DIGITS};')(THREE,document);
-}catch(err){
-  console.error('export_hand_stl: 当前 hand_mechanism_3d.html 不是五指布局（'+err.message+'）。');
-  console.error('  五指布局已下线，stl_hand/ 为五指目标设计的既有输出（保留归档）。');
-  console.error('  现行单指反根模型的打印件与手指版逐件相同，请改用: node export_finger_stl.cjs');
-  process.exit(2);
-}
-const {P,s,scene,DIGITS}=api;
+const api=new Function('THREE','document',main+'\nscene=new THREE.Scene();showLabels=false;buildMechanism();updateMechanism();return {P,s,scene,HAND};')(THREE,document);
+const {P,s,scene,HAND}=api;
 scene.updateMatrixWorld(true);
+const allNames=[]; scene.traverse(o=>{ if(o.isMesh) allNames.push(o.name); });
 
-// ---------- 打印件分组 ----------
-// 每根手指各自的件（suffix 拼在指前缀之后）
-const FINGER_PRINTS={
-  p1_proximal:{note:'近节·掌端段（含叉颊式掌端 + 电机1法兰安装板）',pose:'flipX',
-    m:['p1BodyProximal','p1PalmBase','p1FlangePlateNeck','p1FlangePlate','p1PSplicePadTop','p1PSplicePadBottom','p1PSplicePadTopFoot','p1PSplicePadBottomFoot']},
-  p1_fork:{note:'近节·掌端夹持叉（两颊板夹住电机1，与掌体指根座共用 4×M3）',pose:'flipX',
-    m:['p1ForkCheekL','p1ForkCheekLWeb','p1ForkCheekR','p1ForkCheekRWeb']},
-  p1_distal:{note:'近节·关节1段（含一体化叉耳）',pose:null,
-    m:['p1BodyDistal','p1EarBaseL','p1YokeWebL','p1EarBaseR','p1YokeWebR','p1ForkL','p1ForkLRib','p1ForkR','p1ForkRRib','p1DSplicePadTop','p1DSplicePadBottom']},
-  p2_proximal:{note:'中节·关节1端段（含袖套/毂 + D 侧板叉耳）',pose:'flipX',
-    m:['p2BodyWaist','p2BodyHeel','p2SleeveBody','p2SleeveHub','p2DClevisArmL','p2DClevisArmR','p2DClevisBossL','p2DClevisBossR','p2PSplicePadTop','p2PSplicePadBottom']},
-  p2_distal:{note:'中节·关节2端段（含叉耳 + 电机2法兰安装板）',pose:null,
-    m:['p2BodyDistal','p2EarBaseL','p2YokeWebL','p2EarBaseR','p2YokeWebR','p2ForkL','p2ForkLRib','p2ForkR','p2ForkRRib','p2FlangePlateNeck','p2FlangePlate','p2DSplicePadTop','p2DSplicePadBottom','p2DSplicePadTopFoot','p2DSplicePadBottomFoot']},
-  p3_proximal:{note:'远节·关节2端段（含袖套/毂 + D 侧板叉耳）',pose:'flipX',
-    m:['p3BodyWaist','p3BodyHeel','p3SleeveBody','p3SleeveHub','p3DClevisArmL','p3DClevisArmR','p3DClevisBossL','p3DClevisBossR','p3PSplicePadTop','p3PSplicePadBottom']},
-  p3_distal:{note:'远节·指尖段（含末端法兰与指尖圆头）',pose:null,
-    m:['p3BodyDistal','p3FingerTip','p3FingerTipPad','p3DSplicePadTop','p3DSplicePadBottom','p3DSplicePadTopFoot','p3DSplicePadBottomFoot']},
-  motor1_collar:{note:'电机1后抱箍（开口 300°）',pose:'rotX90',m:['m1CollarRing','m1CollarTabA','m1CollarTabB']},
-  motor2_collar:{note:'电机2后抱箍（开口 300°）',pose:'rotX90',m:['m2CollarRing','m2CollarTabA','m2CollarTabB']},
-  b_clevis_1:{note:'B 推杆叉头1（双耳 + M6 螺母沉龛夹持桥）',pose:null,
-    m:['m1BridgeFloor','m1BridgeWallZP','m1BridgeWallZN','m1BridgeWallXP','m1BridgeWallXN','m1BridgeRibL','m1BridgeRibR','m1ClevisArmL','m1ClevisArmR','m1ClevisPlateL','m1ClevisPlateR']},
-  b_clevis_2:{note:'B 推杆叉头2（与 1 同规格，可互换）',pose:null,
-    m:['m2BridgeFloor','m2BridgeWallZP','m2BridgeWallZN','m2BridgeWallXP','m2BridgeWallXN','m2BridgeRibL','m2BridgeRibR','m2ClevisArmL','m2ClevisArmR','m2ClevisPlateL','m2ClevisPlateR']},
-  link_1:{note:'BD 等宽长条连杆1（长轴已摆正）',pose:null,unrotateGroup:'t1Tendon',m:['t1TendonWeb','t1TendonEyeB','t1TendonEyeD']},
-  link_2:{note:'BD 等宽长条连杆2（与 1 同规格，可互换备件）',pose:null,unrotateGroup:'t2Tendon',m:['t2TendonWeb','t2TendonEyeB','t2TendonEyeD']},
-  grip_pad:{note:'指尖防滑抓握垫（TPU95A 柔性更佳）',pose:'flipX',m:['p3GripPad','p3GripRib1','p3GripRib2','p3GripRib3']},
-};
+// 打印件类型表：src = 取几何的基准指；sfx = 该件包含的网格名后缀（不带 <指>_ 前缀）
+const P_PALM_P=['palmBodyProximal','palmBase','palmFlangePlateNeck','palmFlangePlate','palmPSplicePadTop','palmPSplicePadBottom','palmPSplicePadTopFoot','palmPSplicePadBottomFoot'];
+const P_PALM_D=['palmBodyDistal','palmEarBaseL','palmYokeWebL','palmEarBaseR','palmYokeWebR','palmForkL','palmForkLRib','palmForkR','palmForkRRib','palmDSplicePadTop','palmDSplicePadBottom'];
+const P_PHAL_P=['p1BodyWaist','p1BodyHeel','p1SleeveBody','p1SleeveHub','p1DClevisArmL','p1DClevisArmR','p1DClevisBossL','p1DClevisBossR','p1PSplicePadTop','p1PSplicePadBottom'];
+const P_PHAL_D=['p1BodyDistal','p1EarBaseL','p1YokeWebL','p1EarBaseR','p1YokeWebR','p1ForkL','p1ForkLRib','p1ForkR','p1ForkRRib','p1FlangePlateNeck','p1FlangePlate','p1DSplicePadTop','p1DSplicePadBottom','p1DSplicePadTopFoot','p1DSplicePadBottomFoot'];
+const P_TERM_P=['p3BodyWaist','p3BodyHeel','p3SleeveBody','p3SleeveHub','p3DClevisArmL','p3DClevisArmR','p3DClevisBossL','p3DClevisBossR','p3PSplicePadTop','p3PSplicePadBottom'];
+const P_TERM_D=['p3BodyDistal','p3FingerTip','p3FingerTipPad','p3DSplicePadTop','p3DSplicePadBottom','p3DSplicePadTopFoot','p3DSplicePadBottomFoot'];
+const P_COLLAR=['m0CollarRing','m0CollarTabA','m0CollarTabAN','m0CollarTabB','m0CollarTabBN'];
+const P_CLEVIS=['m0BridgeFloor','m0BridgeWallZP','m0BridgeWallZN','m0BridgeWallXP','m0BridgeWallXN','m0BridgeRibL','m0BridgeRibR','m0ClevisArmL','m0ClevisArmR','m0ClevisPlateL','m0ClevisPlateR'];
+const P_LINK=['t0TendonWeb','t0TendonEyeB','t0TendonEyeD'];
+const P_MOUNT=['palmFlangeBase'];
+const P_GRIP=['p3GripPad','p3GripRib1','p3GripRib2','p3GripRib3'];
+const PRINTS=[
+  {file:'finger_palm_proximal', src:'index', sfx:P_PALM_P, pose:'flipX', qty:/^[a-z]+_palmBodyProximal$/, note:'掌段·法兰端段（含指根方块+电机0法兰安装板，与掌段本体在 y=140 拼接）' },
+  {file:'finger_palm_distal', src:'index', sfx:P_PALM_D, pose:null, qty:/^[a-z]+_palmBodyDistal$/, note:'掌段·关节0端段（含一体化叉耳，接 P1）' },
+  {file:'finger_phalanx_proximal', src:'index', sfx:P_PHAL_P, pose:'flipX', qty:[/^[a-z]+_p1BodyWaist$/,/^(index|middle|ring|pinky)_p2BodyWaist$/], note:'近节/中节·关节端段（含袖套/毂+D侧板叉耳，拼接 y=-170）；四指 P1≡P2 同件，拇指 P1 亦同件（9 件）' },
+  {file:'finger_phalanx_distal', src:'index', sfx:P_PHAL_D, pose:null, qty:[/^[a-z]+_p1BodyDistal$/,/^(index|middle|ring|pinky)_p2BodyDistal$/], note:'近节/中节·远端段（含一体化叉耳+电机法兰安装板）；四指 P1≡P2 同件，拇指 P1 亦同件（9 件）' },
+  {file:'finger_terminal_proximal', src:'index', sfx:P_TERM_P, pose:'flipX', qty:[/^[a-z]+_p3BodyWaist$/,/^thumb_p2BodyWaist$/], note:'末节·关节端段（拼接 y=-125）；四指 P3 ≡ 拇指 P2，同件' },
+  {file:'finger_terminal_distal', src:'index', sfx:P_TERM_D, pose:null, qty:[/^[a-z]+_p3BodyDistal$/,/^thumb_p2BodyDistal$/], note:'末节·指尖段（Ø24 圆头 + 半球垫，无电机）' },
+  {file:'finger_motor_collar', src:'index', sfx:P_COLLAR, pose:'rotX90', qty:/^[a-z]+_m[0-2]CollarRing$/, note:'电机后抱箍（开口300°，2×M4 贯穿所在段）；14 台电机通用' },
+  {file:'finger_b_clevis', src:'index', sfx:P_CLEVIS, pose:null, qty:/^[a-z]+_m[0-2]BridgeFloor$/, note:'B 推杆叉头（双耳+M6 螺母沉龛夹持桥）；14 个单元通用' },
+  {file:'finger_bd_link', src:'index', sfx:P_LINK, pose:null, unrotateGroup:'index_t0Tendon', qty:/^[a-z]+_t[0-2]TendonWeb$/, note:'BD 等宽长条连杆 100×15×8（长轴已摆正）；14 个单元通用' },
+  {file:'finger_palm_mount', src:'index', sfx:P_MOUNT, pose:'rotX90', qty:/^[a-z]+_palmFlangeBase$/, note:'掌骨安装法兰 56×56 R8（内圈4×Ø4.4 接指根方块、外圈4×Ø5.5 接掌骨板、Ø9 走线）' },
+  {file:'finger_grip_pad', src:'index', sfx:P_GRIP, pose:'flipX', qty:[/^[a-z]+_p3GripPad$/,/^thumb_p2GripPad$/], note:'指尖防滑抓握垫（TPU95A 柔性更佳）' },
+  {file:'chassis_palmPlateA', src:null, sfx:null, abs:['palmPlateA'], pose:null, qty:/^palmPlateA$/, note:'掌骨板A（66×10 平板，z∈[-253,-55]）：拇指+食指指根接口 + 顶部拼接条 4×M5' },
+  {file:'chassis_palmPlateB', src:null, sfx:null, abs:['palmPlateB'], pose:null, qty:/^palmPlateB$/, note:'掌骨板B（66×10 平板，z∈[-55,153]）：中指+无名指+小指指根接口' },
+  {file:'chassis_palmSpliceTop', src:null, sfx:null, abs:['palmSpliceTop'], pose:null, qty:/^palmSpliceTop$/, note:'顶部拼接条（6mm，z∈[-80,-30]）：4×M5 自下而上把板A/板B 拉成一体' },
+  {file:'chassis_wristBlock', src:null, sfx:null, abs:['wristBlock','wristBoss1','wristBoss2','wristBoss3','wristBoss4'], pose:null, qty:/^wristBlock$/, note:'腕拼接块（含 4×Ø14×6 支承凸台一体打印）：4×M5 旋入掌骨板 + Ø40 走线 + 4×Ø9 腕接口' },
+  {file:'chassis_thumbBridge', src:null, sfx:null, abs:['thumbBridge','thumbBridgeBoss1','thumbBridgeBoss2','thumbBridgeBoss3','thumbBridgeBoss4'], pose:null, qty:/^thumbBridge$/, note:'拇指桥（含 4×Ø14×10 支承凸台一体打印）：2×M5 旋入板A + 4×M5 锁拇指法兰' },
+];
 
-// 掌体件：五指共享同一套骨架（每指一段指根座 + 两条主梁 + 连接肋）
-const PALM_PRINTS={
-  knuckle_seat:{note:'掌体指根座（与指根叉颊共用 4×M3，卡在两颊之间）',pose:'rotX90',m:['KnuckleSeat']},
-  rail:{note:'掌体主梁（外侧 + 内侧，沿电机侧面直伸到腕法兰）',pose:'rotX90',m:['RailMain','RailInner']},
-  rail_tie:{note:'掌体横向连接肋 ×2',pose:'rotX90',m:['RailTie197','RailTie225']},
-  palm_cross:{note:'掌体横撑板（3 道 × 4 层，把 4 指框架连成整体）',pose:'rotX90',
-    m:['palmCross182_-40','palmCross182_-13p3','palmCross182_13p3','palmCross182_40',
-       'palmCross210_-40','palmCross210_-13p3','palmCross210_13p3','palmCross210_40',
-       'palmCross238_-40','palmCross238_-13p3','palmCross238_13p3','palmCross238_40']},
-  wrist_flange:{note:'腕部法兰 Ø108×7 + 腕毂（Ø36 走线孔 + 4×M10 安装孔）',pose:'rotX90',m:['wristFlange','wristHub']},
-  palm_pad:{note:'掌心软垫（TPU95A）+ 3 条防滑棱',pose:'flipX',m:['palmPad','palmPadRib1','palmPadRib2','palmPadRib3']},
-};
-
-// ---------- 外购件 BOM（整手合计） ----------
 const PURCHASED_BOM=[
-  {part:'linearActuator20x40',spec:'微型直线电机（推杆式）Ø20×40，行程 ≥30 mm，内置位置反馈',qty:10,used:'每关节 1 只：5 指 × 2 关节'},
-  {part:'shoulderBoltO5x13',spec:'肩螺栓（塞打螺丝）Ø5 h9×13，端部螺纹 M4',qty:5,used:'每指关节1 转动副 O1'},
-  {part:'shoulderBoltO5x13b',spec:'肩螺栓 Ø5 h9×13，端部螺纹 M4',qty:5,used:'每指关节2 转动副 O2'},
-  {part:'shoulderBoltB4x9',spec:'肩螺栓 Ø4 h9×9，端部螺纹 M3',qty:10,used:'两关节 B 推杆叉头销轴'},
-  {part:'shoulderBoltD4x10',spec:'肩螺栓 Ø4 h9×10，端部螺纹 M3',qty:10,used:'两关节 D 连杆销轴'},
-  {part:'rodNutM3',spec:'M3 六角螺母（沉入 B 叉头沉龛）',qty:10,used:'电机推杆端部夹持'},
-  {part:'washerO',spec:'平垫 Ø5.3/Ø9×1.0',qty:10,used:'O1/O2 螺母侧'},
-  {part:'washerBD',spec:'平垫 Ø4.3/Ø8×1.0',qty:20,used:'B/D 螺母侧'},
-  {part:'nylocNutM4',spec:'M4 尼龙自锁螺母（AF7）',qty:10,used:'O1/O2 肩螺栓'},
-  {part:'nylocNutM3',spec:'M3 尼龙自锁螺母（AF5.5）',qty:20,used:'B/D 肩螺栓'},
-  {part:'boltM3x16',spec:'M3×16 内六角',qty:20,used:'电机后抱箍贯穿指节'},
-  {part:'boltM3x10',spec:'M3×10 内六角',qty:40,used:'电机前法兰旋入安装板（建议配 M3 热熔螺母）'},
-  {part:'boltM3x22',spec:'M3×22 + 平垫 + M3 尼龙自锁螺母',qty:30,used:'P1/P2/P3 三段拼接凸台贯穿'},
-  {part:'boltM3x26',spec:'M3×26 + 平垫 + M3 尼龙自锁螺母',qty:20,used:'掌体指根座 ↔ 指根叉颊（每指 4 只）'},
-  {part:'boltM3x18',spec:'M3×18 内六角',qty:24,used:'掌体横撑板与主梁连接'},
-  {part:'boltM6x20',spec:'M6×20 内六角（沉头）',qty:4,used:'腕法兰固定于手腕/前臂接口'},
+  {part:'shoulderBoltO10x26',spec:'肩螺栓（塞打螺丝）Ø10 h9×26，端部螺纹 M8',qty:14,used:'14 个关节单元的 O 转动副（每指 3/2 个）'},
+  {part:'shoulderBoltB8x18',spec:'肩螺栓 Ø8 h9×18，端部螺纹 M6',qty:14,used:'14 个单元 B 推杆叉头销轴'},
+  {part:'shoulderBoltD8x20',spec:'肩螺栓 Ø8 h9×20，端部螺纹 M6',qty:14,used:'14 个单元 D 连杆销轴'},
+  {part:'rodNutM6',spec:'M6 六角螺母（沉入 B 叉头沉龛）',qty:14,used:'推杆端部夹持'},
+  {part:'washerO',spec:'平垫 Ø10.5/Ø16×1.6',qty:14,used:'O 关节螺母侧'},
+  {part:'washerBD',spec:'平垫 Ø8.4/Ø12×1.6',qty:28,used:'B/D 关节螺母侧'},
+  {part:'nylocNutM8',spec:'M8 尼龙自锁螺母（AF13）',qty:14,used:'O 肩螺栓'},
+  {part:'nylocNutM6',spec:'M6 尼龙自锁螺母（AF10）',qty:28,used:'B/D 肩螺栓'},
+  {part:'boltM4x22',spec:'M4×22 内六角 + 平垫 + M4 尼龙自锁螺母',qty:28,used:'14 台电机后抱箍贯穿所在段（每台 2 组）'},
+  {part:'boltM4x16',spec:'M4×16 内六角（建议配 M4 热熔螺母）',qty:56,used:'14 台电机前法兰旋入安装板（每台 4 根）'},
+  {part:'boltM4x36',spec:'M4×36 + 平垫 + M4 尼龙自锁螺母',qty:36,used:'各段一体化拼接凸台贯穿（每处 2 根，共 18 处）'},
+  {part:'boltM5x20',spec:'M5×20 内六角',qty:20,used:'5 根手指的掌骨法兰外圈 4×Ø5.5 → 掌骨板 M5 螺孔（每指 4 根）'},
+  {part:'boltM5x16',spec:'M5×16 内六角',qty:10,used:'顶部拼接条 4（自下而上旋入条体）+ 拇指桥 2（旋入板A）+ 腕块 4（旋入掌骨板）'},
 ];
 
 function stlBinary(tris){
@@ -93,15 +67,14 @@ function stlBinary(tris){
   buf.writeUInt32LE(tris.length,80);
   let off=84;
   for(const t of tris){
-    const [a,b,c]=t;
+    const a=t[0],b=t[1],c=t[2];
     const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];
     let nx=uy*vz-uz*vy, ny=uz*vx-ux*vz, nz=ux*vy-uy*vx;
     const L=Math.hypot(nx,ny,nz)||1; nx/=L; ny/=L; nz/=L;
     buf.writeFloatLE(nx,off); buf.writeFloatLE(ny,off+4); buf.writeFloatLE(nz,off+8);
-    let p=off+12;
-    for(const v of [a,b,c]){ buf.writeFloatLE(v[0],p); buf.writeFloatLE(v[1],p+4); buf.writeFloatLE(v[2],p+8); p+=12; }
-    buf.writeUInt16LE(0,off+48);
-    off+=50;
+    let q=off+12;
+    for(const v of [a,b,c]){ buf.writeFloatLE(v[0],q); buf.writeFloatLE(v[1],q+4); buf.writeFloatLE(v[2],q+8); q+=12; }
+    buf.writeUInt16LE(0,off+48); off+=50;
   }
   return buf;
 }
@@ -109,8 +82,7 @@ function meshTriangles(mesh){
   const g=mesh.geometry, pos=g.attributes.position, idx=g.index, mw=mesh.matrixWorld;
   const V=[];
   for(let i=0;i<pos.count;i++) V.push(new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(mw).toArray());
-  const tris=[];
-  const n=idx?idx.count:pos.count;
+  const tris=[]; const n=idx?idx.count:pos.count;
   for(let t=0;t<n;t+=3){
     const i0=idx?idx.getX(t):t, i1=idx?idx.getX(t+1):t+1, i2=idx?idx.getX(t+2):t+2;
     const a=V[i0],b=V[i1],c=V[i2];
@@ -123,7 +95,6 @@ function meshTriangles(mesh){
   }
   return tris;
 }
-// 世界(mm) -> 打印姿态：/s → 姿态旋转 → 居中、落到 z=0
 function toPrintMM(tris,pose,thetaZ){
   let out=tris.map(t=>t.map(v=>[v[0]/s,v[1]/s,v[2]/s]));
   if(thetaZ){
@@ -137,57 +108,37 @@ function toPrintMM(tris,pose,thetaZ){
   const cx=(mn[0]+mx[0])/2, cy=(mn[1]+mx[1])/2;
   return out.map(t=>t.map(v=>[+(v[0]-cx).toFixed(4),+(v[1]-cy).toFixed(4),+(v[2]-mn[2]).toFixed(4)]));
 }
-
-const outDir=path.join(root,'stl_hand'); fs.mkdirSync(outDir,{recursive:true});
-const index=[]; const missing=[];
-function emit(partName,def,meshes,digit){
-  let tris=[];
-  for(const nm of meshes){
+function countOf(pat){
+  const list=Array.isArray(pat)?pat:[pat];
+  return allNames.filter(n=>list.some(r=>r.test(n))).length;
+}
+const outDir=path.join(root,'stl_hand'); fs.rmSync(outDir,{recursive:true,force:true}); fs.mkdirSync(outDir,{recursive:true});
+const index=[]; let total=0;
+for(const def of PRINTS){
+  const names = def.abs ? def.abs.slice() : def.sfx.map(x=>def.src+'_'+x);
+  let tris=[], missing=[];
+  for(const nm of names){
     const m=scene.getObjectByName(nm);
     if(!m){ missing.push(nm); continue; }
     tris=tris.concat(meshTriangles(m));
   }
-  if(!tris.length) return;
-  const thetaZ=def.unrotateGroup?scene.getObjectByName(digit+def.unrotateGroup).rotation.z:0;
+  if(missing.length) throw new Error('缺件 '+def.file+': '+missing.join(','));
+  const thetaZ=def.unrotateGroup?scene.getObjectByName(def.unrotateGroup).rotation.z:0;
   const mm=toPrintMM(tris,def.pose,thetaZ);
   let mn=[1e9,1e9,1e9],mx=[-1e9,-1e9,-1e9];
   for(const t of mm)for(const v of t)for(let k=0;k<3;k++){mn[k]=Math.min(mn[k],v[k]);mx[k]=Math.max(mx[k],v[k]);}
-  const size=[mx[0]-mn[0],mx[1]-mn[1],mx[2]-mn[2]];
-  fs.writeFileSync(path.join(outDir,partName+'.stl'), stlBinary(mm));
-  index.push({part:partName,digit:digit||null,kind:'printed',note:def.note,
-    pose:(def.pose||'as-modeled')+(thetaZ?('+alignLink('+(thetaZ*180/Math.PI).toFixed(2)+'deg)'):''),
-    triangles:mm.length, bounding_box_mm:size.map(x=>+x.toFixed(2)),
-    source_meshes:meshes});
-}
-for(const f of DIGITS){
-  for(const [key,def] of Object.entries(FINGER_PRINTS)){
-    emit(f.id+'_'+key, def, def.m.map(n=>f.id+n), f.id);
-  }
-}
-for(const [key,def] of Object.entries(PALM_PRINTS)){
-  // 指根座/主梁/连接肋每指一段
-  if(key==='knuckle_seat'||key==='rail'||key==='rail_tie'){
-    for(const f of DIGITS) emit(f.id+'_'+key, def, def.m.map(n=>f.id+n), f.id);
-  } else {
-    emit(key, def, def.m, null);
-  }
+  const size=[mx[0]-mn[0],mx[1]-mn[1],mx[2]-mn[2]].map(x=>+x.toFixed(2));
+  const qty=countOf(def.qty);
+  if(!qty) throw new Error('数量为0: '+def.file);
+  total+=qty;
+  fs.writeFileSync(path.join(outDir,def.file+'.stl'), stlBinary(mm));
+  index.push({part:def.file,kind:'printed',qty:qty,note:def.note,pose:(def.pose||'as-modeled')+(thetaZ?('+alignLink('+(thetaZ*180/Math.PI).toFixed(2)+'deg)'):''),triangles:mm.length,bounding_box_mm:size,fits_220mm_bed:Math.max(size[0],size[1],size[2])<=220});
 }
 fs.writeFileSync(path.join(outDir,'index.json'),JSON.stringify({
-  unit:'mm',
-  model:'hand print-ready v1 (5 digits x 2 joint-units + palm chassis)',
+  unit:'mm', model:'hand print-ready v1 (five fingers / 14 units, 1:1)',
   generated_from:'hand_mechanism_3d.html',
-  scale_note:'整手按 HAND.scale=0.5 缩放；机构拓扑与已验证的 1:1 手指版完全一致，仅尺度不同。',
-  mechanism_note:'每根手指 = 2 套肘关节机构串联；每个关节 = 1 只 Ø20×40 直线电机 + 1 根 BD 连杆，'+
-    '电机伸长推动 B 点，经 BD 连杆带动 D 点绕转动副 O 转动。整手共 10 个驱动关节。',
-  safe_travel_deg:{index:120,middle:120,ring:70,pinky:120,thumb:45},
-  safe_travel_note:'由 verify_hand.cjs 以 2° 步长扫掠全部单指/双指/三指/预设姿态验证：配合区之外零接触。'+
-    '无名指上限 70°（再大时 t2 连杆扫到掌体指根座）、拇指上限 45°（再大时 p3 扫入中指/无名指近节区）。',
-  print_note:'每个 STL 为一个独立打印件，已按打印姿态摆放（销轴孔轴 = Z 竖直，落地 z=0）。'+
-    '5 指机构件互为同规格备件；掌体件按指分段，可单独更换。',
-  purchased_parts_bom:PURCHASED_BOM,
-  parts:index},null,2)+'\n');
-if(missing.length) console.log('缺失网格:',[...new Set(missing)].join(', '));
-console.log('导出打印零件数:',index.length,'；外购标准件:',PURCHASED_BOM.length,'项');
-const byDigit={};
-for(const p of index){ const k=p.digit||'palm'; byDigit[k]=(byDigit[k]||0)+1; }
-console.log('按指统计:',JSON.stringify(byDigit));
+  note:'整手 95 个打印件 = 四指×19 + 拇指×14 + 掌体骨架 5；同规格件几何完全相同（见 hand_verify_report.json 的互换性检查），故按类型出 16 个 STL，每个文件附打印数量。销轴孔轴=Z 竖直落地，免支撑打印。',
+  printed_part_total: total, stl_file_total: index.length,
+  purchased_parts_bom: PURCHASED_BOM, parts: index},null,2)+'\n');
+console.log('打印件总数', total, '；STL 文件', index.length, '；外购标准件', PURCHASED_BOM.length, '项');
+for(const q of index) console.log('  '+q.part.padEnd(28), 'x'+String(q.qty).padStart(2), q.bounding_box_mm.join(' x '), 'mm', q.fits_220mm_bed?'':'(超床!)');

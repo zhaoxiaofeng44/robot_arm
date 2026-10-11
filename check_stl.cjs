@@ -1,6 +1,6 @@
 
 const fs=require('fs'),path=require('path');
-const dir=path.join(__dirname,'stl');
+const dir=path.join(__dirname, process.argv[2]||'stl');
 let files=fs.readdirSync(dir).filter(f=>f.endsWith('.stl'));
 let bad=[];
 for(const f of files){

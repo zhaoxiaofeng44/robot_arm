@@ -9,7 +9,7 @@
 |---|---|---|
 | **肘关节机构 v5** | `arm_mechanism_3d.html` | 上臂(300)固定 + 前臂(250)绕 O 转动 0–120°，电机 A=(28,213)，BD 连杆 85mm，行程 59.393mm |
 | **掌+三节手指** | `finger_mechanism_3d.html` | **三个上述单元串联**：掌(300,固定,载电机0) →[关节0/MCP]→ P1 近节(300,载电机1) →[关节1/PIP]→ P2 中节(300,载电机2) →[关节2/DIP]→ P3 远节(250+指尖)；三个关节逐项同方案，安全包络 90°/90°/70° |
-| **整手机构** | `hand_mechanism_3d.html` | **当前为单指反根验证版**：机构与手指版逐件相同，链条反根为 P3(固定·接掌) →O2→ P2 →O1→ P1(自由·指尖)，用来把反根链的关节归属与连杆摆位验证干净；**五指布局（0.5× ×5 + 掌体骨架）暂下线**（目标设计仍保留在 `hand_design_spec.md`） |
+| **整手机构** | `hand_mechanism_3d.html` | **五指整手 = 14 个上述单元**：四指各 3 关节 + 拇指 2 关节，五指 MCP 共线于 y=0、机构平面互相平行（指距 70mm），全部螺栓固定在 66×10 掌骨板上；1:1 与手指版同尺寸（整手 1250mm，非人体尺度）；14 电机 / 14 连杆 / 42 组肩螺栓 / 95 打印件 |
 
 浏览器打开 HTML 即可交互（滑杆调角度、播放动画、切换视图/标签/轨迹）。
 
@@ -70,8 +70,9 @@ node verify_all.cjs --quick  # 快速自查（0.5° 步进）
 | 肘·STL 完整性 `check_stl.cjs` | 0 问题文件 |
 | 手指·三关节碰撞与闭合 `verify_finger.cjs` | 安全包络内 2° 三维网格 76176 姿态 + 三关节各自 0.05° 细扫：碰撞 **0**（2912 候选对），非配合连续下限 **+0.738mm**（最小间隙 1.000mm），闭合误差 **4.3e-14mm**，可拆装/互换 **54/54** |
 | 手指·打印与拆装 `verify_finger_print.cjs` | **148/148** |
-| 整手·单指反根全姿态碰撞与闭合 `verify_hand.cjs` | 碰撞 **0**（950 候选对），非配合连续下限 **+0.302mm**，闭合误差 **1.4e-14mm**，可拆装 **38/38** |
-| 连接物理性 `verify_connections.cjs`（arm / finger / hand） | 三件均「**全部连接物理上成立**」（销轴真穿孔 / 运动归属 / 无缺件重复件） |
+| 整手·五指 14 单元碰撞与闭合 `verify_hand.cjs` | **45584 姿态**（14 关节 0.05° 细扫 + 每指安全包络 5° 三维网格 + 整手抓握/极值/随机姿态）、**12012 候选对**：碰撞 **0**，非配合最小间隙 **1.000mm**，连续下限 **+0.236mm**（步长允差 0.764mm），闭合误差 **8.5e-14mm**，可拆装/互换 **85/85** |
+| 整手·95 打印件出档 `export_hand_stl.cjs` + `check_stl.cjs` | **95 件**（四指 4×19 + 拇指 14 + 骨架 5）按类型出 **16 个 STL**，最大件 208mm（适配 220mm 床），13 项外购 BOM |
+| 连接物理性 `verify_connections_all.cjs`（arm / finger / 整手五指） | 三个目标、**整手逐指 5 条链**均「**全部连接物理上成立**」：销轴真穿孔 / 闭环与锚点距恒为 85mm / 无死点 / 抱箍双侧耳板 / 拼接螺栓通孔 / 螺母落位 / **掌骨板孔位与指根法兰 4×Ø4.2 + 4×Ø9 逐孔对位**（整手特有） |
 
 ## 文件索引
 
@@ -79,7 +80,7 @@ node verify_all.cjs --quick  # 快速自查（0.5° 步进）
 - `arm_mechanism_3d.html` / `finger_mechanism_3d.html` / `hand_mechanism_3d.html` — 可交互 3D 模型（唯一几何真源，校验器从中提取）
 - `arm_design_spec.md` / `3d_print_optimization.md` — 肘版设计说明与打印优化
 - `finger_design_spec.md` — 手指构型（掌+三关节）、关节衔接、**安全行程包络**、打印件清单、校验结论
-- `hand_design_spec.md` — 整手构型、掌体骨架接口、**安全行程包络**、Z 分层布局、打印件清单（**五指目标设计**；当前模型为单指反根验证版）
+- `hand_design_spec.md` — **五指整手**构型、14 个同构单元、掌体骨架接口与螺钉避让、安全包络、95 件打印清单、尺度与设计取舍（含拇指对掌滚转被三维扫描否决的结论）
 - `assembly_guide.md` / `finger_assembly_guide.md` / `hand_assembly_guide.md` — 装配/拆解顺序、力矩表、打印注意
 
 **校验器**
@@ -91,14 +92,14 @@ node verify_all.cjs --quick  # 快速自查（0.5° 步进）
 | `verify_print_geometry.cjs` | 肘版孔/倒角/壁厚/连通性/幅面 |
 | `verify_finger.cjs` | 手指三关节闭合 + 三关节细扫 + 安全包络内三维网格碰撞扫描（含三单元互换性） |
 | `verify_finger_print.cjs` | 手指 STL 幅面/落地/关键孔 + 三单元可互换 + 拆装通道 |
-| `verify_hand.cjs` | 整手（单指反根）闭合/行程/传动角 + 全姿态碰撞（含 3D 精确实体求交）+ 电机间距 + 可拆装 38 项 |
-| `verify_connections.cjs` | **连接物理性审计**：逐关节检查「谁绕谁转」「谁跟着谁动」「缺件/重复件/销轴是否真穿过两件」，arm / finger / hand 三件分别出报告 |
+| `verify_hand.cjs` | **整手五指 14 单元**闭合/行程/传动角 + 逐关节 0.05° 细扫 + 每指安全包络 5° 三维网格 + 整手姿态（等比抓握/单指极值/随机 400 组）碰撞扫描（2.5D 判据 + 3D 实体求交复核）+ 骨架—指根螺钉避让 + 可拆装/互换性 85 项 |
+| `verify_connections_all.cjs` / `verify_connections.cjs` | **连接物理性审计**：逐关节检查「谁绕谁转」「谁跟着谁动」「缺件/重复件/销轴是否真穿过两件」，arm / finger / hand 三件分别出报告 |
 | `check_stl.cjs` | STL 可切片性（法线/退化三角面等） |
 
 **出档与预览**
 - `export_print_stl.cjs` → `stl/`（肘版 7 打印件 + 11 项外购 BOM）
 - `export_finger_stl.cjs` → `stl_finger/`（手指 19 打印件 + 12 项外购 BOM）
-- `export_hand_stl.cjs` → `stl_hand/`（**五指目标设计**的 88 打印件 + 16 项外购 BOM，含 10 只直线电机；当前模型的打印件与手指版一致）
+- `export_hand_stl.cjs` → `stl_hand/`（整手 **95 打印件**按类型出 16 个 STL + 13 项外购 BOM；同规格件几何逐件相同，故按类型出档并标注数量）
 - `render_print_preview.cjs` / `render_finger_preview.cjs` / `render_hand_preview.cjs` → `preview/`（软件渲染多视角 PNG，无 GPU 依赖）
 - `arm_near_joint_params.json` / `finger_verify_report.json` / `finger_print_report.json` / `serviceability_report.json` / `hand_verify_report.json` — 校验报告
 - `connections_verify_report_{arm,finger,hand}.txt`（+ `connections_audit_*.log` 逐条审计流水）— `verify_connections.cjs` 三件各自的连接物理性报告
@@ -121,6 +122,6 @@ node verify_all.cjs --quick  # 快速自查（0.5° 步进）
 | 无名指 | **70°** | 再大时 t2 连杆摆到掌体指根座（首次接触 68°） |
 | 拇指 | **45°** | 再大时 P3 远节扫入中指/无名指近节区（首次接触 48°） |
 
-> **当前模型（单指反根验证版）没有多指交叉，故不启用该包络**：单指在 0–120° 全行程上已做到配合区外零接触（`verify_hand.cjs`：碰撞 0 / 连续下限 +0.302mm）。上表是五指目标设计的约束，恢复五指布局时必须重新写回 `HAND.limitDeg`、滑块 `max` 与逐指钳制。详见 `hand_design_spec.md`。
+> **上表是旧「0.5× × Z 分层」五指方案的逐指约束，已被现行平行布局取代**：现版五指机构平面平行、间距 70mm（零件 z 向半宽 ≤18mm，相邻指间隙 ≥34mm），`verify_hand.cjs` 三维扫描证实**指间无需额外限位**，四指统一 90°/90°/70°、拇指 90°/70°。详见 `hand_design_spec.md`「安全行程包络」。
 
-> 说明：肘版与手指版为 1:1 机构级几何模型；整手现行文件为同一机构**反根后的单指验证版**（五指 0.5× 实例化布局暂下线，目标设计见 `hand_design_spec.md`）。校验脚本不含绝对尺寸假设，整体等比缩放机构参数即可换尺度。
+> 说明：肘版、手指版、整手版均为 **1:1 机构级几何模型**（`P.scale` 只影响场景显示，不影响 mm 参数）。整手是把同一肘关节单元串成 5 指（四指 3 关节 + 拇指 2 关节 = 14 单元）的开放桁架概念模型，不是人体尺度可穿戴假肢；校验脚本不含绝对尺寸假设，整体等比缩放机构参数即可换尺度。

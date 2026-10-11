@@ -1,304 +1,722 @@
 {
-  "version": "hand-v9-index-baseplate",
-  "status": "仿生食指（单指复位版）：2×（每关节直线电机 + BD连杆）+ 指根简化底板",
-  "scope": "仅食指；多指扇形布局暂时下线",
-  "scale": 0.35,
-  "parameters": {
-    "upperArmLen": 300,
-    "phalanx2Len": 300,
-    "forearmLen": 250,
-    "motorMountX": 28,
-    "motorMountY": 213,
-    "motorBodyDia": 36,
-    "motorBodyLen": 80,
-    "tendonLinkLen": 85,
-    "strokeMax": 59.393
-  },
-  "root_junction": {
-    "gap_plate_to_block_mm": 0,
-    "bolt_engagement_into_block_mm": 10,
-    "bolt_spans_plate": true,
-    "head_seat_offset_mm": 0,
-    "bolt_holes_in_both": true,
-    "bearing_area_mm2": 528,
-    "plate_face_area_mm2": 3136,
-    "block_Y": [
-      -570,
-      -550
-    ],
-    "plate_Y": [
-      -576,
-      -570
-    ],
-    "plate_XZ": [
-      [
-        -28,
-        28
+  "version": "hand-v1-five-finger-14-unit",
+  "status": "五指整手（四指×3 + 拇指×2 = 14 个同构关节单元）闭合/行程/配合区/安全包络碰撞/可拆装性核验",
+  "scale_note": "1:1 与手指版同尺寸（非人体尺度）：掌段300 + 300/300/250，整手 z 展宽 406mm",
+  "fingers": {
+    "index": {
+      "label": "食指",
+      "n": 3,
+      "limits": [
+        90,
+        90,
+        70
       ],
-      [
-        -28,
-        28
-      ]
+      "pos_z": -90,
+      "spin": 0
+    },
+    "middle": {
+      "label": "中指",
+      "n": 3,
+      "limits": [
+        90,
+        90,
+        70
+      ],
+      "pos_z": -20,
+      "spin": 0
+    },
+    "ring": {
+      "label": "无名指",
+      "n": 3,
+      "limits": [
+        90,
+        90,
+        70
+      ],
+      "pos_z": 50,
+      "spin": 0
+    },
+    "pinky": {
+      "label": "小指",
+      "n": 3,
+      "limits": [
+        90,
+        90,
+        70
+      ],
+      "pos_z": 120,
+      "spin": 0
+    },
+    "thumb": {
+      "label": "拇指",
+      "n": 2,
+      "limits": [
+        90,
+        70
+      ],
+      "pos_z": -220,
+      "spin": 0
+    }
+  },
+  "limits_deg": {
+    "index": [
+      90,
+      90,
+      70
+    ],
+    "middle": [
+      90,
+      90,
+      70
+    ],
+    "ring": [
+      90,
+      90,
+      70
+    ],
+    "pinky": [
+      90,
+      90,
+      70
+    ],
+    "thumb": [
+      90,
+      70
     ]
   },
-  "results": {
-    "closure_error_mm": 1.4210854715202004e-14,
-    "stroke_used_mm": 0,
-    "stroke_max_mm": 59.393,
-    "collision_count": 0,
-    "fine_sweep_step_deg": 0.1,
-    "allowance_mm": 0.698,
-    "min_non_mating_clearance_mm": 1,
-    "continuous_lower_bound_mm": 0.302,
-    "tested_pairs": 950,
-    "physical_meshes": 201,
-    "swept_meshes": 116,
-    "motor_min_clearance_mm": 220,
-    "motor_required_mm": 38,
-    "svc_pass": 38,
-    "svc_total": 38
+  "grid_step_deg": 5,
+  "fine_step_deg": 0.05,
+  "broadphase_cell_mm": 45,
+  "parameters": {
+    "motorMountX": 28,
+    "motorMountY": 213,
+    "tendonLinkLen": 85,
+    "strokeMax": 59.393,
+    "s_extended": 160.161,
+    "phalanxLen": 300,
+    "tipLen": 250
   },
+  "results": {
+    "collision_count": 0,
+    "mating_zone_pairs": 3048,
+    "rejected_2p5d_by_exact3d": 0,
+    "allowance_mm": 0.764,
+    "radius_max_mm": 876,
+    "allowance_worst_joint": {
+      "finger": "index",
+      "joint": 0,
+      "r_max_mm": 876,
+      "allowance_mm": 0.764
+    },
+    "min_non_mating_clearance_mm": 1,
+    "continuous_lower_bound_mm": 0.236,
+    "tested_pairs": 12012,
+    "physical_meshes": 1395,
+    "poses_scanned": 45584,
+    "closure_error_mm": 8.526512829121202e-14,
+    "stroke_error_mm": 2.534995,
+    "transmission_angle_deg": [
+      33.8,
+      89.7
+    ],
+    "tip_y_mm": {
+      "index": -864,
+      "middle": -864,
+      "ring": -864,
+      "pinky": -864,
+      "thumb": -564
+    },
+    "svc_pass": 85,
+    "svc_total": 85
+  },
+  "collisions": [],
   "closest": [
     {
-      "pair": "m1MotorFlange / p1DSplicePadTop",
+      "pair": "index_palmBodyDistal | index_m0MotorFlange",
+      "assemblies": [
+        "index_PALM",
+        "index_m0Fixed"
+      ],
       "min_clearance_mm": 1
     },
     {
-      "pair": "m1MotorFlange / p1DSplicePadBottom",
+      "pair": "index_palmDSplicePadBottom | index_m0MotorFlange",
+      "assemblies": [
+        "index_PALM",
+        "index_m0Fixed"
+      ],
       "min_clearance_mm": 1
     },
     {
-      "pair": "m1MotorFlange / p1PSplicePadTop",
+      "pair": "index_palmPSplicePadBottom | index_m0MotorFlange",
+      "assemblies": [
+        "index_PALM",
+        "index_m0Fixed"
+      ],
       "min_clearance_mm": 1
     },
     {
-      "pair": "m1MotorFlange / p1PSplicePadBottom",
+      "pair": "index_palmDSplicePadTop | index_m0MotorFlange",
+      "assemblies": [
+        "index_PALM",
+        "index_m0Fixed"
+      ],
       "min_clearance_mm": 1
     },
     {
-      "pair": "m1MotorFlange / p1BodyDistal",
+      "pair": "index_palmPSplicePadTop | index_m0MotorFlange",
+      "assemblies": [
+        "index_PALM",
+        "index_m0Fixed"
+      ],
       "min_clearance_mm": 1
     },
     {
-      "pair": "p1BodyProximal / p1PalmFlangeBase",
-      "min_clearance_mm": 1.215
+      "pair": "middle_palmBodyDistal | middle_m0MotorFlange",
+      "assemblies": [
+        "middle_PALM",
+        "middle_m0Fixed"
+      ],
+      "min_clearance_mm": 1
     },
     {
-      "pair": "m1MotorFlange / p1BodyProximal",
-      "min_clearance_mm": 1.414
+      "pair": "middle_palmDSplicePadTop | middle_m0MotorFlange",
+      "assemblies": [
+        "middle_PALM",
+        "middle_m0Fixed"
+      ],
+      "min_clearance_mm": 1
     },
     {
-      "pair": "m1ExposedRod / m1MotorFlange",
-      "min_clearance_mm": 1.633
+      "pair": "middle_palmDSplicePadBottom | middle_m0MotorFlange",
+      "assemblies": [
+        "middle_PALM",
+        "middle_m0Fixed"
+      ],
+      "min_clearance_mm": 1
     },
     {
-      "pair": "m2ExposedRod / m2MotorFlange",
-      "min_clearance_mm": 1.633
+      "pair": "middle_palmPSplicePadTop | middle_m0MotorFlange",
+      "assemblies": [
+        "middle_PALM",
+        "middle_m0Fixed"
+      ],
+      "min_clearance_mm": 1
     },
     {
-      "pair": "m1MotorBody / p1DSplicePadTop",
-      "min_clearance_mm": 2
+      "pair": "middle_palmPSplicePadBottom | middle_m0MotorFlange",
+      "assemblies": [
+        "middle_PALM",
+        "middle_m0Fixed"
+      ],
+      "min_clearance_mm": 1
     },
     {
-      "pair": "m1MotorBody / p1DSplicePadBottom",
-      "min_clearance_mm": 2
+      "pair": "ring_palmBodyDistal | ring_m0MotorFlange",
+      "assemblies": [
+        "ring_PALM",
+        "ring_m0Fixed"
+      ],
+      "min_clearance_mm": 1
     },
     {
-      "pair": "m1MotorFrontCap / p1PSplicePadTop",
-      "min_clearance_mm": 2
+      "pair": "ring_palmDSplicePadBottom | ring_m0MotorFlange",
+      "assemblies": [
+        "ring_PALM",
+        "ring_m0Fixed"
+      ],
+      "min_clearance_mm": 1
+    },
+    {
+      "pair": "ring_palmPSplicePadBottom | ring_m0MotorFlange",
+      "assemblies": [
+        "ring_PALM",
+        "ring_m0Fixed"
+      ],
+      "min_clearance_mm": 1
+    },
+    {
+      "pair": "ring_palmDSplicePadTop | ring_m0MotorFlange",
+      "assemblies": [
+        "ring_PALM",
+        "ring_m0Fixed"
+      ],
+      "min_clearance_mm": 1
+    },
+    {
+      "pair": "ring_palmPSplicePadTop | ring_m0MotorFlange",
+      "assemblies": [
+        "ring_PALM",
+        "ring_m0Fixed"
+      ],
+      "min_clearance_mm": 1
+    },
+    {
+      "pair": "pinky_palmBodyDistal | pinky_m0MotorFlange",
+      "assemblies": [
+        "pinky_PALM",
+        "pinky_m0Fixed"
+      ],
+      "min_clearance_mm": 1
+    },
+    {
+      "pair": "pinky_palmDSplicePadTop | pinky_m0MotorFlange",
+      "assemblies": [
+        "pinky_PALM",
+        "pinky_m0Fixed"
+      ],
+      "min_clearance_mm": 1
+    },
+    {
+      "pair": "pinky_palmDSplicePadBottom | pinky_m0MotorFlange",
+      "assemblies": [
+        "pinky_PALM",
+        "pinky_m0Fixed"
+      ],
+      "min_clearance_mm": 1
+    },
+    {
+      "pair": "pinky_palmPSplicePadTop | pinky_m0MotorFlange",
+      "assemblies": [
+        "pinky_PALM",
+        "pinky_m0Fixed"
+      ],
+      "min_clearance_mm": 1
+    },
+    {
+      "pair": "pinky_palmPSplicePadBottom | pinky_m0MotorFlange",
+      "assemblies": [
+        "pinky_PALM",
+        "pinky_m0Fixed"
+      ],
+      "min_clearance_mm": 1
     }
   ],
-  "collisions": [],
   "serviceability": [
     {
       "name": "无铆接/永久连接",
       "pass": true,
-      "detail": "201 网格"
+      "detail": "1395 网格"
     },
     {
-      "name": "m1b BoltHead 在位",
+      "name": "食指 O0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "index_o0"
+    },
+    {
+      "name": "食指 B0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "index_m0b"
+    },
+    {
+      "name": "食指 D0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "index_p1d"
+    },
+    {
+      "name": "食指 单元0 推杆端自锁螺母在位",
+      "pass": true,
+      "detail": "index_m0RodNut"
+    },
+    {
+      "name": "食指 单元0 电机+连杆+叉头齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "m1b BoltShank 在位",
+      "name": "食指 O1 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "index_o1"
+    },
+    {
+      "name": "食指 B1 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "index_m1b"
+    },
+    {
+      "name": "食指 D1 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "index_p2d"
+    },
+    {
+      "name": "食指 单元1 推杆端自锁螺母在位",
+      "pass": true,
+      "detail": "index_m1RodNut"
+    },
+    {
+      "name": "食指 单元1 电机+连杆+叉头齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "m1b BoltThread 在位",
+      "name": "食指 O2 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "index_o2"
+    },
+    {
+      "name": "食指 B2 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "index_m2b"
+    },
+    {
+      "name": "食指 D2 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "index_p3d"
+    },
+    {
+      "name": "食指 单元2 推杆端自锁螺母在位",
+      "pass": true,
+      "detail": "index_m2RodNut"
+    },
+    {
+      "name": "食指 单元2 电机+连杆+叉头齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "m1b BoltWasher 在位",
+      "name": "食指 掌骨法兰 4×M4 齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "m1b BoltNut 在位",
+      "name": "食指 链条父子关系正确（掌段→P1→…→P3）",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "m2b BoltHead 在位",
+      "name": "中指 O0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "middle_o0"
+    },
+    {
+      "name": "中指 B0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "middle_m0b"
+    },
+    {
+      "name": "中指 D0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "middle_p1d"
+    },
+    {
+      "name": "中指 单元0 推杆端自锁螺母在位",
+      "pass": true,
+      "detail": "middle_m0RodNut"
+    },
+    {
+      "name": "中指 单元0 电机+连杆+叉头齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "m2b BoltShank 在位",
+      "name": "中指 O1 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "middle_o1"
+    },
+    {
+      "name": "中指 B1 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "middle_m1b"
+    },
+    {
+      "name": "中指 D1 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "middle_p2d"
+    },
+    {
+      "name": "中指 单元1 推杆端自锁螺母在位",
+      "pass": true,
+      "detail": "middle_m1RodNut"
+    },
+    {
+      "name": "中指 单元1 电机+连杆+叉头齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "m2b BoltThread 在位",
+      "name": "中指 O2 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "middle_o2"
+    },
+    {
+      "name": "中指 B2 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "middle_m2b"
+    },
+    {
+      "name": "中指 D2 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "middle_p3d"
+    },
+    {
+      "name": "中指 单元2 推杆端自锁螺母在位",
+      "pass": true,
+      "detail": "middle_m2RodNut"
+    },
+    {
+      "name": "中指 单元2 电机+连杆+叉头齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "m2b BoltWasher 在位",
+      "name": "中指 掌骨法兰 4×M4 齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "m2b BoltNut 在位",
+      "name": "中指 链条父子关系正确（掌段→P1→…→P3）",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "o1 BoltHead 在位",
+      "name": "无名指 O0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "ring_o0"
+    },
+    {
+      "name": "无名指 B0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "ring_m0b"
+    },
+    {
+      "name": "无名指 D0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "ring_p1d"
+    },
+    {
+      "name": "无名指 单元0 推杆端自锁螺母在位",
+      "pass": true,
+      "detail": "ring_m0RodNut"
+    },
+    {
+      "name": "无名指 单元0 电机+连杆+叉头齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "o1 BoltShank 在位",
+      "name": "无名指 O1 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "ring_o1"
+    },
+    {
+      "name": "无名指 B1 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "ring_m1b"
+    },
+    {
+      "name": "无名指 D1 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "ring_p2d"
+    },
+    {
+      "name": "无名指 单元1 推杆端自锁螺母在位",
+      "pass": true,
+      "detail": "ring_m1RodNut"
+    },
+    {
+      "name": "无名指 单元1 电机+连杆+叉头齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "o1 BoltThread 在位",
+      "name": "无名指 O2 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "ring_o2"
+    },
+    {
+      "name": "无名指 B2 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "ring_m2b"
+    },
+    {
+      "name": "无名指 D2 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "ring_p3d"
+    },
+    {
+      "name": "无名指 单元2 推杆端自锁螺母在位",
+      "pass": true,
+      "detail": "ring_m2RodNut"
+    },
+    {
+      "name": "无名指 单元2 电机+连杆+叉头齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "o1 BoltWasher 在位",
+      "name": "无名指 掌骨法兰 4×M4 齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "o1 BoltNut 在位",
+      "name": "无名指 链条父子关系正确（掌段→P1→…→P3）",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "p2d BoltHead 在位",
+      "name": "小指 O0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "pinky_o0"
+    },
+    {
+      "name": "小指 B0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "pinky_m0b"
+    },
+    {
+      "name": "小指 D0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "pinky_p1d"
+    },
+    {
+      "name": "小指 单元0 推杆端自锁螺母在位",
+      "pass": true,
+      "detail": "pinky_m0RodNut"
+    },
+    {
+      "name": "小指 单元0 电机+连杆+叉头齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "p2d BoltShank 在位",
+      "name": "小指 O1 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "pinky_o1"
+    },
+    {
+      "name": "小指 B1 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "pinky_m1b"
+    },
+    {
+      "name": "小指 D1 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "pinky_p2d"
+    },
+    {
+      "name": "小指 单元1 推杆端自锁螺母在位",
+      "pass": true,
+      "detail": "pinky_m1RodNut"
+    },
+    {
+      "name": "小指 单元1 电机+连杆+叉头齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "p2d BoltThread 在位",
+      "name": "小指 O2 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "pinky_o2"
+    },
+    {
+      "name": "小指 B2 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "pinky_m2b"
+    },
+    {
+      "name": "小指 D2 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "pinky_p3d"
+    },
+    {
+      "name": "小指 单元2 推杆端自锁螺母在位",
+      "pass": true,
+      "detail": "pinky_m2RodNut"
+    },
+    {
+      "name": "小指 单元2 电机+连杆+叉头齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "p2d BoltWasher 在位",
+      "name": "小指 掌骨法兰 4×M4 齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "p2d BoltNut 在位",
+      "name": "小指 链条父子关系正确（掌段→P1→…→P3）",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "p3d BoltHead 在位",
+      "name": "拇指 O0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "thumb_o0"
+    },
+    {
+      "name": "拇指 B0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "thumb_m0b"
+    },
+    {
+      "name": "拇指 D0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "thumb_p1d"
+    },
+    {
+      "name": "拇指 单元0 推杆端自锁螺母在位",
+      "pass": true,
+      "detail": "thumb_m0RodNut"
+    },
+    {
+      "name": "拇指 单元0 电机+连杆+叉头齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "p3d BoltShank 在位",
+      "name": "拇指 O1 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "thumb_o1"
+    },
+    {
+      "name": "拇指 B1 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "thumb_m1b"
+    },
+    {
+      "name": "拇指 D1 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
+      "pass": true,
+      "detail": "thumb_p2d"
+    },
+    {
+      "name": "拇指 单元1 推杆端自锁螺母在位",
+      "pass": true,
+      "detail": "thumb_m1RodNut"
+    },
+    {
+      "name": "拇指 单元1 电机+连杆+叉头齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "p3d BoltThread 在位",
+      "name": "拇指 掌骨法兰 4×M4 齐套",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "p3d BoltWasher 在位",
+      "name": "拇指 链条父子关系正确（掌段→P1→…→P2）",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "p3d BoltNut 在位",
+      "name": "14 个关节单元（四指 3 + 拇指 2）肩螺栓总数 = 42 组",
+      "pass": true,
+      "detail": "42 组 O/B/D"
+    },
+    {
+      "name": "轴向浮动 = 1mm/侧（耳内档−连杆/袖套，与肘版 v5 相同）",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "B叉头沉龛螺母×2 在位",
+      "name": "连杆为等宽长条（几何同肘版 v5）",
       "pass": true,
       "detail": ""
     },
     {
-      "name": "两单元轴向浮动≥1mm/侧",
+      "name": "五指同规格件逐件同几何（1382 件可互换，含拇指末端 P2≡四指末端 P3）",
       "pass": true,
       "detail": ""
-    },
-    {
-      "name": "两单元连杆为等宽长条",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "指根底板与方块顶面贴合（无悬空）",
-      "pass": true,
-      "detail": "0 mm"
-    },
-    {
-      "name": "4×M4 指根螺栓齐套",
-      "pass": true,
-      "detail": "M4×4"
-    },
-    {
-      "name": "指根螺栓杆身贯穿底板",
-      "pass": true,
-      "detail": "杆 Y[-576.0,-560.0]"
-    },
-    {
-      "name": "指根螺栓旋入方块有效啮合 > 3mm",
-      "pass": true,
-      "detail": "10 mm"
-    },
-    {
-      "name": "指根螺栓头部坐在板面上",
-      "pass": true,
-      "detail": "头底面 y=-570.00"
-    },
-    {
-      "name": "螺栓孔位同时落在底板与方块内",
-      "pass": true,
-      "detail": "孔距 8×7, 8×-7, -8×7, -8×-7"
-    },
-    {
-      "name": "指根方块对底板有承压面",
-      "pass": true,
-      "detail": "528 mm²（板上表面 3136 mm²）"
-    },
-    {
-      "name": "每关节 1 台直线电机（无欠驱动）",
-      "pass": true,
-      "detail": "2 台 / 2 个主动关节"
-    },
-    {
-      "name": "电机仓无干涉（轴线间距 ≥ 外径+2mm）",
-      "pass": true,
-      "detail": "220 ≥ 38"
     }
   ]
 }

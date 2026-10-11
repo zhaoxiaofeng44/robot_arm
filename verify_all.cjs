@@ -30,10 +30,21 @@ const jobs=[
     return (c?('碰撞 '+c[1]):'')+(lb?(' / 下限 '+lb[1]+'mm'):'')+(cl?(' / 闭合 '+Number(cl[1]).toExponential(1)):'');
   }},
   {name:'手指·打印与拆装',file:'verify_finger_print.cjs',extract:out=>(out.match(/通过 (\d+\/\d+)/)||[])[1]||''},
-  {name:'整手·单指反根闭合与碰撞',file:'verify_hand.cjs',extract:out=>{
-    const c=out.match(/"collisions":\s*(\d+)/),lb=out.match(/"continuous_lower_bound_mm":\s*(-?[\d.]+)/),sv=out.match(/"svc_pass":\s*"(\d+\/\d+)"/);
-    return (c?('碰撞 '+c[1]):'')+(lb?(' / 下限 '+lb[1]+'mm'):'')+(sv?(' / 可拆装 '+sv[1]):'');
+  {name:'整手·五指14单元碰撞与闭合',file:'verify_hand.cjs',
+   args:quick?['--quick','--no-write']:[],
+   extract:out=>{
+    const c=out.match(/"collision_count":\s*(\d+)/),lb=out.match(/"continuous_lower_bound_mm":\s*(-?[\d.]+)/),
+          sv=out.match(/"svc":\s*"(\d+\/\d+)"/),ms=out.match(/"meshes":\s*(\d+)/),po=out.match(/"poses":\s*(\d+)/);
+    return (c?('碰撞 '+c[1]):'')+(lb?(' / 下限 '+lb[1]+'mm'):'')+(sv?(' / 可拆装互换 '+sv[1]):'')+(ms?(' / 网格 '+ms[1]):'')+(po?(' / 姿态 '+po[1]):'');
   }},
+  {name:'连接物理性(arm/finger/整手五指)',file:'verify_connections_all.cjs',
+   extract:out=>(out.match(/连接物理性：(.*)/)||[])[1]||''},
+  {name:'整手·95 打印件STL出档',file:'export_hand_stl.cjs',
+   extract:out=>{
+    const m=out.match(/打印件总数 (\d+)/),f=out.match(/STL 文件 (\d+)/);
+    return (m?('打印件 '+m[1]):'')+(f?(' / STL '+f[1]):'');
+  }},
+  {name:'整手·STL完整性',file:'check_stl.cjs',args:['stl_hand'],extract:out=>(out.match(/问题文件:\s*(\d+)/)||[])[0]||''},
 ];
 const rows=[];let allOk=true;
 for(const j of jobs){

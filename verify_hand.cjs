@@ -1,259 +1,447 @@
 'use strict';
-// 仿生"食指 + 简化底板"机构校验（verify_hand.cjs）
-//   node verify_hand.cjs [--no-write]
-//   本文件 = 已验证的手指版校验（verify_finger.cjs）改为读取 hand_mechanism_3d.html，
-//   并额外增加"指根衔接"专项核验：
-//     ① 底板底面与指根方块顶面贴合（间隙 = 0，不得复现旧版 5.0mm 悬空）
-//     ② 4×M4 螺栓杆身贯穿底板并旋入方块（有效啮合长度 > 0），头部坐在板面上
-//     ③ 螺栓落在底板/方块轮廓内，指根方块对底板有真实承压面
-//   - 闭合误差 / 行程 / 传动角 / 碰撞扫描（θ1细扫、θ2细扫、二维网格）
-//   - 电机仓：2 台电机轴线最短距离 ≥ 外径 + 2mm
-//   - 可拆装性：无铆接、紧固件齐套、轴向浮动、指根紧固件齐套
-const fs=require('fs'),path=require('path'),assert=require('assert/strict');
-const { THREE, clip, area, polyDist, prepare, project, broadPairs, segSeg3, makeSolid, convexOverlapPoint } = require('./.verification/geom2d.cjs');
-const root=__dirname;
-const html=fs.readFileSync(path.join(root,'hand_mechanism_3d.html'),'utf8');
-const script=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].find(m=>m[1].includes('const P ='))[1];
-new Function(script);                                   // 仅做语法检查（不调用）
-const nodes=new Map(),document={getElementById(id){if(!nodes.has(id))nodes.set(id,{});return nodes.get(id);}};
-const main=script.slice(0,script.lastIndexOf('\ninitScene();'));
-const api=new Function('THREE','document',main+
-  '\nscene=new THREE.Scene();showLabels=false;buildMechanism();updateMechanism(0,0);'+
-  'return {P,s,scene,updateMechanism,getJoints,angleToStroke,getStrokeFromAngle,getForceData,transmissionAngle};')(THREE,document);
-const {P,s,scene}=api;
+// 五指整手校验（verify_hand.cjs）—— 1:1 尺度，14 个关节单元（四指×3 + 拇指×2）
+//   每单元 = 电机(k) + BD长条连杆(k) + 被驱动段(k+1)，几何与手指版逐件相同
+//   核验：
+//     ① 逐关节细扫（STEP）→ 连续间隙下限（扣除步长允差 allowance）
+//     ② 每指安全包络内三维网格（GRID）→ 单指自干涉 + 与骨架/邻指干涉
+//     ③ 整手姿态：五指等比抓握 / 单指极值 / 拇指对掌 / 随机组合
+//     ④ 闭合误差·行程一致性·传动角
+//     ⑤ 可拆装性：无铆接、14 关节紧固件齐套、同规格件可互换、链条父子关系
+//   配合区半径 = 孔半径 + 0.6mm（与肘版 v5 / 手指版一致）
+//   用法: node verify_hand.cjs [--quick] [--no-write]
+const fs = require('fs'), path = require('path'), assert = require('assert/strict');
+const G = require('./.verification/geom2d.cjs');
+const THREE = G.THREE;
+const root = __dirname;
+const html = fs.readFileSync(path.join(root, 'hand_mechanism_3d.html'), 'utf8');
+const script = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].find(m => m[1].includes('const P ='))[1];
+const nodes = new Map();
+const mockEl = () => ({ style: {}, textContent: '', innerHTML: '', value: '0', className: '', addEventListener() {}, appendChild() {} });
+const document = {
+  getElementById(id) { if (!nodes.has(id)) nodes.set(id, mockEl()); return nodes.get(id); },
+  createElement() { return { style: {}, className: '', innerHTML: '', appendChild() {},
+    getContext() { return { font: '', fillStyle: '', measureText() { return { width: 40 }; }, fillText() {} }; } }; },
+};
+const main = script.slice(0, script.lastIndexOf('\ninitScene();'));
+const api = new Function('THREE', 'document', main + '\nscene = new THREE.Scene(); showLabels = false; buildMechanism(); updateMechanism(); return { P, s, scene, getJoints, updateMechanism, FINGERS, HAND, angleToStroke, getForceData, transmissionAngle, currentPose };')(THREE, document);
+const { P, s, scene, HAND, FINGERS, getJoints, updateMechanism } = api;
+const KEYS = HAND.keys;
+const QUICK = process.argv.includes('--quick');
+const GRID = QUICK ? 10 : 5;      // 包络内三维网格步长（deg）
+const STEP = QUICK ? 0.25 : 0.05; // 单关节细扫步长（deg）
+const CELL = 45;                  // 三维宽相单元（mm）
+const MAXPOSE = 400000;
 
-// ---------- 装配分类 ----------
-// 注意顺序：motor2 是 phalanx2 的子组，t2Tendon/m2Rod 又嵌在更内层。
-// 必须"由内向外"判断，否则电机2的所有零件都会被误判成 P2，
-// 导致"推杆与电机同轴滑动配合"等免检规则永远不生效（曾因此误报细扫下限非正）。
-function classify(mesh){
-  const n=[];for(let p=mesh;p;p=p.parent)n.push(p.name);
-  if(n.includes('m1Rod'))return'm1Slider';
-  if(n.includes('m2Rod'))return'm2Slider';
-  if(n.includes('t1Tendon'))return'T1';
-  if(n.includes('t2Tendon'))return'T2';
-  // 先于 phalanx：motor1 挂在 scene/p1 上，motor2 嵌在 phalanx2 内。
-  // 手版的组名是 motor1/motor2Fixed，用前缀匹配，不能只认 "motor2"（否则电机被归为 P2，
-  //   同轴滑动副 m*ExposedRod/m*MotorBody 的免检规则永不触发）。
-  if(n.some(x=>/^motor1/.test(x)))return'm1Fixed';
-  if(n.some(x=>/^motor2/.test(x)))return'm2Fixed';
-  // 反根后 phalanx1 嵌在 phalanx2 的 p2Body 里 → 必须先判 phalanx1
-  if(n.includes('phalanx1'))return'P1';          // 含指根方块与简化底板（同一螺接刚体）
-  if(n.includes('phalanx2'))return'P2';
-  if(n.includes('phalanx3'))return'P3';
-  return'other';
+// ============ 网格清点与分类 =============
+const meshes = [];
+scene.traverse(o => { if (o.isMesh) meshes.push(o); });
+const CHASSIS_RE = /^(palmPlateA|palmPlateB|palmSpliceTop|wristBlock|wristBoss\d+|thumbBridge|thumbBridgeBoss\d+)$/;
+function classOf(mesh) {
+  const chain = []; for (let o = mesh; o; o = o.parent) chain.push(o.name);
+  if (chain.some(n => CHASSIS_RE.test(n))) return 'CHASSIS';
+  let key = null;
+  for (const k of KEYS) if (chain.indexOf(k + '_root') >= 0) { key = k; break; }
+  if (!key) return 'OTHER';
+  // 由内向外取第一个命中的骨架组（段号必须取最内层，否则 P3 会被误判成 P1）
+  for (const n of chain) {
+    if (n.indexOf(key + '_') !== 0) continue;
+    const rest = n.slice(key.length + 1);
+    let m;
+    if ((m = /^m(\d)Rod$/.exec(rest))) return key + '_m' + m[1] + 'Slider';
+    if ((m = /^t(\d)Tendon$/.exec(rest))) return key + '_T' + m[1];
+    if ((m = /^m(\d)Motor$/.exec(rest))) return key + '_m' + m[1] + 'Fixed';
+    if ((m = /^phalanx(\d)$/.exec(rest))) return key + '_P' + m[1];
+    if (rest === 'palm') return key + '_PALM';
+  }
+  return 'OTHER';
 }
-const FASTENER=/Bolt|Nut|Washer|Rivet/;
-const meshes=[];
-scene.traverse(o=>{if(!o.isMesh)return;assert(o.name,'网格必须有名字');meshes.push({mesh:o,assembly:classify(o)});});
-assert.equal(new Set(meshes.map(x=>x.mesh.name)).size,meshes.length,'网格名必须唯一');
-assert(!meshes.some(x=>/rivet/i.test(x.mesh.name)),'不允许残留铆接件');
-const prepared=meshes.filter(x=>!FASTENER.test(x.mesh.name)).map(({mesh,assembly})=>prepare(mesh,s,assembly));
+const assembly = meshes.map(classOf);
+const nameSet = new Set(meshes.map(m => m.name));
+assert.equal(nameSet.size, meshes.length, '网格名必须唯一');
+assert(!meshes.some(m => /rivet/i.test(m.name)), '不允许残留铆接件');
+assert.equal(assembly.filter(a => a === 'OTHER').length, 0, '存在未分类网格');
+const prepared = meshes.map((m, i) => G.prepare(m, s, assembly[i]));
 
-// ---------- 配合/同体免检 ----------
-const key=(a,b)=>[a,b].sort().join(' / ');
-function skip(a,b){
-  if(a.assembly===b.assembly)return'同一刚性子总成';
-  const set=new Set([a.assembly,b.assembly]);
-  const names=[a.name,b.name];
-  for(const [ph,mf] of [['P1','m1'],['P2','m2']]){
-    if(set.has(ph)&&set.has(mf+'Fixed')){
-      if(names.some(n=>new RegExp('^'+mf+'(Collar|FlangeBolt)').test(n)))return'电机抱箍/法兰螺栓与所在指节固定连接';
-      // 安装板按"指节"命名（p1FlangePlate / p2FlangePlate），不是按电机命名——
-      // 旧写法 ^m1FlangePlate 永远匹配不到，等于这条免检从未生效。
-      if(names.some(n=>new RegExp('^'+ph.toLowerCase()+'FlangePlate').test(n)))return'电机法兰安装板与电机的设计配合（板含Ø36.4导向孔，凸包代理不可表达）';
+// ============ 投影缓存（同一姿态下静止件直接复用；单关节细扫提速关键） =============
+const cache = new Array(meshes.length).fill(null);
+const lastE = new Array(meshes.length).fill(null);
+function projectAll() {
+  const out = new Array(meshes.length);
+  for (let i = 0; i < meshes.length; i++) {
+    const e = meshes[i].matrixWorld.elements;
+    let same = cache[i] !== null;
+    if (same) { const lm = lastE[i]; for (let t = 0; t < 16; t++) if (lm[t] !== e[t]) { same = false; break; } }
+    if (same) { out[i] = cache[i]; continue; }
+    const sh = G.project(prepared[i]);
+    out[i] = sh; cache[i] = sh;
+    const cp = new Array(16); for (let t = 0; t < 16; t++) cp[t] = e[t];
+    lastE[i] = cp;
+  }
+  return out;
+}
+// 三维宽相：三层单元桶（x,y,z）—— 重叠必共享单元，因而对碰撞判定无漏检
+function broadPairs3(shapes, cell) {
+  const grid = new Map();
+  const bb = shapes.map(sh => {
+    let a = Infinity, b = -Infinity, c = Infinity, d = -Infinity;
+    for (const q of sh.xy) { a = Math.min(a, q[0]); b = Math.max(b, q[0]); c = Math.min(c, q[1]); d = Math.max(d, q[1]); }
+    return { a, b, c, d, z0: sh.zmin, z1: sh.zmax };
+  });
+  for (let i = 0; i < shapes.length; i++) {
+    const g = bb[i];
+    if (!isFinite(g.a)) continue;
+    for (let gx = Math.floor(g.a / cell); gx <= Math.floor(g.b / cell); gx++)
+      for (let gy = Math.floor(g.c / cell); gy <= Math.floor(g.d / cell); gy++)
+        for (let gz = Math.floor(g.z0 / cell); gz <= Math.floor(g.z1 / cell); gz++) {
+          const k = gx + ',' + gy + ',' + gz; let arr = grid.get(k); if (!arr) { arr = []; grid.set(k, arr); } arr.push(i);
+        }
+  }
+  const seen = new Set(), out = [];
+  for (const arr of grid.values())
+    for (let i = 0; i < arr.length; i++) for (let j = i + 1; j < arr.length; j++) {
+      const a = arr[i], b = arr[j], k = a < b ? a * 100000 + b : b * 100000 + a;
+      if (seen.has(k)) continue; seen.add(k); out.push([a, b]);
+    }
+  return out;
+}
+// ============ 自转手指（spin≠0，本设计为拇指 −30° 对掌）的局部系投影 =============
+//   2.5D（XY投影 + z 区间）判据只在“机构平面 = XY 平面”时精确；拇指绕自身长轴滚转后，
+//   其零件在世界系的 z 区间被 x/z 混合撑大 → 会产生假接触。故对拇指零件再算一套“反向滚转”投影，
+//   同指配对一律在局部系内判；跨指/骨架配对仍用世界系，并对 2.5D 报出的接触用 3D 实体求交复核。
+const keyOf = meshes.map((m, i) => { const a = assembly[i]; return a === 'CHASSIS' ? null : a.slice(0, a.indexOf('_')); });
+const SPUN = KEYS.filter(k => Math.abs(FINGERS[k].spin) > 1e-9);
+const spunSet = new Set(SPUN);
+const localFix = {};
+for (const k of SPUN) {
+  const rt = FINGERS[k].root;
+  const p = rt.position.clone();
+  localFix[k] = new THREE.Matrix4().makeTranslation(-p.x, -p.y, -p.z)
+    .premultiply(new THREE.Matrix4().makeRotationFromQuaternion(rt.quaternion.clone().invert()))
+    .premultiply(new THREE.Matrix4().makeTranslation(p.x, p.y, p.z));
+}
+function projectLocal() {
+  const out = new Array(meshes.length).fill(null);
+  for (const k of SPUN) {
+    for (let i = 0; i < meshes.length; i++) {
+      if (keyOf[i] !== k) continue;
+      const m = meshes[i], save = m.matrixWorld.clone();
+      m.matrixWorld.premultiply(localFix[k]);
+      out[i] = G.project(prepared[i]);
+      m.matrixWorld.copy(save);
     }
   }
-  for(const [mf,sl] of [['m1Fixed','m1Slider'],['m2Fixed','m2Slider']]){
-    const setS=new Set([a.assembly,b.assembly]);
-    if(setS.has(mf)&&setS.has(sl)&&names.some(n=>new RegExp('^'+sl.slice(0,2)+'(ExposedRod|RodThreadStub)$').test(n))&&names.some(n=>new RegExp('^'+mf.slice(0,2)+'(MotorBody|MotorFrontCap)$').test(n)))return'推杆与电机同轴滑动配合';
+  return out;
+}
+const solidCache = new Map();
+function exactIntersect(i, j) {
+  let sa = solidCache.get(i); if (!sa) { sa = G.makeSolid(meshes[i], s); solidCache.set(i, sa); }
+  let sb = solidCache.get(j); if (!sb) { sb = G.makeSolid(meshes[j], s); solidCache.set(j, sb); }
+  return !!G.solidsIntersect(sa, sb);
+}
+
+// ============ 设计贴合/同轴滑动（不计入碰撞与间隙统计） =============
+function skipPair(A, B) {
+  if (A.assembly === B.assembly) return '同一刚性子总成';
+  const set = new Set([A.assembly, B.assembly]);
+  const names = [A.name, B.name];
+  const has = re => names.some(n => re.test(n));
+  if (set.has('CHASSIS')) {
+    if (has(/_(palmFlangeBase|palmMountBolt\d+|palmMountBoltHead\d+)$/)) return '掌骨法兰与掌体骨架的螺栓连接面（设计贴合）';
+    if (has(/MountBoltHead\d+$/) && has(/_(palmFlangeBase)$/)) return 'M4 螺栓头与掌骨板让位孔的设计配合';
   }
-  for(const u of ['m1','m2']){
-    const setS=new Set([a.assembly,b.assembly]);
-    if(setS.has(u+'Slider')&&names.some(n=>new RegExp('^'+u+'(ExposedRod|RodThreadStub)$').test(n))&&names.some(n=>new RegExp('^'+u+'FlangePlate').test(n)))return'推杆穿过该指节安装板导向孔';
+  for (const k of KEYS) {
+    const n = FINGERS[k].n;
+    for (let j = 0; j < n; j++) {
+      const seg = (j === 0 ? k + '_PALM' : k + '_P' + j);
+      const fpLc = (j === 0 ? k + '_palm' : k + '_p' + j);
+      const mf = k + '_m' + j + 'Fixed';
+      if (set.has(seg) && set.has(mf)) {
+        if (has(new RegExp('^' + k + '_m' + j + '(Collar|FlangeBolt)'))) return '电机抱箍/法兰螺栓与所在段固定连接';
+        if (has(new RegExp('^' + fpLc + 'FlangePlate'))) return '电机法兰安装板与电机的设计配合（含导向孔）';
+      }
+      if (set.has(mf) && set.has(k + '_m' + j + 'Slider')) {
+        if (has(new RegExp('^' + k + '_m' + j + '(ExposedRod|RodThreadStub)$')) && has(new RegExp('^' + k + '_m' + j + '(MotorBody|MotorFrontCap|MotorRearCap)$'))) return '推杆与电机同轴滑动配合';
+      }
+      if (set.has(k + '_m' + j + 'Slider') && has(new RegExp('^' + k + '_m' + j + '(ExposedRod|RodThreadStub)$')) && has(new RegExp('^' + fpLc + 'FlangePlate'))) return '推杆穿过该段安装板导向孔';
+      if (set.has(seg) && has(new RegExp('^' + k + '_m' + j + 'Collar')) && has(new RegExp('^' + fpLc + 'FlangePlate'))) return '电机抱箍与安装板的设计贴合';
+    }
   }
   return null;
 }
-function zone(a,b,J){
-  const set=new Set([a.assembly,b.assembly]);
-  const rO=P.boreElbow/2+0.6,rL=P.boreLink/2+0.6;
-  if(set.has('P1')&&set.has('P2'))return{name:'O1',r:rO,c:J.O1};
-  if(set.has('P2')&&set.has('T1'))return{name:'D1',r:rL,c:J.D1};
-  if(set.has('m1Slider')&&set.has('T1'))return{name:'B1',r:rL,c:J.B1};
-  if(set.has('P2')&&set.has('P3'))return{name:'O2',r:rO,c:J.O2};
-  if(set.has('P3')&&set.has('T2'))return{name:'D2',r:rL,c:J.D2};
-  if(set.has('m2Slider')&&set.has('T2'))return{name:'B2',r:rL,c:J.B2};
+
+// ============ 配合区（孔半径 + 0.6mm）：区内重叠=销轴设计配合，区外重叠=碰撞 =============
+const R_O = P.boreElbow / 2 + 0.6, R_L = P.boreLink / 2 + 0.6;
+function zoneOf(A, B, J, spunKey) {
+  const set = new Set([A.assembly, B.assembly]);
+  const mm = v => { const w = spunKey ? v.clone().applyMatrix4(localFix[spunKey]) : v; return { x: w.x / s, y: w.y / s }; };
+  for (const k of KEYS) {
+    const n = FINGERS[k].n, C = J[k];
+    const segOf = i => (i === 0 ? k + '_PALM' : k + '_P' + i);
+    for (let j = 0; j < n; j++) {
+      if (set.has(segOf(j)) && set.has(segOf(j + 1))) return { name: k + ':O' + j, r: R_O, c: mm(C.OW[j]) };
+      if (set.has(segOf(j + 1)) && set.has(k + '_T' + j)) return { name: k + ':D' + j, r: R_L, c: mm(C.DW[j]) };
+      if (set.has(k + '_m' + j + 'Slider') && set.has(k + '_T' + j)) return { name: k + ':B' + j, r: R_L, c: mm(C.BW[j]) };
+    }
+  }
   return null;
 }
-const pairStats=new Map(),collisions=[];
-function sweepPose(deg1,deg2,stepDeg){
-  api.updateMechanism(deg1,deg2);scene.updateMatrixWorld(true);
-  const J=api.getJoints(deg1,deg2),joints={O1:J.O1,B1:J.B1,D1:J.D1,O2:J.O2,B2:J.B2,D2:J.D2};
-  const shapes=prepared.map(project);
-  for(const [ia,ib] of broadPairs(shapes,40)){
-    const A=shapes[ia],C=shapes[ib];if(skip(A,C))continue;
-    const k=key(A.name,C.name),z=zone(A,C,joints);
-    let st=pairStats.get(k);
-    if(!st){st={pair:k,assemblies:[A.assembly,C.assembly],min_clearance_mm:Infinity,mating_zone:z?z.name:null};pairStats.set(k,st);}
-    const inter=clip(A.xy,C.xy),contact=inter.length>0&&area(inter)>1e-8,zover=Math.min(A.zmax,C.zmax)-Math.max(A.zmin,C.zmin);
-    if(contact&&zover>1e-7){
-      const r=z?Math.max(...inter.map(p=>Math.hypot(p[0]-z.c.x,p[1]-z.c.y))):Infinity;
-      if(!(z&&r<=z.r)&&collisions.length<200){
-        // 凸包粗判后再做精确实体复核，避免把"指节合法包绕电机"误判为干涉
-        const sa=makeSolid(prepared[ia].mesh,s),sb=makeSolid(prepared[ib].mesh,s);
-        if(convexOverlapPoint(sa,sb,inter,1.0))collisions.push({deg:[+deg1.toFixed(2),+deg2.toFixed(2)],pair:k,assemblies:[A.assembly,C.assembly],overlap_mm2:+area(inter).toExponential(2)});
+
+// ============ 姿态扫描 =============
+const pairStats = new Map(), collisions = [];
+const skipCache = new Map();
+let poseCount = 0, pairTested = 0, rejected2p5d = 0;
+function sweep(pose) {
+  updateMechanism(pose);
+  scene.updateMatrixWorld(true);
+  poseCount++;
+  const J = getJoints(pose);
+  const shapes = projectAll();
+  const localShapes = SPUN.length ? projectLocal() : null;
+  for (const pr of broadPairs3(shapes, CELL)) {
+    const i = pr[0], j = pr[1];
+    const kA = keyOf[i], kB = keyOf[j];
+    const spunPair = !!(kA && kA === kB && spunSet.has(kA));
+    const A = spunPair ? localShapes[i] : shapes[i], B = spunPair ? localShapes[j] : shapes[j];
+    const pk = pr[0] < pr[1] ? pr[0] * 100000 + pr[1] : pr[1] * 100000 + pr[0];
+    let sk = skipCache.get(pk);
+    if (sk === undefined) { sk = skipPair(A, B) || ''; skipCache.set(pk, sk); }
+    if (sk) continue;
+    pairTested++;
+    const kk = A.name + ' | ' + B.name;
+    let st = pairStats.get(kk);
+    if (!st) { st = { pair: kk, assemblies: [A.assembly, B.assembly], min_clearance_mm: Infinity, mating_zone: null }; pairStats.set(kk, st); }
+    const z = zoneOf(A, B, J, spunPair ? kA : null);
+    if (z) st.mating_zone = z.name;
+    const zover = Math.min(A.zmax, B.zmax) - Math.max(A.zmin, B.zmin);
+    const inter = G.clip(A.xy, B.xy);
+    const contact = inter.length > 0 && G.area(inter) > 1e-8;
+    if (contact && zover > 1e-7) {
+      const r = z ? Math.max.apply(null, inter.map(q => Math.hypot(q[0] - z.c.x, q[1] - z.c.y))) : Infinity;
+      if (!(z && r <= z.r)) {
+        const needExact = !spunPair && (spunSet.has(kA) || spunSet.has(kB));
+        if (needExact && !exactIntersect(i, j)) { rejected2p5d++; }
+        else if (collisions.length < 300) collisions.push({ pose: pose, pair: kk, assemblies: st.assemblies,
+          zone: z ? z.name : null, exact3d: needExact, max_r_mm: isFinite(r) ? +r.toFixed(2) : null,
+          overlap_mm2: +G.area(inter).toExponential(2) });
       }
     }
-    if(!z){
-      const gz=Math.max(0,A.zmin-C.zmax,C.zmin-A.zmax),d=contact?gz:Math.hypot(polyDist(A.xy,C.xy),gz);
-      if(isFinite(d)&&d<st.min_clearance_mm)st.min_clearance_mm=d;
+    if (!z) {
+      const gz = Math.max(0, A.zmin - B.zmax, B.zmin - A.zmax);
+      let d;
+      if (contact || gz >= 20) d = gz;                       // 接触→z 向重叠量；远件→用 z 间隙作保守下界（省去多边形距离）
+      else d = Math.hypot(G.polyDist(A.xy, B.xy), gz);
+      if (isFinite(d) && d < st.min_clearance_mm) st.min_clearance_mm = d;
     }
   }
   return J;
 }
-
-// ---------- 1) 闭合 / 行程 ----------
-let closure=0,strokeErr=0;
-for(const [d1,d2] of [[0,0],[30,70],[60,20],[90,110],[120,60],[120,120],[45,45]]){
-  // 反根后 B/D 分属不同参考系（B 在自身指节、D 在相邻指节），解析式不再同系。
-  // 闭合以"实体眼环的世界距离"为准 —— 这才是物理真值。
-  scene.updateMatrixWorld(true);
-  const V3=(x,y,z)=>new THREE.Vector3(x,y,z);
-  const eyeW=n=>{const o=scene.getObjectByName(n);return V3(0,0,0).applyMatrix4(o.matrixWorld).multiplyScalar(1/s);};
-  closure=Math.max(closure,Math.abs(eyeW('t1TendonEyeB').distanceTo(eyeW('t1TendonEyeD'))-P.tendonLinkLen));
-  closure=Math.max(closure,Math.abs(eyeW('t2TendonEyeB').distanceTo(eyeW('t2TendonEyeD'))-P.tendonLinkLen));
+function zeroPose() { const p = {}; for (const k of KEYS) p[k] = FINGERS[k].limits.map(() => 0); return p; }
+function scalePose(u, thumbU) {
+  const p = {};
+  for (const k of KEYS) p[k] = FINGERS[k].limits.map(l => l * u * (k === 'thumb' && thumbU !== undefined ? thumbU : 1));
+  return p;
 }
 
-// —— 反根后行程校验：连杆反向布置后映射非线性，改为校验"全行程所需行程 ≤ 电机可用行程" ——
-{
-  const MOTOR_STROKE=59.393;
-  let s1min=1e9,s1max=-1e9;
-  for(let d=0;d<=120;d+=2){
-    const v=api.angleToStroke(d);
-    s1min=Math.min(s1min,v);s1max=Math.max(s1max,v);
-  }
-  const need=s1max-s1min;
-  strokeErr = need<=MOTOR_STROKE ? 0 : need-MOTOR_STROKE;
-  P.__requiredStroke=+need.toFixed(2);
-  console.log('反根后两单元所需行程（同构单元，取一） =',need.toFixed(2),'mm / 电机可用',MOTOR_STROKE,'mm');
-}
-
-// ---------- 2) 指根衔接专项（本文件新增）----------
+// ---- 步长允差：细扫相邻两姿态之间，运动件上最远点走过的弦长（保守上界） ----
+updateMechanism(zeroPose());
 scene.updateMatrixWorld(true);
-function worldBox(name){
-  const o=scene.getObjectByName(name);assert(o,'缺少零件 '+name);
-  const a=o.geometry.attributes.position,v=new THREE.Vector3();
-  let mn=[1e9,1e9,1e9],mx=[-1e9,-1e9,-1e9];
-  for(let i=0;i<a.count;i++){v.set(a.getX(i),a.getY(i),a.getZ(i)).applyMatrix4(o.matrixWorld);
-    mn=[Math.min(mn[0],v.x),Math.min(mn[1],v.y),Math.min(mn[2],v.z)];
-    mx=[Math.max(mx[0],v.x),Math.max(mx[1],v.y),Math.max(mx[2],v.z)];}
-  return{mn:mn.map(x=>x/s),mx:mx.map(x=>x/s)};
+const J0 = getJoints(zeroPose());
+let allowanceMaxR = 0;
+const allowancePerJoint = [];
+const _v = new THREE.Vector3();
+for (const k of KEYS) {
+  const F = FINGERS[k], n = F.n;
+  for (let j = 0; j < n; j++) {
+    const o = J0[k].OW[j], ox = o.x / s, oy = o.y / s;
+    let rmax = 0;
+    F.groups[j + 1].traverse(function (m) {
+      if (!m.isMesh) return;
+      const a = m.geometry.attributes.position;
+      for (let i = 0; i < a.count; i++) {
+        _v.set(a.getX(i), a.getY(i), a.getZ(i));
+        m.localToWorld(_v);
+        rmax = Math.max(rmax, Math.hypot(_v.x / s - ox, _v.y / s - oy));
+      }
+    });
+    allowancePerJoint.push({ finger: k, joint: j, r_max_mm: +rmax.toFixed(1), allowance_mm: +(rmax * STEP * Math.PI / 180).toFixed(3) });
+    allowanceMaxR = Math.max(allowanceMaxR, rmax);
+  }
 }
-const jbox={
-  block:   worldBox('p1PalmBase'),
-  plate:   worldBox('p1PalmFlangeBase'),
-  bolt1:   worldBox('p1PalmBolt1'),
-  head1:   worldBox('p1PalmBoltHead1'),
-};
-// —— 以下均为"方向无关"写法：整指现在套在 hand 组里绕 Z 转了 180°，
-//    底板从 +Y 端挪到了 −Y 端，所以不能再用"板在方块上方"的固定符号假设。
-// d=+1 表示板在方块的 +Y 侧；d=−1 表示在 −Y 侧。所有轴向量都先乘 d 归一到"+d 侧"。
-const dSide=((jbox.plate.mn[1]+jbox.plate.mx[1])>=(jbox.block.mn[1]+jbox.block.mx[1]))?1:-1;
-const Y=v=>v*dSide;                       // 归一后的轴向坐标
-const rng=b=>{const a=Y(b.mn[1]),c=Y(b.mx[1]);return[Math.min(a,c),Math.max(a,c)];};  // 乘 −1 会颠倒 min/max，需重排
-const [pY0,pY1]=rng(jbox.plate), [kY0,kY1]=rng(jbox.block);
-const [bY0,bY1]=rng(jbox.bolt1), [hY0,hY1]=rng(jbox.head1);
-const gapMM=+(pY0-kY1).toFixed(4);              // 板底 − 方块顶（归一后板恒在 +Y 侧）
-const engageMM=+(kY1-bY0).toFixed(3);           // 杆伸入方块的长度
-const boltSpansPlate=bY0<=pY0+1e-6&&bY1>=pY1-1e-6;
-const headOnPlate=+(hY0-pY1).toFixed(3);        // 头底面 − 板面
-// 螺栓 XY 必须同时落在底板与方块轮廓内
-const inBox=(b,x,z)=>x>=b.mn[0]-1e-6&&x<=b.mx[0]+1e-6&&z>=b.mn[2]-1e-6&&z<=b.mx[2]+1e-6;
-const boltInBoth=P.print.rootBoltXZ.every(([x,z])=>inBox(jbox.plate,x,z)&&inBox(jbox.block,x,z));
-// 底板承压在方块顶面上的接触面积（板≫方块，取方块顶面积）
-const bearingMM2=+( (jbox.block.mx[0]-jbox.block.mn[0]) * (jbox.block.mx[2]-jbox.block.mn[2]) ).toFixed(1);
-const plateFaceMM2=+((jbox.plate.mx[0]-jbox.plate.mn[0])*(jbox.plate.mx[2]-jbox.plate.mn[2])).toFixed(1);
-
-// ---------- 3) 电机仓间距（2 台）----------
-const motorAxes=[];
-for(const nm of ['m1MotorBody','m2MotorBody']){
-  const o=scene.getObjectByName(nm);assert(o,'缺少 '+nm);
-  const e=o.matrixWorld.elements;
-  const dir=new THREE.Vector3(e[4],e[5],e[6]).normalize();
-  const c=new THREE.Vector3(e[12]/s,e[13]/s,e[14]/s);
-  const h=P.motorBodyLen/2;
-  motorAxes.push({id:nm,p0:c.clone().addScaledVector(dir,-h).toArray(),p1:c.clone().addScaledVector(dir,h).toArray()});
+const allowance = allowanceMaxR * STEP * Math.PI / 180;
+// ---- ① 逐关节细扫（其余关节归零）：求连续间隙下限 ----
+for (const k of KEYS) {
+  const L = FINGERS[k].limits, n = FINGERS[k].n;
+  for (let j = 0; j < n; j++) {
+    const steps = Math.max(1, Math.round(L[j] / STEP));
+    for (let i = 0; i <= steps; i++) {
+      const pose = zeroPose();
+      pose[k][j] = L[j] * i / steps;
+      sweep(pose);
+    }
+  }
 }
-const motorMin=+segSeg3(motorAxes[0].p0,motorAxes[0].p1,motorAxes[1].p0,motorAxes[1].p1).toFixed(2);
-const motorReq=2*P.motorBodyRadius+2;
+// ---- ② 每指安全包络内三维网格（其余指归零）：自干涉 + 与骨架/邻指干涉 ----
+function gridPoses(L, n, cb) {
+  const cnt = L.map(l => Math.max(1, Math.round(l / GRID)));
+  const cur = new Array(n).fill(0);
+  (function rec(d) {
+    if (d === n) { cb(cur.slice()); return; }
+    for (let i = 0; i <= cnt[d]; i++) { cur[d] = L[d] * i / cnt[d]; rec(d + 1); }
+  })(0);
+}
+for (const k of KEYS) {
+  const L = FINGERS[k].limits;
+  gridPoses(L, FINGERS[k].n, arr => { const pose = zeroPose(); pose[k] = arr; sweep(pose); });
+}
+// ---- ③ 整手姿态：等比抓握 / 单指极值 / 拇指对掌 / 随机组合 ----
+const wholePoses = [];
+for (let i = 0; i <= 10; i++) wholePoses.push(scalePose(i / 10));
+for (const k of KEYS) { const p = zeroPose(); p[k] = FINGERS[k].limits.slice(); wholePoses.push(p); }
+for (const a of [0, 0.5, 1]) for (const b of [0, 0.5, 1]) {
+  const p = zeroPose();
+  p.thumb = FINGERS.thumb.limits.map(l => l * a);
+  p.index = FINGERS.index.limits.map(l => l * b);
+  wholePoses.push(p);
+}
+let seed = 20240921;
+const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+const NRAND = QUICK ? 80 : 400;
+for (let i = 0; i < NRAND; i++) {
+  const p = zeroPose();
+  for (const k of KEYS) p[k] = FINGERS[k].limits.map(l => l * rnd());
+  wholePoses.push(p);
+}
+for (const p of wholePoses) sweep(p);
+// ============ 闭合 / 行程 / 传动角 =============
+const CLOSURE_POSES = [[0,0,0],[0.25,0.25,0.25],[0.5,0.5,0.5],[0.75,0.75,0.75],[1,1,1],[1,0.5,0.5],[0.5,1,1],[1,0.8,0.3],[0.3,0.8,1]];
+let closureErr = 0, strokeErr = 0, minTrans = 90, maxTrans = 0;
+for (const k of KEYS) {
+  const L = FINGERS[k].limits, n = FINGERS[k].n;
+  for (const c of CLOSURE_POSES) {
+    const a = c.slice(0, n).map((x, i) => L[i] * x);
+    const C = getJoints({ [k]: a })[k];
+    for (let j = 0; j < n; j++) {
+      const b = C.B[j], d = C.D[j];
+      closureErr = Math.max(closureErr, Math.abs(Math.hypot(b.x - d.x, b.y - d.y) - P.tendonLinkLen));
+      strokeErr = Math.max(strokeErr, Math.abs((P.s_extended - C.s[j]) - P.strokeMax * (a[j] / 120)));
+      const ta = api.transmissionAngle(a[j]);
+      minTrans = Math.min(minTrans, ta); maxTrans = Math.max(maxTrans, ta);
+    }
+  }
+}
 
-// ---------- 4) 碰撞扫描 ----------
-const STEP=0.1,N=Math.round(120/STEP)+1,allowance=400*STEP*Math.PI/180;
-for(let i=0;i<N;i++)sweepPose(120*i/(N-1),0,STEP);        // θ1 细扫（θ2=0）
-for(let i=0;i<N;i++)sweepPose(0,120*i/(N-1),STEP);        // θ2 细扫（θ1=0）
-for(let i=0;i<=60;i++)for(let j=0;j<=60;j++)sweepPose(2*i,2*j,2);   // 二维网格 2°
-const regular=[...pairStats.values()].filter(p=>!p.mating_zone&&isFinite(p.min_clearance_mm)).sort((a,b)=>a.min_clearance_mm-b.min_clearance_mm);
-const minClr=regular.length?regular[0].min_clearance_mm:Infinity;
-const lb=allowance<0?minClr+allowance:minClr-allowance; // allowance 未知时不做扣减
+// ============ 可拆装性 / 互换性 =============
+const has = n => nameSet.has(n);
+const svc = [];
+const check = (name, ok, detail) => svc.push({ name: name, pass: !!ok, detail: detail || '' });
+check('无铆接/永久连接', !meshes.some(m => /rivet/i.test(m.name)), meshes.length + ' 网格');
+const BOLT_PARTS = ['BoltHead','BoltShank','BoltThread','BoltWasher','BoltNut'];
+let boltUnits = 0;
+for (const k of KEYS) {
+  const f = FINGERS[k], n = f.n, lab = f.label;
+  for (let j = 0; j < n; j++) {
+    const tri = [['O' + j, k + '_o' + j], ['B' + j, k + '_m' + j + 'b'], ['D' + j, k + '_p' + (j + 1) + 'd']];
+    for (const t of tri) {
+      const ok = BOLT_PARTS.every(x => has(t[1] + x));
+      check(lab + ' ' + t[0] + ' 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全', ok, t[1]);
+      if (ok) boltUnits++;
+    }
+    check(lab + ' 单元' + j + ' 推杆端自锁螺母在位', has(k + '_m' + j + 'RodNut'), k + '_m' + j + 'RodNut');
+    check(lab + ' 单元' + j + ' 电机+连杆+叉头齐套', has(k + '_m' + j + 'MotorBody') && has(k + '_t' + j + 'TendonWeb')
+      && has(k + '_t' + j + 'TendonEyeB') && has(k + '_t' + j + 'TendonEyeD'), '');
+  }
+  check(lab + ' 掌骨法兰 4×M4 齐套', has(k + '_palmFlangeBase') && [1,2,3,4].every(i => has(k + '_palmMountBolt' + i) && has(k + '_palmMountBoltHead' + i)), '');
+  check(lab + ' 链条父子关系正确（掌段→P1→…→P' + f.n + '）',
+    f.groups[0].parent === f.root && f.groups.slice(1).every((g, i) => g.parent === f.groups[i]), '');
+}
+check('14 个关节单元（四指 3 + 拇指 2）肩螺栓总数 = 42 组', boltUnits === 42, boltUnits + ' 组 O/B/D');
+check('轴向浮动 = ' + P.print.axialClearance + 'mm/侧（耳内档−连杆/袖套，与肘版 v5 相同）',
+  ((16 - P.print.sleeveThickness) / 2) >= P.print.axialClearance - 1e-9 &&
+  ((2 * (P.print.clevisPlateZ - 2)) - P.print.linkThickness) / 2 >= P.print.axialClearance - 1e-9, '');
+check('连杆为等宽长条（几何同肘版 v5）', P.print.linkWidth === 15, '');
+// 同规格件互换性：剥掉指名前缀后逐件比几何（拇指末端 P2 与四指末端 P3 对位）
+function localSig(mesh) {
+  const a = mesh.geometry.attributes.position, out = [];
+  for (let i = 0; i < a.count; i++) out.push([a.getX(i).toFixed(6), a.getY(i).toFixed(6), a.getZ(i).toFixed(6)].join(','));
+  return out.sort().join(';');
+}
+function normName(n) {
+  const i = n.indexOf('_');
+  if (i < 0) return n;
+  const key = n.slice(0, i), rest = n.slice(i);
+  if (key === 'thumb') return rest.replace(/^_p2/, '_p3');
+  return rest;
+}
+const groups = new Map();
+for (const m of meshes) {
+  if (CHASSIS_RE.test(m.name)) continue;
+  const nm = normName(m.name);
+  if (!groups.has(nm)) groups.set(nm, []);
+  groups.get(nm).push(m);
+}
+let interCount = 0; const interBad = [];
+const seenKeys = new Set();
+for (const m of meshes) {
+  const key = m.name.slice(0, m.name.indexOf('_'));
+  if (CHASSIS_RE.test(m.name) || seenKeys.has(key)) continue;
+  seenKeys.add(key);
+}
+for (const g of groups.values()) {
+  if (g.length < 2) continue;
+  const sig = localSig(g[0]);
+  const bad = g.filter(m => localSig(m) !== sig).map(m => m.name);
+  if (bad.length) interBad.push(g[0].name + ' ⇔ ' + bad.slice(0, 2).join(','));
+  else interCount += g.length;
+}
+check('五指同规格件逐件同几何（' + interCount + ' 件可互换，含拇指末端 P2≡四指末端 P3）', interBad.length === 0, interBad.slice(0, 4).join('; '));
+const svcPass = svc.filter(c => c.pass).length;
 
-// ---------- 5) 可拆装性 ----------
-const names=meshes.map(x=>x.mesh.name);
-const has=n=>names.includes(n);
-const svc=[];const check=(name,ok,detail)=>svc.push({name,pass:!!ok,detail:detail||''});
-check('无铆接/永久连接',!names.some(n=>/rivet/i.test(n)),names.length+' 网格');
-for(const [u,parts] of [['m1b',['BoltHead','BoltShank','BoltThread','BoltWasher','BoltNut']],
-                        ['m2b',['BoltHead','BoltShank','BoltThread','BoltWasher','BoltNut']],
-                        ['o1',['BoltHead','BoltShank','BoltThread','BoltWasher','BoltNut']],
-                        ['p2d',['BoltHead','BoltShank','BoltThread','BoltWasher','BoltNut']],
-                        ['p3d',['BoltHead','BoltShank','BoltThread','BoltWasher','BoltNut']]])
-  for(const part of parts)check(u+' '+part+' 在位',has(u+part),'');
-check('B叉头沉龛螺母×2 在位',has('m1RodNut')&&has('m2RodNut'),'');
-check('两单元轴向浮动≥'+P.print.axialClearance+'mm/侧',
-  ((16-P.print.sleeveThickness)/2)>=P.print.axialClearance-1e-9&&((2*(P.print.clevisPlateZ-2))-P.print.linkThickness)/2>=P.print.axialClearance-1e-9,'');
-check('两单元连杆为等宽长条',P.print.linkWidth===15,'');
-// —— 指根衔接项 ——
-check('指根底板与方块顶面贴合（无悬空）',Math.abs(gapMM)<=1e-3,gapMM+' mm');
-check('4×M4 指根螺栓齐套',['1','2','3','4'].every(i=>has('p1PalmBolt'+i)&&has('p1PalmBoltHead'+i)),'M4×4');
-check('指根螺栓杆身贯穿底板',boltSpansPlate,'杆 Y['+jbox.bolt1.mn[1].toFixed(1)+','+jbox.bolt1.mx[1].toFixed(1)+']');
-check('指根螺栓旋入方块有效啮合 > '+(P.print.basePlateT/2)+'mm',engageMM>P.print.basePlateT/2,engageMM+' mm');
-check('指根螺栓头部坐在板面上',headOnPlate>=-1e-6&&headOnPlate<=0.01,'头底面 y='+(jbox.plate.mx[1]+headOnPlate).toFixed(2));
-check('螺栓孔位同时落在底板与方块内',boltInBoth,'孔距 '+P.print.rootBoltXZ.map(p=>p.join('×')).join(', '));
-check('指根方块对底板有承压面',bearingMM2>0&&bearingMM2<=plateFaceMM2,bearingMM2+' mm²（板上表面 '+plateFaceMM2+' mm²）');
-check('每关节 1 台直线电机（无欠驱动）',motorAxes.length===2,'2 台 / 2 个主动关节');
-check('电机仓无干涉（轴线间距 ≥ 外径+2mm）',motorMin>=motorReq,motorMin+' ≥ '+motorReq);
-
-const pass=svc.filter(c=>c.pass).length;
-const summary={version:'hand-v9-index-baseplate',
-  status:'仿生食指（单指复位版）：2×（每关节直线电机 + BD连杆）+ 指根简化底板',
-  scope:'仅食指；多指扇形布局暂时下线',
-  scale:P.scale,
-  parameters:{upperArmLen:P.upperArmLen,phalanx2Len:P.phalanx2Len,forearmLen:P.forearmLen,
-    motorMountX:P.motorMountX,motorMountY:P.motorMountY,motorBodyDia:2*P.motorBodyRadius,
-    motorBodyLen:P.motorBodyLen,tendonLinkLen:P.tendonLinkLen,strokeMax:+P.strokeMax.toFixed(3)},
-  root_junction:{gap_plate_to_block_mm:gapMM,bolt_engagement_into_block_mm:engageMM,
-    bolt_spans_plate:boltSpansPlate,head_seat_offset_mm:headOnPlate,
-    bolt_holes_in_both:boltInBoth,bearing_area_mm2:bearingMM2,plate_face_area_mm2:plateFaceMM2,
-    block_Y:[+jbox.block.mn[1].toFixed(1),+jbox.block.mx[1].toFixed(1)],
-    plate_Y:[+jbox.plate.mn[1].toFixed(1),+jbox.plate.mx[1].toFixed(1)],
-    plate_XZ:[[+jbox.plate.mn[0].toFixed(1),+jbox.plate.mx[0].toFixed(1)],[+jbox.plate.mn[2].toFixed(1),+jbox.plate.mx[2].toFixed(1)]]},
-  results:{closure_error_mm:closure,stroke_used_mm:+(P.s_extended-api.angleToStroke(0)).toFixed(3),stroke_max_mm:+P.strokeMax.toFixed(3),
-    collision_count:collisions.length,fine_sweep_step_deg:STEP,allowance_mm:+allowance.toFixed(3),
-    min_non_mating_clearance_mm:+minClr.toFixed(3),continuous_lower_bound_mm:+lb.toFixed(3),
-    tested_pairs:pairStats.size,physical_meshes:meshes.length,swept_meshes:prepared.length,
-    motor_min_clearance_mm:motorMin,motor_required_mm:motorReq,svc_pass:pass,svc_total:svc.length},
-  closest:regular.slice(0,12).map(p=>({pair:p.pair,min_clearance_mm:+p.min_clearance_mm.toFixed(3)})),
-  collisions:collisions.slice(0,50),serviceability:svc};
-console.log(JSON.stringify({collisions:collisions.length,min_clearance_mm:+minClr.toFixed(3),
-  continuous_lower_bound_mm:+lb.toFixed(3),meshes:meshes.length,pairs:pairStats.size,closure:closure,
-  motor_min:motorMin,motor_req:motorReq,
-  root_gap_mm:gapMM,bolt_engagement_mm:engageMM,svc_pass:pass+'/'+svc.length},null,1));
-if(collisions.length)console.log('碰撞样本:',JSON.stringify(collisions.slice(0,8),null,1));
-console.log('最近非配合间距:',JSON.stringify(regular.slice(0,8).map(p=>({p:p.pair,d:+p.min_clearance_mm.toFixed(2)}))));
-if(pass!==svc.length)console.log('未通过项:',JSON.stringify(svc.filter(c=>!c.pass)));
-assert(closure<1e-6,'双单元闭合误差');
-assert(strokeErr<=P.strokeMax+1e-9,'行程范围');
-assert.equal(collisions.length,0,'扫描到配合区之外的接触');
-assert(lb>0,'细扫连续下限非正');
-assert(pass===svc.length,'可拆装性/衔接检查未全通过');
-if(!process.argv.includes('--no-write'))fs.writeFileSync(path.join(root,'hand_verify_report.json'),JSON.stringify(summary,null,2)+'\n');
-module.exports={api,summary};
+// ============ 汇总 =============
+const regular = [...pairStats.values()].filter(p => !p.mating_zone && isFinite(p.min_clearance_mm)).sort((a, b) => a.min_clearance_mm - b.min_clearance_mm);
+const minClr = regular.length ? regular[0].min_clearance_mm : Infinity;
+const lb = minClr - allowance;
+const zonePairs = [...pairStats.values()].filter(p => p.mating_zone).length;
+const tips = {};
+for (const k of KEYS) tips[k] = +(getJoints(zeroPose())[k].tip.y / s).toFixed(1);
+const summary = {
+  version: 'hand-v1-five-finger-14-unit',
+  status: '五指整手（四指×3 + 拇指×2 = 14 个同构关节单元）闭合/行程/配合区/安全包络碰撞/可拆装性核验',
+  scale_note: '1:1 与手指版同尺寸（非人体尺度）：掌段300 + 300/300/250，整手 z 展宽 ' + (HAND.plateZ1 - HAND.plateZ0) + 'mm',
+  fingers: FINGERS_PUBLIC(),
+  limits_deg: LIMITS_PUBLIC(),
+  grid_step_deg: GRID, fine_step_deg: STEP, broadphase_cell_mm: CELL,
+  parameters: { motorMountX: P.motorMountX, motorMountY: P.motorMountY, tendonLinkLen: P.tendonLinkLen,
+    strokeMax: +P.strokeMax.toFixed(3), s_extended: +P.s_extended.toFixed(3), phalanxLen: P.phalanx1Len, tipLen: P.forearmLen },
+  results: { collision_count: collisions.length, mating_zone_pairs: zonePairs, rejected_2p5d_by_exact3d: rejected2p5d,
+    allowance_mm: +allowance.toFixed(3), radius_max_mm: +allowanceMaxR.toFixed(1),
+    allowance_worst_joint: allowancePerJoint.slice().sort((a, b) => b.allowance_mm - a.allowance_mm)[0],
+    min_non_mating_clearance_mm: +minClr.toFixed(3), continuous_lower_bound_mm: +lb.toFixed(3),
+    tested_pairs: pairStats.size, physical_meshes: meshes.length, poses_scanned: poseCount,
+    closure_error_mm: closureErr, stroke_error_mm: +strokeErr.toFixed(6),
+    transmission_angle_deg: [+minTrans.toFixed(1), +maxTrans.toFixed(1)],
+    tip_y_mm: tips, svc_pass: svcPass, svc_total: svc.length },
+  collisions: collisions.slice(0, 60),
+  closest: regular.slice(0, 20).map(p => ({ pair: p.pair, assemblies: p.assemblies, min_clearance_mm: +p.min_clearance_mm.toFixed(3) })),
+  serviceability: svc };
+function FINGERS_PUBLIC() { const o = {}; for (const k of KEYS) o[k] = { label: FINGERS[k].label, n: FINGERS[k].n, limits: FINGERS[k].limits, pos_z: FINGERS[k].pos[2], spin: FINGERS[k].spin }; return o; }
+function LIMITS_PUBLIC() { const o = {}; for (const k of KEYS) o[k] = FINGERS[k].limits; return o; }
+console.log(JSON.stringify({ collisions: collisions.slice(0, 12), collision_count: collisions.length,
+  mating_zone_pairs: zonePairs, min_clearance_mm: +minClr.toFixed(3), continuous_lower_bound_mm: +lb.toFixed(3),
+  allowance_mm: +allowance.toFixed(3), allowance_radius_mm: +allowanceMaxR.toFixed(1),
+  meshes: meshes.length, pairs: pairStats.size, poses: poseCount, closure_mm: closureErr,
+  stroke_err: +strokeErr.toFixed(6), trans_deg: [+minTrans.toFixed(1), +maxTrans.toFixed(1)],
+  svc: svcPass + '/' + svc.length, svc_fail: svc.filter(c => !c.pass).map(c => c.name + ' | ' + c.detail) }, null, 1));
+if (!process.argv.includes('--no-write')) fs.writeFileSync(path.join(root, 'hand_verify_report.json'), JSON.stringify(summary, null, 2) + '\n');
+assert(closureErr < 1e-6, '关节闭合误差（B–D 中心距 ≠ 连杆长）');
+assert(strokeErr <= P.strokeMax + 1e-9, '行程越界');
+assert.equal(collisions.length, 0, '安全包络内扫描到配合区之外的接触');
+if (QUICK) {
+  // quick 模式步长 0.25°→ 允差被放大 ~5 倍（本例 Rmax≈876mm → 3.82mm），连续下限断言只在完整模式生效
+  const fullAllow = allowanceMaxR * 0.05 * Math.PI / 180;
+  console.log('（quick：步长允差 ' + allowance.toFixed(3) + 'mm；完整模式 STEP=0.05° → 允差 ' + fullAllow.toFixed(3) +
+    'mm，届时连续下限 = ' + (minClr - fullAllow).toFixed(3) + 'mm）');
+} else {
+  assert(lb > 0, '细扫连续间隙下限非正：' + JSON.stringify(regular.slice(0, 4)));
+}
+assert(svcPass === svc.length, '可拆装性/互换性检查未全通过');
+module.exports = { api: api, summary: summary };

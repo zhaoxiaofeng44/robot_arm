@@ -1,0 +1,41 @@
+<body>
+<div id='canvas-container'></div>
+<div id='loading'>加载中...</div>
+<style>
+  .finger-block { border-top: 1px solid rgba(80,80,160,0.25); padding-top: 8px; margin-bottom: 10px; }
+  .finger-block h4 { font-size: 12px; color: #66ddaa; margin-bottom: 6px; font-weight: 600; }
+  .info-box .hl { color: #7c8aff; }
+</style>
+<div id='control-panel' style='display:none;'>
+  <h2>仿生五指整手 · 14 个可拆关节单元（四指×3 + 拇指×2） · 14 台直线电机</h2>
+  <div class='panel-section'>
+    <h3>整手动作 · 各指按自身安全包络等比联动</h3>
+    <div class='btn-group'><button id='btn-play'>▶ 播放</button><button id='btn-reset'>⏹ 重置</button></div>
+    <div class='btn-group' style='margin-top:8px;'>
+      <button id='btn-preset-open'>五指伸展</button><button id='btn-preset-half'>半握</button><button id='btn-preset-fist'>握拳</button>
+    </div>
+    <div class='btn-group' style='margin-top:8px;'>
+      <button id='btn-preset-pinch'>对捏</button><button id='btn-preset-index'>食指独屈</button><button id='btn-preset-thumb'>拇指对掌</button>
+    </div>
+    <div class='slider-group' style='margin-top:8px;'><label>动画速度 <span class='value' id='speed-val'>1.0x</span></label><input type='range' id='speed-slider' min='0.1' max='3.0' value='1.0' step='0.1'></div>
+  </div>
+  <div class='panel-section'>
+    <h3>逐关节控制 · 14 关节独立，上限 = 该关节安全包络</h3>
+    <div id='joint-sliders'></div>
+  </div>
+  <div class='panel-section'>
+    <h3>显示选项</h3>
+    <div class='toggle-row'><input type='checkbox' id='show-grid' checked><label for='show-grid'>网格地面</label></div>
+    <div class='toggle-row'><input type='checkbox' id='show-labels' checked><label for='show-labels'>标注标签</label></div>
+    <div class='toggle-row'><input type='checkbox' id='show-trail' checked><label for='show-trail'>指尖轨迹</label></div>
+    <div class='toggle-row'><input type='checkbox' id='show-body' checked><label for='show-body'>人体轮廓参考</label></div>
+  </div>
+  <div class='panel-section'>
+    <h3>视图</h3>
+    <div class='btn-group'><button id='btn-view-iso'>等轴</button><button id='btn-view-front'>正面</button><button id='btn-view-side'>侧面</button><button id='btn-view-top'>俯视</button></div>
+  </div>
+  <div class='panel-section'><h3>仿生类比</h3><div class='info-box' id='bio-info'></div></div>
+  <div class='panel-section'><h3>机构参数</h3><div class='info-box' id='param-info'></div></div>
+  <div class='panel-section'><h3>3D打印与拆装指南</h3><div class='info-box' id='print-info'></div></div>
+  <div class='panel-section'><h3>实时数据</h3><div class='info-box' id='live-data'></div></div>
+</div>

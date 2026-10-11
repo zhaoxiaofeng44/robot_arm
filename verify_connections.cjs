@@ -5,6 +5,28 @@ const fs=require('fs'),path=require('path');
 const THREE=require('./.verification/three-r128.cjs');
 const root=__dirname;
 const target=(process.argv[2]||'finger');
+// 整手 = 五条链（四指各 3 单元 + 拇指 2 单元），各链零件名带指名前缀；
+// 故 hand 目标先以 CONN_F=<finger> 逐指重跑自身（每指一套完整审计），再汇总。
+if (target==='hand' && !process.env.CONN_F) {
+  const {spawnSync}=require('child_process'); let fail=0;
+  const kids=['index','middle','ring','pinky','thumb'];
+  for (const kk of kids) {
+    const r=spawnSync(process.execPath,[__filename,'hand'],{env:Object.assign({},process.env,{CONN_F:kk}),encoding:'utf8',maxBuffer:1<<28});
+    const body=(r.stdout||'').split('\n');
+    process.stdout.write('---- '+kk+' ----\n'+body.slice(-4).join('\n')+'\n');
+    if (r.status!==0) fail++;
+  }
+  // 汇总各指链报告到一份 hand 报告（保持文档中的文件名约定）
+  const parts=kids.map(kk=>{ const p2=path.join(__dirname,'connections_verify_report_hand_'+kk+'.txt');
+    return fs.existsSync(p2)? fs.readFileSync(p2,'utf8') : ('（缺 '+kk+' 报告）\n'); });
+  fs.writeFileSync(path.join(__dirname,'connections_verify_report_hand.txt'),
+    parts.join('\n\n')+'\n@@ 汇总：'+(fail?(fail+' 条指链不成立'):'五指链全部成立')+'\n');
+  console.log('\n==== 整手连接物理性：'+(fail? (fail+' 条指链不成立') : '五指链全部成立 ✓')+' ====');
+  process.exit(fail?1:0);
+}
+const HANDF=(target==='hand')?(process.env.CONN_F||'index'):null;
+const PX=HANDF?HANDF+'_':'';
+const mapHand=n=>{ if(!HANDF)return n; let x=String(n); if(HANDF==='thumb')x=x.replace(/^p3/,'p2'); return PX+x; };
 const FILE={finger:'finger_mechanism_3d.html',arm:'arm_mechanism_3d.html',hand:'hand_mechanism_3d.html'}[target];
 const html=fs.readFileSync(path.join(root,FILE),'utf8');
 const script=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].find(m=>m[1].includes('const P ='))[1];
@@ -13,7 +35,7 @@ const main=script.slice(0,script.lastIndexOf('\ninitScene();'));
 const api=new Function('THREE','document',main+
   '\nscene=new THREE.Scene();showLabels=false;buildMechanism();updateMechanism(0);'+
   'return {P,s,scene,updateMechanism,angleToStroke,getStrokeFromAngle,transmissionAngle,getForceData,LIMITS:(typeof LIMITS!=="undefined"?LIMITS:null),'+
-  'getJoints:(typeof getJoints!=="undefined"?getJoints:null)};')(THREE,document);
+  'getJoints:(typeof getJoints!=="undefined"?getJoints:null),FINGERS:(typeof FINGERS!=="undefined"?FINGERS:null),currentPose:(typeof currentPose!=="undefined"?currentPose:null)};')(THREE,document);
 const {P,s,scene}=api;
 scene.updateMatrixWorld(true);
 const out=[],FAIL=[];
@@ -21,7 +43,7 @@ const say=(...a)=>{const l=a.join(' ');out.push(l);fs.appendFileSync(path.join(r
 const bad=(...a)=>{FAIL.push(a.join(' '));say('   !! '+a.join(' '));};
 const f=(x,n)=>(x===undefined||x===null)?String(x):(+x).toFixed(n===undefined?3:n);
 const rc=new THREE.Raycaster();
-const mesh=n=>scene.getObjectByName(n);
+const mesh=n=>scene.getObjectByName(n)||scene.getObjectByName(mapHand(n));   // 已带前缀的名字直接命中，否则补前缀
 function bboxMM(name){
   const m=mesh(name); if(!m)return null;
   m.updateMatrixWorld(true);
@@ -75,7 +97,7 @@ function inSolid(name,x,y,z){
 }
 let nm=0;scene.traverse(o=>{if(o.isMesh)nm++;});
 say('######################################################################');
-say('# 连接物理性审计  target='+target+'  ('+FILE+')   网格数='+nm);
+say('# 连接物理性审计  target='+target+(HANDF?('  指链='+HANDF):'')+'  ('+FILE+')   网格数='+nm);
 say('######################################################################');
 say('');
 say('== 0. 基准参数 ==');
@@ -85,19 +107,16 @@ say('   安装板 y0='+P.print.flangePlateY0+' 厚'+P.print.flangePlateT+'  抱�
 
 say('');
 say('== 1. 电机安装：前法兰 <-> 安装板（承推面）==');
-const TEN=(target==='arm')?[['motor','upperArm']]
-        :(target==='finger')?[['m0','palm'],['m1','p1'],['m2','p2']]
-        :[['m1','p1'],['m2','p2']];
-const BODIES=(target==='arm')?[['','upperArmBodyProximal']]
-        :(target==='finger')?[['m0','palmBodyProximal'],['m1','p1BodyHeel'],['m2','p2BodyHeel']]
-        :[['m1','p1BodyProximal'],['m2','p2BodyHeel']];
-const MOTORS=(target==='arm')?['']:((target==='finger')?['m0','m1','m2']:['m1','m2']);
-const JOINTS=(target==='arm')
+let TEN=(target==='arm')?[['motor','upperArm']]
+        :[['m0','palm'],['m1','p1'],['m2','p2']];
+let BODIES=(target==='arm')?[['','upperArmBodyProximal']]
+        :[['m0','palmBodyProximal'],['m1','p1BodyHeel'],['m2','p2BodyHeel']];
+let MOTORS=(target==='arm')?['']:['m0','m1','m2'];
+let JOINTS=(target==='arm')
   ?[['O','elbowForkLeft','elbowSleeveBody','elbowBoltShank'],
     ['D','dClevisBossLeft','dClevisBossRight','dBoltShank'],
     ['B','bClevisPlateLeft','bClevisPlateRight','bBoltShank']]
-  :(target==='finger')
-    ?[['O0','palmForkL','p1SleeveBody','o0BoltShank'],
+  :[['O0','palmForkL','p1SleeveBody','o0BoltShank'],
       ['D0','p1DClevisBossL','p1DClevisBossR','p1dBoltShank'],
       ['B0','m0ClevisPlateL','m0ClevisPlateR','m0bBoltShank'],
       ['O1','p1ForkL','p2SleeveBody','o1BoltShank'],
@@ -105,16 +124,13 @@ const JOINTS=(target==='arm')
       ['B1','m1ClevisPlateL','m1ClevisPlateR','m1bBoltShank'],
       ['O2','p2ForkL','p3SleeveBody','o2BoltShank'],
       ['D2','p3DClevisBossL','p3DClevisBossR','p3dBoltShank'],
-      ['B2','m2ClevisPlateL','m2ClevisPlateR','m2bBoltShank']]
-    :[['O1','p1ForkL','p2SleeveBody','o1BoltShank'],
-      ['D1','p2DClevisBossL','p2DClevisBossR','p2dBoltShank'],
-      ['B1','m1ClevisPlateL','m1ClevisPlateR','m1bBoltShank'],
-      ['O2','p2ForkL','p3SleeveBody',null],
-      ['D2','p3DClevisBossL','p3DClevisBossR','p3dBoltShank'],
       ['B2','m2ClevisPlateL','m2ClevisPlateR','m2bBoltShank']];
-const ANCH=(target==='arm')?[['bClevis','dBoltAssembly']]
-  :(target==='finger')?[['m0BClevis','p1dBoltAssembly'],['m1BClevis','p2dBoltAssembly'],['m2BClevis','p3dBoltAssembly']]
-  :[['m1BClevis','p2dBoltAssembly'],['m2BClevis','p3dBoltAssembly']];
+let ANCH=(target==='arm')?[['bClevis','dBoltAssembly']]
+  :[['m0BClevis','p1dBoltAssembly'],['m1BClevis','p2dBoltAssembly'],['m2BClevis','p3dBoltAssembly']];
+// 拇指只有 2 个单元（P2 即末节），相应截断
+const NU=(HANDF==='thumb')?2:3;
+if(NU===2){ TEN=TEN.slice(0,2); BODIES=BODIES.slice(0,2); MOTORS=MOTORS.slice(0,2);
+  JOINTS=JOINTS.slice(0,6); ANCH=ANCH.slice(0,2); }
 const motes=TEN;
 for(const mp of motes){
   const M=mp[0],PFX=mp[1];
@@ -143,13 +159,14 @@ say('== 2. 后抱箍 <-> 段身（2xM4 贯穿 + 双侧耳板）==');
 {
   const bodies=BODIES;
   const tabs=[];
-  scene.traverse(o=>{if(o.isMesh&&/ollarTab/i.test(o.name))tabs.push(o.name);});
+  scene.traverse(o=>{if(o.isMesh&&/ollarTab/i.test(o.name)&&(!PX||o.name.indexOf(PX)===0))tabs.push(o.name);});
   say('   抱箍耳板网格 ('+tabs.length+' 片): '+tabs.join(', '));
   const tabTags=(target==='arm')?['Left','Right']:['A','B'];
   tabTags.forEach((tag,i)=>{
     const names=tabs.filter(n=>target==='arm'? n.indexOf('collarTab'+tag)===0 : n.indexOf('CollarTab'+tag)>=0);
     const zs=names.map(n=>{const b=bboxMM(n);return b?b.c[2]:null;}).filter(z=>z!==null);
-    const hasP=zs.some(z=>z>0),hasN=zs.some(z=>z<0);
+    const zc=zs.length?(Math.max.apply(null,zs)+Math.min.apply(null,zs))/2:0;   // 以本指抱箍中心为基准（整手各指 z 有平移）
+    const hasP=zs.some(z=>z>zc+0.1),hasN=zs.some(z=>z<zc-0.1);
     say('   螺栓'+tag+'：耳板 '+names.length+' 片  z>0:'+hasP+'  z<0:'+hasN+(hasP&&hasN?'  -> 双侧夹持 OK':'  -> 单侧 !!'));
     if(!(hasP&&hasN))bad('抱箍螺栓'+tag+' 只有单侧耳板：另一侧螺母/垫圈悬空，M4 锁不紧（设计为 z=±7..11 双耳板）');
   });
@@ -166,13 +183,13 @@ say('');
 say('== 3. 分段拼接：M4 竖向贯穿（垫板有孔；本体也必须开孔）==');
 {
   const bolts=[];
-  scene.traverse(o=>{if(o.isMesh&&/SpliceBolt[LR]$/.test(o.name)){
+  scene.traverse(o=>{if(o.isMesh&&/SpliceBolt[LR]$/.test(o.name)&&(!PX||o.name.indexOf(PX)===0)){
     const p=new THREE.Vector3(0,0,0).applyMatrix4(o.matrixWorld);
     bolts.push({name:o.name,x:p.x/s,y:p.y/s});}});
   const seen=new Set();
   for(const b of bolts){
     const bodies=[];
-    scene.traverse(o=>{if(o.isMesh&&/Body/.test(o.name)){const bb=bboxMM(o.name);
+    scene.traverse(o=>{if(o.isMesh&&/Body/.test(o.name)&&(!PX||o.name.indexOf(PX)===0)){const bb=bboxMM(o.name);
       if(bb&&b.x>=bb.mn[0]-0.01&&b.x<=bb.mx[0]+0.01&&b.y>=bb.mn[1]-0.01&&b.y<=bb.mx[1]+0.01&&bodies.indexOf(o.name)<0)bodies.push(o.name);}});
     if(!bodies.length)continue;
     const owner=bodies.join('+');
@@ -217,17 +234,18 @@ for(const M of MOTORS){
   }
 }
 
-if(target==='finger'){
+if(target==='finger'||target==='hand'){
   say('');
   say('== 5. 手掌侧接口：palm_mount <-> 掌段指根方块 ==');
   const blk=bboxMM('palmBase'),base=bboxMM('palmFlangeBase');
+  const ZOFF=(target==='hand'&&base)?base.c[2]:0;   // 整手：该指基节在世界 z 上的平移量
   say('   palmBase(指根方块)     y=['+f(blk.mn[1])+','+f(blk.mx[1])+']  x±'+f(blk.size[0]/2)+' z±'+f(blk.size[2]/2));
   say('   palmFlangeBase(法兰板) y=['+f(base.mn[1])+','+f(base.mx[1])+']  x±'+f(base.size[0]/2)+' z±'+f(base.size[2]/2));
   const g=base.mn[1]-blk.mx[1];
   say('   法兰板底面 vs 方块顶面 间隙 = '+f(g)+'mm '+(Math.abs(g)<0.05?'-> 面接触 OK':'-> 悬空/干涉 !!'));
   if(Math.abs(g)>0.05)bad('palm_mount 与指根方块未贴合（间隙 '+f(g)+'mm）');
   for(const [bx,bz] of P.print.rootBoltXZ){
-    const ph=yHits('palmFlangeBase',bx,bz), bh=yHits('palmBase',bx,bz);
+    const ph=yHits('palmFlangeBase',bx,bz+ZOFF), bh=yHits('palmBase',bx,bz+ZOFF);
     const ok=(ph===0&&bh===0);
     say('   内圈 M4 @(x='+bx+',z='+bz+')：法兰过孔命中'+ph+(ph===0?' 通孔OK':' 实心!!')+'；方块底孔命中'+bh+(bh===0?' 通孔OK':' 实心!!'));
     if(!ok)bad('palm_mount 内圈 M4 接口 (x='+bx+',z='+bz+') 孔不成立');
@@ -235,7 +253,16 @@ if(target==='finger'){
   const pb=bboxMM('palmMountBolt1');
   if(pb)say('   M4×16 螺栓杆 y=['+f(pb.mn[1])+','+f(pb.mx[1])+']（穿法兰板6 + 旋入方块10）');
   const outer=[[22,22],[22,-22],[-22,22],[-22,-22]];
-  say('   外圈 Ø5.5 掌侧孔: '+outer.map(([a,b])=>'('+a+','+b+')').join(' ')+'  命中='+outer.map(([a,b])=>yHits('palmFlangeBase',a,b)).join('/')+'（手掌球窝侧零件未建模）');
+  say('   外圈 Ø5.5 掌侧孔: '+outer.map(([a,b])=>'('+a+','+b+')').join(' ')+'  命中='+outer.map(([a,b])=>yHits('palmFlangeBase',a,b+ZOFF)).join('/'));
+  if(target==='hand'){
+    // 整手：外圈 M5 自法兰下方穿入掌骨板的螺纹孔 —— 必须与掌骨板的孔对位（骨架孔位是整手特有的风险）
+    const PN=(HANDF==='thumb'||HANDF==='index')?'palmPlateA':'palmPlateB';
+    const ring=outer.map(([a,b])=>yHits(PN,a,b+ZOFF));
+    const inner=P.print.rootBoltXZ.map(([a,b])=>yHits(PN,a,b+ZOFF));
+    say('   '+PN+' 对位：外圈 4×Ø4.2 命中='+ring.join('/')+'   内圈 4×Ø9 让位孔命中='+inner.join('/'));
+    if(ring.some(v=>v!==0))bad('掌骨板 '+PN+' 与 '+HANDF+' 法兰外圈 M5 孔位不对位（命中≠0 即被实体挡住）');
+    if(inner.some(v=>v!==0))bad('掌骨板 '+PN+' 与 '+HANDF+' 指根 M4 头让位孔不对位');
+  }
 }
 
 say('');
@@ -264,13 +291,19 @@ else{
   const step=0.5;let worstClosure=0,worstOff=0,worstAnchor=0,minT=1e9,maxT=-1e9,mono=true,rodMin=1e9,rodMax=-1e9;
   const prevS=[null,null,null];
   const anchPairs=ANCH;
-  const isF=(target==='finger'), L=(isF&&api.LIMITS)?api.LIMITS:{mcp:120,pip:120,dip:120};
+  const isF=(target==='finger'), isH=(target==='hand');
+  let L={mcp:120,pip:120,dip:120};
+  if(isF&&api.LIMITS)L=api.LIMITS;
+  else if(isH&&api.FINGERS&&api.FINGERS[HANDF]){const q=api.FINGERS[HANDF].limits;L={mcp:q[0],pip:q[1],dip:q[2]};}
   for(let i=0;i<=120/step;i++){
     const u=step*i/120, d0=L.mcp*u, d1=(L.pip||120)*u, d2=(L.dip||120)*u;
-    const call=isF?[d0,d1,d2]:[d1,d2];
-    api.updateMechanism(...call);scene.updateMatrixWorld(true);
-    const J=api.getJoints(...call);
-    const units=isF?[[0,'t0Tendon',J.B0,J.D0,d0],[1,'t1Tendon',J.B1,J.D1,d1],[2,'t2Tendon',J.B2,J.D2,d2]]
+    const pose=isH?Object.assign(api.currentPose(),({})[HANDF]=[d0,d1,d2].slice(0,NU)):null;
+    const call=isF?[d0,d1,d2]:(isH?[pose]:[d1,d2]);
+    api.updateMechanism.apply(null,call);scene.updateMatrixWorld(true);
+    const J=api.getJoints.apply(null,call);
+    const C=isH?J[HANDF]:J;
+    const Bc=i=>isH?C.B[i]:C['B'+i], Dc=i=>isH?C.D[i]:C['D'+i];
+    const units=(isF||isH)?[[0,'t0Tendon',Bc(0),Dc(0),d0],[1,'t1Tendon',Bc(1),Dc(1),d1],[2,'t2Tendon',Bc(2),Dc(2),d2]].slice(0,NU)
                    :[[1,'t1Tendon',J.B1,J.D1,d1],[2,'t2Tendon',J.B2,J.D2,d2]];
     for(const [idx,tn,Bc,Dc,ang] of units){
       if(!Bc||!Dc)continue;
@@ -311,8 +344,9 @@ else{
   const g=api.getForceData(60);
   say('   [参考] theta=60 理想静载杆力 '+f(g.forceN,1)+' N（5kg@250mm）');
 }
-fs.appendFileSync(path.join(root,'connections_audit_'+target+'.log'),'ALL-DONE fails='+FAIL.length+'\n');
-fs.writeFileSync(path.join(root,'connections_verify_report_'+target+'.txt'),out.join('\n')+'\n');
+const SUF=target+(HANDF?('_'+HANDF):'');
+fs.appendFileSync(path.join(root,'connections_audit_'+SUF+'.log'),'ALL-DONE fails='+FAIL.length+'\n');
+fs.writeFileSync(path.join(root,'connections_verify_report_'+SUF+'.txt'),out.join('\n')+'\n');
 console.log(out.join('\n'));
 console.log('\n==== 结论：'+(FAIL.length?FAIL.length+' 项连接物理上不成立':'全部连接物理上成立')+' ====');
 FAIL.forEach(t=>console.log(' - '+t));

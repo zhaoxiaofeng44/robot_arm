@@ -1,0 +1,21 @@
+const fs=require('fs'),path=require('path');
+const G=require('/Users/xf/workspace/myArm/robot_arm/.verification/geom2d.cjs');
+const THREE=G.THREE;
+const root='/Users/xf/workspace/myArm/robot_arm';
+const html=fs.readFileSync(path.join(root,'hand_mechanism_3d.html'),'utf8');
+const script=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].find(m=>m[1].includes('const P ='))[1];
+const nodes=new Map(),document={getElementById(id){if(!nodes.has(id))nodes.set(id,{});return nodes.get(id);}};
+const main=script.slice(0,script.lastIndexOf('\ninitScene();'));
+const t0=Date.now();
+const api=new Function('THREE','document',main+'\nscene=new THREE.Scene();showLabels=false;buildMechanism();updateMechanism();return {P,s,scene,getJoints,updateMechanism,FINGERS,HAND};')(THREE,document);
+console.log('build ms', Date.now()-t0);
+const {scene,s,HAND,FINGERS}=api;
+const meshes=[]; scene.traverse(o=>{ if(o.isMesh) meshes.push(o); });
+console.log('meshes', meshes.length);
+const t1=Date.now();
+const prepared=meshes.map(m=>G.prepare(m,s,'x'));
+console.log('prepare ms', Date.now()-t1);
+const shapes=prepared.map(G.project);
+const t2=Date.now();
+let pairs=0; for(let i=0;i<60;i++){ scene.updateMatrixWorld(true); const sh=prepared.map(G.project); pairs=G.broadPairs(sh,45).length; }
+console.log('project+broadphase ms/pose', ((Date.now()-t2)/60).toFixed(1), 'pairs', pairs);
