@@ -151,6 +151,16 @@ function updateMechanism(pose){
       updateRodUnit(F.motors[k], f.key+'_m'+k, -P.phalanx1Len+P.motorFrontY, C.Bl[k].x, C.Bl[k].y);
       updateTendon(F.tendons[k], C.Bl[k], C.Dl[k]);
     }
+    // 展开/并拢：指根绕 x 转 φ，推杆 + BD 连杆按闭合关系逐帧摆位（|BD| ≡ L = 85 恒等）
+    const phi = (F.spread || 0) * Math.PI/180;
+    if (F.spreadGroup) F.spreadGroup.rotation.x = phi;
+    if (F.spreadUnit) {
+      const R = SPREAD.crankR, L = P.tendonLinkLen;
+      const Dy = -R*Math.sin(phi), Dz = R*Math.cos(phi);
+      const By = Dy - Math.sqrt(L*L - (R - Dz)*(R - Dz));
+      updateRodUnit(F.spreadUnit.motor, f.key+'_sp', SPREAD.noseY, P.motorMountX, By);
+      updateTendon(F.spreadUnit.link, {x:R, y:By}, {x:Dz, y:Dy});
+    }
   }
   updateLabels();
   updateLiveData();

@@ -1,5 +1,5 @@
 ######################################################################
-# 连接物理性审计  target=hand  指链=index  (hand_mechanism_3d.html)   网格数=1395
+# 连接物理性审计  target=hand  指链=index  (hand_mechanism_3d.html)   网格数=1745
 ######################################################################
 
 == 0. 基准参数 ==
@@ -31,9 +31,9 @@
    安装板 M4 孔(x=44,z=13) 射线命中 0  -> 通孔 OK
 
 == 2. 后抱箍 <-> 段身（2xM4 贯穿 + 双侧耳板）==
-   抱箍耳板网格 (12 片): index_m2CollarTabA, index_m2CollarTabAN, index_m2CollarTabB, index_m2CollarTabBN, index_m1CollarTabA, index_m1CollarTabAN, index_m1CollarTabB, index_m1CollarTabBN, index_m0CollarTabA, index_m0CollarTabAN, index_m0CollarTabB, index_m0CollarTabBN
-   螺栓A：耳板 6 片  z>0:true  z<0:true  -> 双侧夹持 OK
-   螺栓B：耳板 6 片  z>0:true  z<0:true  -> 双侧夹持 OK
+   抱箍耳板网格 (16 片): index_m2CollarTabA, index_m2CollarTabAN, index_m2CollarTabB, index_m2CollarTabBN, index_m1CollarTabA, index_m1CollarTabAN, index_m1CollarTabB, index_m1CollarTabBN, index_m0CollarTabA, index_m0CollarTabAN, index_m0CollarTabB, index_m0CollarTabBN, index_spCollarTabA, index_spCollarTabAN, index_spCollarTabB, index_spCollarTabBN
+   螺栓A：耳板 8 片  z>0:true  z<0:true  -> 双侧夹持 OK
+   螺栓B：耳板 8 片  z>0:true  z<0:true  -> 双侧夹持 OK
    palmBodyProximal z=[-97.000,-83.000]  抱箍螺栓孔位 y=184/209
    m0CollarBoltShankA 光杆 z=[-101.000,-79.000] 长 22.000mm；双侧夹持所需 = 段身14.000+2x4 = 22.000mm
    p1BodyHeel z=[-96.000,-84.000]  抱箍螺栓孔位 y=184/209
@@ -72,7 +72,7 @@
         防转围壁 y=[-19.339,-13.339] 相对螺母[ -18.839,-13.839] 完整包住 OK（拉力靠螺纹副+防转传递）
 
 == 5. 手掌侧接口：palm_mount <-> 掌段指根方块 ==
-   palmBase(指根方块)     y=[300.000,320.000]  x±12.000 z±11.000
+   palmBase(指根方块)     y=[303.000,320.000]  x±12.000 z±11.000
    palmFlangeBase(法兰板) y=[320.000,326.000]  x±28.000 z±28.000
    法兰板底面 vs 方块顶面 间隙 = 0.000mm -> 面接触 OK
    内圈 M4 @(x=8,z=7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK

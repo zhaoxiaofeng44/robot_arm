@@ -9,6 +9,22 @@ function skipPair(A, B) {
     if (has(/_(palmFlangeBase|palmMountBolt\d+|palmMountBoltHead\d+)$/)) return '掌骨法兰与掌体骨架的螺栓连接面（设计贴合）';
     if (has(/MountBoltHead\d+$/) && has(/_(palmFlangeBase)$/)) return 'M4 螺栓头与掌骨板让位孔的设计配合';
   }
+  // —— 销轴设计配合（Ø10 肩螺栓/Ø8 销 与对应孔件的过盈/滑配，全机同构）——
+  {
+    const pair = A.name + '|' + B.name;
+    const shank = /BoltShank$/.test(A.name) || /BoltShank$/.test(B.name);
+    if (shank && /(SleeveHub|SleeveBody|BodyWaist|BodyDistal|Bo?dy|TendonEye|spHub|spForkBoss|spDClevisBoss|ClevisPlate|DClevisBoss|Fork\w)/.test(pair))
+      return 'Ø10/Ø8 肩螺栓光杆穿轴套/端环/毂孔的设计配合（同肘版 v5 判据）';
+  }
+  // —— 展开/并拢副（每指 1 台侧挂电机 + 铰链 + 曲柄 + BD 连杆）——
+  for (const k of KEYS) {
+    const S = t => set.has(k + t);
+    if (S('_SPF') && S('_SPR')) return '展开副铰链：Ø10 销 + 叉耳 + 毂 + Ø8 D 销（销轴设计配合）';
+    if (S('_SPR') && S('_SPT')) return '展开副 D 销与 BD 连杆端环（Ø8 销轴配合）';
+    if (S('_SPF') && S('_SPT')) return '展开副 B 叉头/推杆与 BD 连杆端环（Ø8 销 + 同轴滑动）';
+    if (S('_SPF') && S('_MTF')) return '展开副吊架/安装板与掌骨安装件固定贴合（4×M4）';
+    if (S('_SPR') && (S('_P' + FINGERS[k].n) || S('_PALM'))) return '展开副毂与接掌段一体（同一打印件，固连）';
+  }
   for (const k of KEYS) {
     const n = FINGERS[k].n;
     for (let j = 0; j < n; j++) {

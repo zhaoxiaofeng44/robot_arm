@@ -39,11 +39,71 @@
     const TY = P.upperArmLen - P.forearmLen;                 // = 50mm
     const asm = new THREE.Group(); asm.name = palmPfx + 'MountAsm';
     parent.add(asm); asm.rotation.z = Math.PI; asm.position.set(0, TY * s, 0);
-    const palmBlock = createPlateWithHoles(24, 22, 20, pr.rootBoltXZ.map(function(h){return [h[0],h[1],1.7];}), MAT.base);
+    // 方块厚度 20→17：底面抬到 y=303，让开铰链毂顶面(300)与指根段顶角摆动(≈301.5)
+    const palmBlock = createPlateWithHoles(24, 22, 17, pr.rootBoltXZ.map(function(h){return [h[0],h[1],1.7];}), MAT.base);
     palmBlock.name = palmPfx+'Base'; palmBlock.rotation.x = Math.PI/2;
-    palmBlock.position.y = (P.upperArmLen+10)*s;
+    palmBlock.position.y = (P.upperArmLen+11.5)*s;
     asm.add(palmBlock);
     buildPalmMount(asm, palmPfx);
+  }
+
+  // ============ 展开/并拢副（每指 1 台侧挂直线电机）：绕掌骨安装处的 x 轴摆动 ============
+  //   枢轴 = 掌骨安装件底面（局部 y = SPREAD.pivotY = 300），铰链销 Ø10 沿 x。
+  //   固定侧（随安装件/掌骨板）: 叉耳 2 片 + Ø10 销 + 吊架 + 电机安装板 + Ø36 直线电机 + 后抱箍
+  //   转动侧（随指根）        : 毂（Ø10 孔）+ 曲柄臂 R + D 双耳（Ø8 销）
+  //   传动：电机推杆沿 y 上行（前端面 y = SPREAD.noseY），经 85mm BD 连杆推曲柄 → 指根绕 x 转 φ
+  //   闭合关系（在 (y,z) 平面内，曲柄零位沿 +z）：D(φ) = (−R sinφ, R cosφ)
+  //            B = D − (0, √(L² − (R − R cosφ)²))  ⇒ |BD| ≡ L = 85（恒等闭合，无需迭代求解）
+  //   φ = ±12° 时推杆只用 ±5.4mm 行程（电机 59mm 全行程的 9%），故侧挂小电机也可直接替换。
+  function buildSpreadUnit(rootParent, movingParent, K) {
+    const SP = SPREAD;
+    const R = SP.crankR, NE = SP.noseY;
+    // ---------- 固定侧 ----------
+    const fx = new THREE.Group(); fx.name = K + '_spreadFixed';
+    fx.position.set(0, SP.pivotY * s, 0); rootParent.add(fx);
+    for (const [tag, xx] of [['L', SP.earX], ['R', -SP.earX]]) {
+      const ear = createBox(SP.earT*s, 30*s, 22*s, MAT.base);
+      ear.name = K + '_spFork' + tag; ear.position.set(xx*s, 1*s, 0); fx.add(ear);
+      const boss = createBoredDisc(pr.earBossRadius, P.boreElbow/2, SP.earT, MAT.base);
+      boss.name = K + '_spForkBoss' + tag;
+      boss.rotation.y = Math.PI/2; boss.position.set(xx*s, 0, 0); fx.add(boss);
+    }
+    const oBolt = createShoulderBolt(K + '_sp_o', pr.boltElbow, MAT.fastener);
+    oBolt.rotation.z = Math.PI/2; fx.add(oBolt);                       // Ø10 铰链销：轴线沿 x
+    // 吊架：电机安装板顶面(y=−77) → 掌骨法兰底面(y=+31)，落在 x∈[10,18]、z∈[16,28]，
+    //   与曲柄(≤x9)、BD连杆(≤x4)、D双耳(≤x9) 在 x 上分离 → 摆动全程无干涉
+    //   L 形：立柱 x∈[outX−6,outX+6]、z∈[16,28]（贴着电机安装板外侧），横臂到指根方块 (y=+31)
+    const brk = createBox(12*s, 180*s, 12*s, MAT.base);
+    brk.name = K + '_spBracket'; brk.position.set(SP.outX*s, -59*s, 22*s); fx.add(brk);
+    const foot = createBox((SP.outX - 4)*s, 17*s, 12*s, MAT.base);
+    foot.name = K + '_spBracketFoot'; foot.position.set((SP.outX/2 + 2)*s, 22.5*s, 22*s); fx.add(foot);
+    const footPad = createBox(16*s, 17*s, 22*s, MAT.base);
+    footPad.name = K + '_spBracketPad'; footPad.position.set(4*s, 22.5*s, 11*s); fx.add(footPad);
+    // 电机：轴沿 y，轴线落在 (x=0, z=+R)；buildMotorSet 内部 +28mm 偏置用 mg 平移补回
+    const mg = new THREE.Group(); mg.name = K + '_spMotorGroup';
+    mg.position.set((SP.outX - P.motorMountX)*s, 0, R*s); fx.add(mg);   // 轴线落在 (x=outX, z=+R)
+    buildMotorSet(mg, K + '_sp', NE, NE - 80, NE - 38, [NE - 72, NE - 48]);
+    buildFlangePlate(mg, K + '_sp', NE + 4);
+    // 推杆 / 推杆叉头 / 桥座 / M6 螺母：由 buildMotorSet 一并生成（<前缀>ExposedRod / BClevis），
+    //   交 updateRodUnit 逐帧摆位 —— 此处不再重复建件，避免同名件双份。
+    // ---------- 转动侧（随指根绕 x 摆）----------
+    const hub = createBoredDisc(11, P.boreElbow/2, 13, MAT.forearm);
+    hub.name = K + '_spHub'; hub.rotation.y = Math.PI/2; movingParent.add(hub);
+    // 曲柄：毂 → 横向 (x=outX) → 外伸 R，末端 D 双耳（Ø8 销沿 x）
+    const arm = createBox(SP.outX*s, 12*s, (R - 4)*s, MAT.forearm);
+    arm.name = K + '_spCrankArm'; arm.position.set((SP.outX/2)*s, 0, (R + 4)/2*s); movingParent.add(arm);
+    for (const [tag, xx] of [['L', SP.outX + SP.dBossX], ['R', SP.outX - SP.dBossX]]) {
+      const boss = createBoredDisc(pr.dBossOD/2, P.boreLink/2, pr.dBossT, MAT.base);
+      boss.name = K + '_spDClevisBoss' + tag;
+      boss.rotation.y = Math.PI/2; boss.position.set(xx*s, 0, R*s); movingParent.add(boss);
+    }
+    const dBolt = createShoulderBolt(K + '_sp_d', pr.boltD, MAT.fastener);
+    dBolt.rotation.z = Math.PI/2; dBolt.position.set(SP.outX*s, 0, R*s); movingParent.add(dBolt);
+    // ---------- BD 连杆（85mm 同型件）：挂在平面转换组里，逐帧按 B/D 摆位 ----------
+    const plan = new THREE.Group(); plan.name = K + '_spLinkPlane';
+    plan.rotation.y = -Math.PI/2; plan.position.x = SP.outX*s; fx.add(plan);   // plan(x,y) ≡ 实际(z,y)，整体在 x=outX
+    const link = buildTendon(plan, K + '_spt');
+    return { fixed: fx, motor: mg, link: link, linkPlane: plan };
   }
 
   // ============ 单指（反根链）：掌段(自由末端·载电机0·带指尖配件) + n 个关节单元 ============
@@ -68,7 +128,14 @@
     const M = (P.upperArmLen - P.phalanx1Len*(N-1) - P.forearmLen) / 2;
     const chainRoot = new THREE.Group(); chainRoot.name = K+'_chainRoot';
     chainRoot.rotation.z = Math.PI; chainRoot.position.set(0, 2*M*s, 0);
-    root.add(chainRoot); F.chainRoot = chainRoot;
+    // —— 展开/并拢层：指根绕 x 摆 φ（枢轴 = 安装件底面）；反根镜像层挂在其下 ——
+    const spread = new THREE.Group(); spread.name = K+'_spread';
+    spread.position.set(0, SPREAD.pivotY*s, 0);   // 289：毂心
+
+    root.add(spread); F.spreadGroup = spread;
+    F.spread = 0; F.spreadLimit = SPREAD.limitDeg;
+    chainRoot.position.set(0, (2*M - SPREAD.pivotY)*s, 0);
+    spread.add(chainRoot); F.chainRoot = chainRoot;
 
     // —— 掌段（反根后 = 自由末端，载电机0 + 指尖配件）——
     const q = K+'_palm';
@@ -118,6 +185,22 @@
         buildTerminalPhalanx(g, pfx, q);
       }
       parent = g;
+    }
+
+    // —— 展开/并拢副：固定侧挂 root（安装件侧），转动侧挂 spread（指根侧）——
+    F.spreadUnit = buildSpreadUnit(root, spread, K);
+    // —— 掌部安装件（方块+56×56法兰）改为“固定件”：整组搬到 root 下，世界位姿逐点保持不变 ——
+    //    原因：方块经 4×M4 锁在法兰上、法兰经 4×M5 锁在掌骨板上，物理上不能随指根摆；
+    //    铰链把“方块以上”与“指根段以下”分开，因此安装件必须留在固定侧。
+    root.updateWorldMatrix(true, true);
+    const mAsm = root.getObjectByName(q + 'MountAsm');
+    if (mAsm) {
+      const wp = new THREE.Vector3(), wq = new THREE.Quaternion(), ws = new THREE.Vector3();
+      mAsm.matrixWorld.decompose(wp, wq, ws);
+      const rq = new THREE.Quaternion().setFromRotationMatrix(root.matrixWorld).invert();
+      const lp = wp.clone().applyMatrix4(new THREE.Matrix4().copy(root.matrixWorld).invert());
+      root.add(mAsm); mAsm.position.copy(lp); mAsm.quaternion.copy(rq.multiply(wq)); mAsm.scale.copy(ws);
+      F.mountAsm = mAsm;
     }
 
     // —— 反根重挂：Pn 固定于 chainRoot；P(n−1)…掌段 各套关节组 joints[j]，绕 Oj 转 −θj ——

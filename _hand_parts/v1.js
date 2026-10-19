@@ -23,8 +23,8 @@ const document = {
     getContext() { return { font: '', fillStyle: '', measureText() { return { width: 40 }; }, fillText() {} }; } }; },
 };
 const main = script.slice(0, script.lastIndexOf('\ninitScene();'));
-const api = new Function('THREE', 'document', main + '\nscene = new THREE.Scene(); showLabels = false; buildMechanism(); updateMechanism(); return { P, s, scene, getJoints, updateMechanism, FINGERS, HAND, angleToStroke, getForceData, transmissionAngle, currentPose };')(THREE, document);
-const { P, s, scene, HAND, FINGERS, getJoints, updateMechanism } = api;
+const api = new Function('THREE', 'document', main + '\nscene = new THREE.Scene(); showLabels = false; buildMechanism(); updateMechanism(); return { P, s, scene, getJoints, updateMechanism, FINGERS, HAND, angleToStroke, getForceData, transmissionAngle, currentPose, SPREAD };')(THREE, document);
+const { P, s, scene, HAND, FINGERS, getJoints, updateMechanism, SPREAD } = api;
 const KEYS = HAND.keys;
 const QUICK = process.argv.includes('--quick');
 const GRID = QUICK ? 10 : 5;      // 包络内三维网格步长（deg）
@@ -52,6 +52,10 @@ function classOf(mesh) {
     if ((m = /^m(\d)Motor$/.exec(rest))) return key + '_m' + m[1] + 'Fixed';
     if ((m = /^phalanx(\d)$/.exec(rest))) return key + '_P' + m[1];
     if (rest === 'palm') return key + '_PALM';
+    if (rest === 'spreadFixed') return key + '_SPF';   // 展开副固定侧：叉耳/吊架/安装板/电机/推杆/B叉头
+    if (rest === 'spLinkPlane')  return key + '_SPT';  // 展开副 BD 连杆（随指根摆动，逐帧摆位）
+    if (rest === 'spread')       return key + '_SPR';  // 展开副转动侧：毂/曲柄臂/D双耳/Ø8销
+    if (rest === 'palmMountAsm') return key + '_MTF';  // 掌骨安装件（方块+56×56法兰+4×M4/4×M5）：展开后改为固定件
   }
   return 'OTHER';
 }

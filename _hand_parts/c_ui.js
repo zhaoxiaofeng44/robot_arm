@@ -17,6 +17,12 @@ function setupUI() {
         + '<input type=range id=' + f.key + '_a' + i + '-slider min=0 max=' + f.limits[i] + ' value=0 step=0.5>';
       blk.appendChild(row);
     }
+    // —— 展开/并拢（外展/内收）：绕掌骨安装处 x 轴，正 = 向 −z 侧张开 ——
+    const srow = document.createElement('div');
+    srow.className = 'slider-group';
+    srow.innerHTML = '<label>展开/并拢 外展 <span class=value id=' + f.key + '_sp-val>0.0°</span></label>'
+      + '<input type=range id=' + f.key + '_sp-slider min=' + (-SPREAD.safeDeg) + ' max=' + SPREAD.safeDeg + ' value=0 step=0.5>';
+    blk.appendChild(srow);
     host.appendChild(blk);
   }
   const onSlide = function(key, i) {
@@ -29,6 +35,31 @@ function setupUI() {
   };
   for (const f of HAND.fingers) for (let i = 0; i < f.n; i++)
     document.getElementById(f.key + '_a' + i + '-slider').addEventListener('input', onSlide(f.key, i));
+  const syncSpread = function(key) {
+    const F = FINGERS[key]; if (!F) return;
+    const el = document.getElementById(key + '_sp-val'); if (el) el.textContent = (F.spread >= 0 ? '+' : '') + F.spread.toFixed(1) + '°';
+    const sl = document.getElementById(key + '_sp-slider'); if (sl) sl.value = F.spread;
+  };
+  const onSpread = function(key) {
+    return function(e) {
+      isPlaying = false;
+      const pb = document.getElementById('btn-play'); if (pb) pb.textContent = '▶ 播放';
+      FINGERS[key].spread = parseFloat(e.target.value);
+      syncSpread(key); updateMechanism();
+    };
+  };
+  for (const f of HAND.fingers) document.getElementById(f.key + '_sp-slider').addEventListener('input', onSpread(f.key));
+  // 对称扇开：以中指为轴（权重 index +1 … pinky −2，拇指 +2 反向张开）
+  const SPW = { index: 1, middle: 0, ring: -1, pinky: -2, thumb: 2 };
+  const spreadAll = function(u) {
+    return function() {
+      stopPlay(); animU = 0;
+      for (const k of HAND.keys) { FINGERS[k].spread = u * (SPW[k] || 0); syncSpread(k); }
+      updateMechanism();
+    };
+  };
+  document.getElementById('btn-spread-open').addEventListener('click', spreadAll(SPREAD.safeDeg / 2));
+  document.getElementById('btn-spread-close').addEventListener('click', spreadAll(0));
   const speedSlider = document.getElementById('speed-slider');
   speedSlider.addEventListener('input', function(e) { animSpeed = parseFloat(e.target.value); updateSliderLabels(); });
   document.getElementById('btn-play').addEventListener('click', function() {
@@ -38,7 +69,7 @@ function setupUI() {
   const stopPlay = function(){ isPlaying = false; const pb = document.getElementById('btn-play'); if (pb) pb.textContent = '▶ 播放'; };
   document.getElementById('btn-reset').addEventListener('click', function() {
     stopPlay(); animU = 0;
-    for (const k of HAND.keys) FINGERS[k].pose = fingerDef(k).limits.map(function(){ return 0; });
+    for (const k of HAND.keys) { FINGERS[k].pose = fingerDef(k).limits.map(function(){ return 0; }); FINGERS[k].spread = 0; syncSpread(k); }
     updateMechanism(); updateSliderLabels();
   });
   const pOpen = function(){ const p = {}; for (const k of HAND.keys) p[k] = fingerDef(k).limits.map(function(){ return 0; }); return p; };

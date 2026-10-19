@@ -39,7 +39,19 @@ for (const k of KEYS) {
   }
   check(lab + ' 掌骨法兰 4×M4 齐套', has(k + '_palmFlangeBase') && [1,2,3,4].every(i => has(k + '_palmMountBolt' + i) && has(k + '_palmMountBoltHead' + i)), '');
   // 反根链：P{n}(固定·接掌) → 关节组 n−1 → P{n−1} → … → 关节组 0 → 掌段(自由末端·带指尖配件)
-  const okChain = f.groups[f.n].parent === f.chainRoot && f.chainRoot.parent === f.root &&
+  // 展开/并拢副（新增 DOF）：铰链枢轴必须落在掌骨安装件底面下方，且件件齐套
+  const sOk = has(k + '_spForkL') && has(k + '_spForkR') && has(k + '_spHub') && has(k + '_spCrankArm')
+    && has(k + '_spDClevisBossL') && has(k + '_spDClevisBossR') && has(k + '_spBracket')
+    && has(k + '_spMotorBody') && has(k + '_spFlangePlate')
+    && has(k + '_spClevisPlateL') && has(k + '_spBridgeFloor') && has(k + '_spRodNut')
+    && ['Head', 'Shank', 'Thread', 'Washer', 'Nut'].every(x => has(k + '_sp_oBolt' + x) && has(k + '_sp_dBolt' + x))
+    && has(k + '_spExposedRod') && has(k + '_sptTendonWeb') && has(k + '_sptTendonEyeB') && has(k + '_sptTendonEyeD');
+  check(lab + ' 展开/并拢副齐套（叉耳+毂+曲柄+D双耳+吊架+侧挂电机+Ø10/Ø8肩螺栓+BD连杆）', sOk, '');
+  const spOk = f.spreadGroup && f.spreadGroup.parent === f.root
+    && Math.abs(f.spreadGroup.position.y / s - SPREAD.pivotY) < 1e-9
+    && Math.abs(f.spreadGroup.position.z) < 1e-9 && f.chainRoot.parent === f.spreadGroup;
+  check(lab + ' 展开副枢轴 = 掌骨安装件底面 y=' + SPREAD.pivotY + 'mm（指根绕 x 摆，安装件不动）', spOk, '');
+  const okChain = f.groups[f.n].parent === f.chainRoot && f.chainRoot.parent === f.spreadGroup &&
     f.joints.length === f.n &&
     f.groups.slice(0, f.n).every((g, j) => g.parent === f.joints[j] && f.joints[j].parent === f.groups[j + 1]);
   check(lab + ' 反根链条父子关系正确（P' + f.n + '(固定·接掌)→…→P1→掌段(自由·指尖)）', okChain, '');
