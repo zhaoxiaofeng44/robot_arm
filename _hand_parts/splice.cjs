@@ -37,6 +37,9 @@ const patches = [
   ['PointLight(0x6060ff, 0.3, 500)', 'PointLight(0x6060ff, 0.3, 1200)'],
   ["mg.name = 'motor'+mPfx.slice(1);", "mg.name = mPfx + 'Motor';"],
   ["'o'+pfx.slice(1)", "pfx.replace(/_p/, '_o')"],
+  // 依赖离线化：cdnjs/jsdelivr 直连不稳（jsdelivr 会被重置），改成本地 vendor/ 下的同一版本 r128
+  ['src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"', 'src="vendor/three.min.js"'],
+  ['src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"', 'src="vendor/OrbitControls.js"'],
 ];
 let text = out.join('\n');
 for (const pr of patches) {
