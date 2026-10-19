@@ -37,6 +37,8 @@ const jobs=[
           sv=out.match(/"svc":\s*"(\d+\/\d+)"/),ms=out.match(/"meshes":\s*(\d+)/),po=out.match(/"poses":\s*(\d+)/);
     return (c?('碰撞 '+c[1]):'')+(lb?(' / 下限 '+lb[1]+'mm'):'')+(sv?(' / 可拆装互换 '+sv[1]):'')+(ms?(' / 网格 '+ms[1]):'')+(po?(' / 姿态 '+po[1]):'');
   }},
+  {name:'整手·展开/并拢副连接物理性',file:'verify_spread.cjs',
+   extract:out=>(out.match(/结果:\s*(\d+\/\d+)/)||[])[1]||''},
   {name:'连接物理性(arm/finger/整手五指)',file:'verify_connections_all.cjs',
    extract:out=>(out.match(/连接物理性：(.*)/)||[])[1]||''},
   {name:'整手·95 打印件STL出档',file:'export_hand_stl.cjs',

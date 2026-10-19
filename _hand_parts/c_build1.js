@@ -69,7 +69,7 @@
       boss.rotation.y = Math.PI/2; boss.position.set(xx*s, 0, 0); fx.add(boss);
     }
     const oBolt = createShoulderBolt(K + '_sp_o', pr.boltElbow, MAT.fastener);
-    oBolt.rotation.z = Math.PI/2; fx.add(oBolt);                       // Ø10 铰链销：轴线沿 x
+    oBolt.rotation.y = Math.PI/2; fx.add(oBolt);                       // Ø10 铰链销：轴线沿 x（销体原生沿 z）
     // 吊架：电机安装板顶面(y=−77) → 掌骨法兰底面(y=+31)，落在 x∈[10,18]、z∈[16,28]，
     //   与曲柄(≤x9)、BD连杆(≤x4)、D双耳(≤x9) 在 x 上分离 → 摆动全程无干涉
     //   L 形：立柱 x∈[outX−6,outX+6]、z∈[16,28]（贴着电机安装板外侧），横臂到指根方块 (y=+31)
@@ -98,7 +98,7 @@
       boss.rotation.y = Math.PI/2; boss.position.set(xx*s, 0, R*s); movingParent.add(boss);
     }
     const dBolt = createShoulderBolt(K + '_sp_d', pr.boltD, MAT.fastener);
-    dBolt.rotation.z = Math.PI/2; dBolt.position.set(SP.outX*s, 0, R*s); movingParent.add(dBolt);
+    dBolt.rotation.y = Math.PI/2; dBolt.position.set(SP.outX*s, 0, R*s); movingParent.add(dBolt);
     // ---------- BD 连杆（85mm 同型件）：挂在平面转换组里，逐帧按 B/D 摆位 ----------
     const plan = new THREE.Group(); plan.name = K + '_spLinkPlane';
     plan.rotation.y = -Math.PI/2; plan.position.x = SP.outX*s; fx.add(plan);   // plan(x,y) ≡ 实际(z,y)，整体在 x=outX
