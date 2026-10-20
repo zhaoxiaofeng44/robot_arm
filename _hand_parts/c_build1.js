@@ -72,13 +72,12 @@
     oBolt.rotation.y = Math.PI/2; fx.add(oBolt);                       // Ø10 铰链销：轴线沿 x（销体原生沿 z）
     // 吊架：电机安装板顶面(y=−77) → 掌骨法兰底面(y=+31)，落在 x∈[10,18]、z∈[16,28]，
     //   与曲柄(≤x9)、BD连杆(≤x4)、D双耳(≤x9) 在 x 上分离 → 摆动全程无干涉
-    //   L 形：立柱 x∈[outX−6,outX+6]、z∈[16,28]（贴着电机安装板外侧），横臂到指根方块 (y=+31)
-    const brk = createBox(12*s, 180*s, 12*s, MAT.base);
-    brk.name = K + '_spBracket'; brk.position.set(SP.outX*s, -59*s, 22*s); fx.add(brk);
-    const foot = createBox((SP.outX - 4)*s, 17*s, 12*s, MAT.base);
-    foot.name = K + '_spBracketFoot'; foot.position.set((SP.outX/2 + 2)*s, 22.5*s, 22*s); fx.add(foot);
-    const footPad = createBox(16*s, 17*s, 22*s, MAT.base);
-    footPad.name = K + '_spBracketPad'; footPad.position.set(4*s, 22.5*s, 11*s); fx.add(footPad);
+    // 侧向吊架（L 形）：立柱在 z=bracketZ（曲柄/连杆包络之外）从电机安装板吊到掌骨法兰底面，
+    //   横臂沿 z 从法兰边缘伸进来咬合 —— 全程不与曲柄扫掠、BD 连杆相碰
+    const brk = createBox(12*s, 32*s, 12*s, MAT.base);
+    brk.name = K + '_spBracket'; brk.position.set(0, 1*s, SP.bracketZ*s); fx.add(brk);
+    const foot = createBox(12*s, 11*s, 22*s, MAT.base);
+    foot.name = K + '_spBracketFoot'; foot.position.set(0, 36.5*s, (SP.bracketZ - 5)*s); fx.add(foot);
     // 电机：轴沿 y，轴线落在 (x=0, z=+R)；buildMotorSet 内部 +28mm 偏置用 mg 平移补回
     const mg = new THREE.Group(); mg.name = K + '_spMotorGroup';
     mg.position.set((SP.outX - P.motorMountX)*s, 0, R*s); fx.add(mg);   // 轴线落在 (x=outX, z=+R)

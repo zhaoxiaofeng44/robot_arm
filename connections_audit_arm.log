@@ -448,3 +448,53 @@ ALL-DONE fails=0
 == 7. 运动学 / 连杆错位 ==
    （该模型无 getJoints，跳过）
 ALL-DONE fails=0
+######################################################################
+# 连接物理性审计  target=arm  (arm_mechanism_3d.html)   网格数=108
+######################################################################
+
+== 0. 基准参数 ==
+   电机 Ø36x80  A=(28,213)  前端面 y=137  后端面 y=217
+   连杆 BD=85  D0=(14,-31)  O销Ø10  B/D销Ø8
+   安装板 y0=141 厚8  抱箍 y=175..217  拼接孔Ø4.4@x=±4.5  y偏移6
+
+== 1. 电机安装：前法兰 <-> 安装板（承推面）==
+   motorFlange  y=[137.000,141.000]  外径Ø38.000
+   motorFlangePlate  y=[141.000,149.000]
+   -> 法兰与安装板相对面共面：接触 OK
+   flangeBoltHead1 y=[133.000,137.000] 顶住法兰 OK
+   安装板导出孔(x=28,z=0) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=12,z=13) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=44,z=13) 射线命中 0  -> 通孔 OK
+
+== 2. 后抱箍 <-> 段身（2xM4 贯穿 + 双侧耳板）==
+   抱箍耳板网格 (4 片): collarTabLeft, collarTabLeftN, collarTabRight, collarTabRightN
+   螺栓Left：耳板 2 片  z>0:true  z<0:true  -> 双侧夹持 OK
+   螺栓Right：耳板 2 片  z>0:true  z<0:true  -> 双侧夹持 OK
+   upperArmBodyProximal z=[-7.000,7.000]  抱箍螺栓孔位 y=184/209
+   collarBoltShankA 光杆 z=[-11.000,11.000] 长 22.000mm；双侧夹持所需 = 段身14.000+2x4 = 22.000mm
+
+== 3. 分段拼接：M4 竖向贯穿（垫板有孔；本体也必须开孔）==
+   upperArmPSpliceBoltL @(x=-4.500,y=146.000) 穿过本体 upperArmBodyProximal  z向实体命中 0  -> 有通孔 OK
+   upperArmPSpliceBoltR @(x=4.500,y=146.000) 穿过本体 upperArmBodyProximal  z向实体命中 0  -> 有通孔 OK
+   forearmDSpliceBoltL @(x=-4.500,y=-131.000) 穿过本体 forearmBodyDistal  z向实体命中 0  -> 有通孔 OK
+   forearmDSpliceBoltR @(x=4.500,y=-131.000) 穿过本体 forearmBodyDistal  z向实体命中 0  -> 有通孔 OK
+
+== 4. B 推杆叉头：底板通孔 / 螺母落位 ==
+   [arm] bClevisBridgeFloor y=[61.839,63.839] （底板 18x2x18）
+        bRodNut y=[63.839,68.839] 高5.000 对边10
+        螺母<->底板 y 重叠 = -0.000mm -> 螺母坐在底板顶面 OK
+        底板中心 实体命中 4 -> 实心
+        杆端面高于底板顶面 0.500mm、螺母坐在底板顶面 → 底板无需开孔 ✓
+        杆端螺纹段 y=[64.339,76.339]  与螺母啮合长度 = 4.500mm（≥2mm 可用）
+
+== 6. 销轴副堆叠（孔 / 浮动 / 销杆）==
+   O  elbowForkLeft z=[-13.000,-8.000]   elbowSleeveBody z=[-7.000,7.000]
+      elbowBoltShank z=[-13.000,13.000] 长26.000 需覆盖[-13.000,7.000] OK
+   D  dClevisBossLeft z=[5.000,6.000]   dClevisBossRight z=[-6.000,-5.000]
+      dBoltShank z=[-10.000,10.000] 长20.000 需覆盖[-6.000,6.000] OK
+   B  bClevisPlateLeft z=[5.000,9.000]   bClevisPlateRight z=[-9.000,-5.000]
+      bBoltShank z=[-9.000,9.000] 长18.000 需覆盖[-9.000,9.000] OK
+
+== 7. 运动学 / 连杆错位 ==
+   （该模型无 getJoints，跳过）
+ALL-DONE fails=0

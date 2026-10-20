@@ -108,10 +108,10 @@
       "r_max_mm": 637,
       "allowance_mm": 2.779
     },
-    "min_non_mating_clearance_mm": 1,
-    "continuous_lower_bound_mm": -1.779,
-    "tested_pairs": 16413,
-    "physical_meshes": 1745,
+    "min_non_mating_clearance_mm": 0,
+    "continuous_lower_bound_mm": -2.779,
+    "tested_pairs": 15980,
+    "physical_meshes": 1740,
     "poses_scanned": 8039,
     "closure_error_mm": 8.526512829121202e-14,
     "stroke_error_mm": 2.534995,
@@ -131,6 +131,54 @@
   },
   "collisions": [],
   "closest": [
+    {
+      "pair": "palmPlateA | thumb_spBracketFoot",
+      "assemblies": [
+        "CHASSIS",
+        "thumb_SPF"
+      ],
+      "min_clearance_mm": 0
+    },
+    {
+      "pair": "palmPlateA | index_spBracketFoot",
+      "assemblies": [
+        "CHASSIS",
+        "index_SPF"
+      ],
+      "min_clearance_mm": 0
+    },
+    {
+      "pair": "palmPlateB | index_spBracketFoot",
+      "assemblies": [
+        "CHASSIS",
+        "index_SPF"
+      ],
+      "min_clearance_mm": 0
+    },
+    {
+      "pair": "palmPlateB | middle_spBracketFoot",
+      "assemblies": [
+        "CHASSIS",
+        "middle_SPF"
+      ],
+      "min_clearance_mm": 0
+    },
+    {
+      "pair": "palmPlateB | ring_spBracketFoot",
+      "assemblies": [
+        "CHASSIS",
+        "ring_SPF"
+      ],
+      "min_clearance_mm": 0
+    },
+    {
+      "pair": "palmPlateB | pinky_spBracketFoot",
+      "assemblies": [
+        "CHASSIS",
+        "pinky_SPF"
+      ],
+      "min_clearance_mm": 0
+    },
     {
       "pair": "index_palmDSplicePadBottom | index_m0MotorFlange",
       "assemblies": [
@@ -242,61 +290,13 @@
         "ring_m0Fixed"
       ],
       "min_clearance_mm": 1
-    },
-    {
-      "pair": "pinky_palmPSplicePadTop | pinky_m0MotorFlange",
-      "assemblies": [
-        "pinky_PALM",
-        "pinky_m0Fixed"
-      ],
-      "min_clearance_mm": 1
-    },
-    {
-      "pair": "pinky_palmPSplicePadBottom | pinky_m0MotorFlange",
-      "assemblies": [
-        "pinky_PALM",
-        "pinky_m0Fixed"
-      ],
-      "min_clearance_mm": 1
-    },
-    {
-      "pair": "middle_palmBodyDistal | middle_m0MotorFlange",
-      "assemblies": [
-        "middle_PALM",
-        "middle_m0Fixed"
-      ],
-      "min_clearance_mm": 1
-    },
-    {
-      "pair": "index_palmBodyDistal | index_m0MotorFlange",
-      "assemblies": [
-        "index_PALM",
-        "index_m0Fixed"
-      ],
-      "min_clearance_mm": 1
-    },
-    {
-      "pair": "ring_palmBodyDistal | ring_m0MotorFlange",
-      "assemblies": [
-        "ring_PALM",
-        "ring_m0Fixed"
-      ],
-      "min_clearance_mm": 1
-    },
-    {
-      "pair": "pinky_palmBodyDistal | pinky_m0MotorFlange",
-      "assemblies": [
-        "pinky_PALM",
-        "pinky_m0Fixed"
-      ],
-      "min_clearance_mm": 1
     }
   ],
   "serviceability": [
     {
       "name": "无铆接/永久连接",
       "pass": true,
-      "detail": "1745 网格"
+      "detail": "1740 网格"
     },
     {
       "name": "食指 O0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
@@ -764,7 +764,7 @@
       "detail": ""
     },
     {
-      "name": "五指同规格件逐件同几何（1732 件可互换，含拇指末端 P2≡四指末端 P3）",
+      "name": "五指同规格件逐件同几何（1727 件可互换，含拇指末端 P2≡四指末端 P3）",
       "pass": true,
       "detail": ""
     }

@@ -4873,3 +4873,540 @@
    传动角范围 = 33.78 .. 89.99 deg
    s(theta) 单调（无死点）：是 OK
    [参考] theta=60 理想静载杆力 315.9 N（5kg@250mm）
+######################################################################
+# 连接物理性审计  target=hand  指链=index  (hand_mechanism_3d.html)   网格数=1740
+######################################################################
+
+== 0. 基准参数 ==
+   电机 Ø36x80  A=(28,213)  前端面 y=137  后端面 y=217
+   连杆 BD=85  D0=(14,-31)  O销Ø10  B/D销Ø8
+   安装板 y0=141 厚8  抱箍 y=175..217  拼接孔Ø4.4@x=±4.5  y偏移6
+
+== 1. 电机安装：前法兰 <-> 安装板（承推面）==
+   m0MotorFlange  y=[-691.000,-687.000]  外径Ø38.000
+   palmFlangePlate  y=[-699.000,-691.000]
+   -> 法兰与安装板相对面共面：接触 OK
+   m0FlangeBolt1Head y=[-687.000,-683.000] 顶住法兰 OK
+   安装板导出孔(x=28,z=0) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=12,z=13) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=44,z=13) 射线命中 0  -> 通孔 OK
+   m1MotorFlange  y=[-391.000,-387.000]  外径Ø38.000
+   p1FlangePlate  y=[-399.000,-391.000]
+   -> 法兰与安装板相对面共面：接触 OK
+   m1FlangeBolt1Head y=[-387.000,-383.000] 顶住法兰 OK
+   安装板导出孔(x=28,z=0) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=12,z=13) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=44,z=13) 射线命中 0  -> 通孔 OK
+   m2MotorFlange  y=[-91.000,-87.000]  外径Ø38.000
+   p2FlangePlate  y=[-99.000,-91.000]
+   -> 法兰与安装板相对面共面：接触 OK
+   m2FlangeBolt1Head y=[-87.000,-83.000] 顶住法兰 OK
+   安装板导出孔(x=28,z=0) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=12,z=13) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=44,z=13) 射线命中 0  -> 通孔 OK
+
+== 2. 后抱箍 <-> 段身（2xM4 贯穿 + 双侧耳板）==
+   抱箍耳板网格 (16 片): index_m2CollarTabA, index_m2CollarTabAN, index_m2CollarTabB, index_m2CollarTabBN, index_m1CollarTabA, index_m1CollarTabAN, index_m1CollarTabB, index_m1CollarTabBN, index_m0CollarTabA, index_m0CollarTabAN, index_m0CollarTabB, index_m0CollarTabBN, index_spCollarTabA, index_spCollarTabAN, index_spCollarTabB, index_spCollarTabBN
+   螺栓A：耳板 8 片  z>0:true  z<0:true  -> 双侧夹持 OK
+   螺栓B：耳板 8 片  z>0:true  z<0:true  -> 双侧夹持 OK
+   palmBodyProximal z=[-97.000,-83.000]  抱箍螺栓孔位 y=184/209
+   m0CollarBoltShankA 光杆 z=[-101.000,-79.000] 长 22.000mm；双侧夹持所需 = 段身14.000+2x4 = 22.000mm
+   p1BodyHeel z=[-96.000,-84.000]  抱箍螺栓孔位 y=184/209
+   m1CollarBoltShankA 光杆 z=[-101.000,-79.000] 长 22.000mm；双侧夹持所需 = 段身12.000+2x4 = 20.000mm
+   p2BodyHeel z=[-96.000,-84.000]  抱箍螺栓孔位 y=184/209
+   m2CollarBoltShankA 光杆 z=[-101.000,-79.000] 长 22.000mm；双侧夹持所需 = 段身12.000+2x4 = 20.000mm
+
+== 3. 分段拼接：M4 竖向贯穿（垫板有孔；本体也必须开孔）==
+   index_p3DSpliceBoltL @(x=4.500,y=181.000) 穿过本体 index_p3BodyDistal  z向实体命中 0  -> 有通孔 OK
+   index_p3DSpliceBoltR @(x=-4.500,y=181.000) 穿过本体 index_p3BodyDistal  z向实体命中 0  -> 有通孔 OK
+   index_p2DSpliceBoltL @(x=4.500,y=-74.000) 穿过本体 index_p2BodyDistal  z向实体命中 0  -> 有通孔 OK
+   index_p2DSpliceBoltR @(x=-4.500,y=-74.000) 穿过本体 index_p2BodyDistal  z向实体命中 0  -> 有通孔 OK
+   index_p1DSpliceBoltL @(x=4.500,y=-374.000) 穿过本体 index_p1BodyDistal  z向实体命中 0  -> 有通孔 OK
+   index_p1DSpliceBoltR @(x=-4.500,y=-374.000) 穿过本体 index_p1BodyDistal  z向实体命中 0  -> 有通孔 OK
+   index_palmPSpliceBoltL @(x=4.500,y=-696.000) 穿过本体 index_palmBodyProximal  z向实体命中 0  -> 有通孔 OK
+   index_palmPSpliceBoltR @(x=-4.500,y=-696.000) 穿过本体 index_palmBodyProximal  z向实体命中 0  -> 有通孔 OK
+
+== 4. B 推杆叉头：底板通孔 / 螺母落位 ==
+   [m0] m0BridgeFloor y=[-613.839,-611.839] （底板 18x2x18）
+        m0RodNut y=[-618.839,-613.839] 高5.000 对边10
+        螺母<->底板 y 重叠 = -0.000mm -> 螺母坐在底板顶面 OK
+        底板中心 实体命中 0 -> 有通孔
+        杆端螺纹段 y=[-626.339,-614.339]  与螺母啮合长度 = 4.500mm（≥2mm 可用）
+        防转围壁 y=[-619.339,-613.339] 相对螺母[ -618.839,-613.839] 完整包住 OK（拉力靠螺纹副+防转传递）
+   [m1] m1BridgeFloor y=[-313.839,-311.839] （底板 18x2x18）
+        m1RodNut y=[-318.839,-313.839] 高5.000 对边10
+        螺母<->底板 y 重叠 = -0.000mm -> 螺母坐在底板顶面 OK
+        底板中心 实体命中 0 -> 有通孔
+        杆端螺纹段 y=[-326.339,-314.339]  与螺母啮合长度 = 4.500mm（≥2mm 可用）
+        防转围壁 y=[-319.339,-313.339] 相对螺母[ -318.839,-313.839] 完整包住 OK（拉力靠螺纹副+防转传递）
+   [m2] m2BridgeFloor y=[-13.839,-11.839] （底板 18x2x18）
+        m2RodNut y=[-18.839,-13.839] 高5.000 对边10
+        螺母<->底板 y 重叠 = -0.000mm -> 螺母坐在底板顶面 OK
+        底板中心 实体命中 0 -> 有通孔
+        杆端螺纹段 y=[-26.339,-14.339]  与螺母啮合长度 = 4.500mm（≥2mm 可用）
+        防转围壁 y=[-19.339,-13.339] 相对螺母[ -18.839,-13.839] 完整包住 OK（拉力靠螺纹副+防转传递）
+
+== 5. 手掌侧接口：palm_mount <-> 掌段指根方块 ==
+   palmBase(指根方块)     y=[303.000,320.000]  x±12.000 z±11.000
+   palmFlangeBase(法兰板) y=[320.000,326.000]  x±28.000 z±28.000
+   法兰板底面 vs 方块顶面 间隙 = 0.000mm -> 面接触 OK
+   内圈 M4 @(x=8,z=7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   内圈 M4 @(x=8,z=-7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   内圈 M4 @(x=-8,z=7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   内圈 M4 @(x=-8,z=-7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   M4×16 螺栓杆 y=[310.000,326.000]（穿法兰板6 + 旋入方块10）
+   外圈 Ø5.5 掌侧孔: (22,22) (22,-22) (-22,22) (-22,-22)  命中=0/0/0/0
+   palmPlateA 对位：外圈 4×Ø4.2 命中=0/0/0/0   内圈 4×Ø9 让位孔命中=0/0/0/0
+
+== 6. 销轴副堆叠（孔 / 浮动 / 销杆）==
+   O0  palmForkL z=[-103.000,-98.000]   p1SleeveBody z=[-97.000,-83.000]
+      o0BoltShank z=[-103.000,-77.000] 长26.000 需覆盖[-103.000,-83.000] OK
+   D0  p1DClevisBossL z=[-85.000,-84.000]   p1DClevisBossR z=[-96.000,-95.000]
+      p1dBoltShank z=[-100.000,-80.000] 长20.000 需覆盖[-96.000,-84.000] OK
+   B0  m0ClevisPlateL z=[-85.000,-81.000]   m0ClevisPlateR z=[-99.000,-95.000]
+      m0bBoltShank z=[-99.000,-81.000] 长18.000 需覆盖[-99.000,-81.000] OK
+   O1  p1ForkL z=[-103.000,-98.000]   p2SleeveBody z=[-97.000,-83.000]
+      o1BoltShank z=[-103.000,-77.000] 长26.000 需覆盖[-103.000,-83.000] OK
+   D1  p2DClevisBossL z=[-85.000,-84.000]   p2DClevisBossR z=[-96.000,-95.000]
+      p2dBoltShank z=[-100.000,-80.000] 长20.000 需覆盖[-96.000,-84.000] OK
+   B1  m1ClevisPlateL z=[-85.000,-81.000]   m1ClevisPlateR z=[-99.000,-95.000]
+      m1bBoltShank z=[-99.000,-81.000] 长18.000 需覆盖[-99.000,-81.000] OK
+   O2  p2ForkL z=[-103.000,-98.000]   p3SleeveBody z=[-97.000,-83.000]
+      o2BoltShank z=[-103.000,-77.000] 长26.000 需覆盖[-103.000,-83.000] OK
+   D2  p3DClevisBossL z=[-85.000,-84.000]   p3DClevisBossR z=[-96.000,-95.000]
+      p3dBoltShank z=[-100.000,-80.000] 长20.000 需覆盖[-96.000,-84.000] OK
+   B2  m2ClevisPlateL z=[-85.000,-81.000]   m2ClevisPlateR z=[-99.000,-95.000]
+      m2bBoltShank z=[-99.000,-81.000] 长18.000 需覆盖[-99.000,-81.000] OK
+
+== 7. 运动学 / 连杆错位 ==
+   连杆孔心<->销心 最大偏差 = 9.52e-14 mm  (应 0)
+   闭环 |BD|-85 最大误差 = 5.68e-14 mm
+   连杆两端锚点(B叉头<->D销)距 最大偏差 = 0.000 mm  (刚杆应恒 0)
+   传动角范围 = 33.78 .. 89.99 deg
+   s(theta) 单调（无死点）：是 OK
+   [参考] theta=60 理想静载杆力 315.9 N（5kg@250mm）
+######################################################################
+# 连接物理性审计  target=hand  指链=middle  (hand_mechanism_3d.html)   网格数=1740
+######################################################################
+
+== 0. 基准参数 ==
+   电机 Ø36x80  A=(28,213)  前端面 y=137  后端面 y=217
+   连杆 BD=85  D0=(14,-31)  O销Ø10  B/D销Ø8
+   安装板 y0=141 厚8  抱箍 y=175..217  拼接孔Ø4.4@x=±4.5  y偏移6
+
+== 1. 电机安装：前法兰 <-> 安装板（承推面）==
+   m0MotorFlange  y=[-691.000,-687.000]  外径Ø38.000
+   palmFlangePlate  y=[-699.000,-691.000]
+   -> 法兰与安装板相对面共面：接触 OK
+   m0FlangeBolt1Head y=[-687.000,-683.000] 顶住法兰 OK
+   安装板导出孔(x=28,z=0) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=12,z=13) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=44,z=13) 射线命中 0  -> 通孔 OK
+   m1MotorFlange  y=[-391.000,-387.000]  外径Ø38.000
+   p1FlangePlate  y=[-399.000,-391.000]
+   -> 法兰与安装板相对面共面：接触 OK
+   m1FlangeBolt1Head y=[-387.000,-383.000] 顶住法兰 OK
+   安装板导出孔(x=28,z=0) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=12,z=13) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=44,z=13) 射线命中 0  -> 通孔 OK
+   m2MotorFlange  y=[-91.000,-87.000]  外径Ø38.000
+   p2FlangePlate  y=[-99.000,-91.000]
+   -> 法兰与安装板相对面共面：接触 OK
+   m2FlangeBolt1Head y=[-87.000,-83.000] 顶住法兰 OK
+   安装板导出孔(x=28,z=0) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=12,z=13) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=44,z=13) 射线命中 0  -> 通孔 OK
+
+== 2. 后抱箍 <-> 段身（2xM4 贯穿 + 双侧耳板）==
+   抱箍耳板网格 (16 片): middle_m2CollarTabA, middle_m2CollarTabAN, middle_m2CollarTabB, middle_m2CollarTabBN, middle_m1CollarTabA, middle_m1CollarTabAN, middle_m1CollarTabB, middle_m1CollarTabBN, middle_m0CollarTabA, middle_m0CollarTabAN, middle_m0CollarTabB, middle_m0CollarTabBN, middle_spCollarTabA, middle_spCollarTabAN, middle_spCollarTabB, middle_spCollarTabBN
+   螺栓A：耳板 8 片  z>0:true  z<0:true  -> 双侧夹持 OK
+   螺栓B：耳板 8 片  z>0:true  z<0:true  -> 双侧夹持 OK
+   palmBodyProximal z=[-27.000,-13.000]  抱箍螺栓孔位 y=184/209
+   m0CollarBoltShankA 光杆 z=[-31.000,-9.000] 长 22.000mm；双侧夹持所需 = 段身14.000+2x4 = 22.000mm
+   p1BodyHeel z=[-26.000,-14.000]  抱箍螺栓孔位 y=184/209
+   m1CollarBoltShankA 光杆 z=[-31.000,-9.000] 长 22.000mm；双侧夹持所需 = 段身12.000+2x4 = 20.000mm
+   p2BodyHeel z=[-26.000,-14.000]  抱箍螺栓孔位 y=184/209
+   m2CollarBoltShankA 光杆 z=[-31.000,-9.000] 长 22.000mm；双侧夹持所需 = 段身12.000+2x4 = 20.000mm
+
+== 3. 分段拼接：M4 竖向贯穿（垫板有孔；本体也必须开孔）==
+   middle_p3DSpliceBoltL @(x=4.500,y=181.000) 穿过本体 middle_p3BodyDistal  z向实体命中 0  -> 有通孔 OK
+   middle_p3DSpliceBoltR @(x=-4.500,y=181.000) 穿过本体 middle_p3BodyDistal  z向实体命中 0  -> 有通孔 OK
+   middle_p2DSpliceBoltL @(x=4.500,y=-74.000) 穿过本体 middle_p2BodyDistal  z向实体命中 0  -> 有通孔 OK
+   middle_p2DSpliceBoltR @(x=-4.500,y=-74.000) 穿过本体 middle_p2BodyDistal  z向实体命中 0  -> 有通孔 OK
+   middle_p1DSpliceBoltL @(x=4.500,y=-374.000) 穿过本体 middle_p1BodyDistal  z向实体命中 0  -> 有通孔 OK
+   middle_p1DSpliceBoltR @(x=-4.500,y=-374.000) 穿过本体 middle_p1BodyDistal  z向实体命中 0  -> 有通孔 OK
+   middle_palmPSpliceBoltL @(x=4.500,y=-696.000) 穿过本体 middle_palmBodyProximal  z向实体命中 0  -> 有通孔 OK
+   middle_palmPSpliceBoltR @(x=-4.500,y=-696.000) 穿过本体 middle_palmBodyProximal  z向实体命中 0  -> 有通孔 OK
+
+== 4. B 推杆叉头：底板通孔 / 螺母落位 ==
+   [m0] m0BridgeFloor y=[-613.839,-611.839] （底板 18x2x18）
+        m0RodNut y=[-618.839,-613.839] 高5.000 对边10
+        螺母<->底板 y 重叠 = -0.000mm -> 螺母坐在底板顶面 OK
+        底板中心 实体命中 0 -> 有通孔
+        杆端螺纹段 y=[-626.339,-614.339]  与螺母啮合长度 = 4.500mm（≥2mm 可用）
+        防转围壁 y=[-619.339,-613.339] 相对螺母[ -618.839,-613.839] 完整包住 OK（拉力靠螺纹副+防转传递）
+   [m1] m1BridgeFloor y=[-313.839,-311.839] （底板 18x2x18）
+        m1RodNut y=[-318.839,-313.839] 高5.000 对边10
+        螺母<->底板 y 重叠 = -0.000mm -> 螺母坐在底板顶面 OK
+        底板中心 实体命中 0 -> 有通孔
+        杆端螺纹段 y=[-326.339,-314.339]  与螺母啮合长度 = 4.500mm（≥2mm 可用）
+        防转围壁 y=[-319.339,-313.339] 相对螺母[ -318.839,-313.839] 完整包住 OK（拉力靠螺纹副+防转传递）
+   [m2] m2BridgeFloor y=[-13.839,-11.839] （底板 18x2x18）
+        m2RodNut y=[-18.839,-13.839] 高5.000 对边10
+        螺母<->底板 y 重叠 = -0.000mm -> 螺母坐在底板顶面 OK
+        底板中心 实体命中 0 -> 有通孔
+        杆端螺纹段 y=[-26.339,-14.339]  与螺母啮合长度 = 4.500mm（≥2mm 可用）
+        防转围壁 y=[-19.339,-13.339] 相对螺母[ -18.839,-13.839] 完整包住 OK（拉力靠螺纹副+防转传递）
+
+== 5. 手掌侧接口：palm_mount <-> 掌段指根方块 ==
+   palmBase(指根方块)     y=[303.000,320.000]  x±12.000 z±11.000
+   palmFlangeBase(法兰板) y=[320.000,326.000]  x±28.000 z±28.000
+   法兰板底面 vs 方块顶面 间隙 = 0.000mm -> 面接触 OK
+   内圈 M4 @(x=8,z=7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   内圈 M4 @(x=8,z=-7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   内圈 M4 @(x=-8,z=7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   内圈 M4 @(x=-8,z=-7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   M4×16 螺栓杆 y=[310.000,326.000]（穿法兰板6 + 旋入方块10）
+   外圈 Ø5.5 掌侧孔: (22,22) (22,-22) (-22,22) (-22,-22)  命中=0/0/0/0
+   palmPlateB 对位：外圈 4×Ø4.2 命中=0/0/0/0   内圈 4×Ø9 让位孔命中=0/0/0/0
+
+== 6. 销轴副堆叠（孔 / 浮动 / 销杆）==
+   O0  palmForkL z=[-33.000,-28.000]   p1SleeveBody z=[-27.000,-13.000]
+      o0BoltShank z=[-33.000,-7.000] 长26.000 需覆盖[-33.000,-13.000] OK
+   D0  p1DClevisBossL z=[-15.000,-14.000]   p1DClevisBossR z=[-26.000,-25.000]
+      p1dBoltShank z=[-30.000,-10.000] 长20.000 需覆盖[-26.000,-14.000] OK
+   B0  m0ClevisPlateL z=[-15.000,-11.000]   m0ClevisPlateR z=[-29.000,-25.000]
+      m0bBoltShank z=[-29.000,-11.000] 长18.000 需覆盖[-29.000,-11.000] OK
+   O1  p1ForkL z=[-33.000,-28.000]   p2SleeveBody z=[-27.000,-13.000]
+      o1BoltShank z=[-33.000,-7.000] 长26.000 需覆盖[-33.000,-13.000] OK
+   D1  p2DClevisBossL z=[-15.000,-14.000]   p2DClevisBossR z=[-26.000,-25.000]
+      p2dBoltShank z=[-30.000,-10.000] 长20.000 需覆盖[-26.000,-14.000] OK
+   B1  m1ClevisPlateL z=[-15.000,-11.000]   m1ClevisPlateR z=[-29.000,-25.000]
+      m1bBoltShank z=[-29.000,-11.000] 长18.000 需覆盖[-29.000,-11.000] OK
+   O2  p2ForkL z=[-33.000,-28.000]   p3SleeveBody z=[-27.000,-13.000]
+      o2BoltShank z=[-33.000,-7.000] 长26.000 需覆盖[-33.000,-13.000] OK
+   D2  p3DClevisBossL z=[-15.000,-14.000]   p3DClevisBossR z=[-26.000,-25.000]
+      p3dBoltShank z=[-30.000,-10.000] 长20.000 需覆盖[-26.000,-14.000] OK
+   B2  m2ClevisPlateL z=[-15.000,-11.000]   m2ClevisPlateR z=[-29.000,-25.000]
+      m2bBoltShank z=[-29.000,-11.000] 长18.000 需覆盖[-29.000,-11.000] OK
+
+== 7. 运动学 / 连杆错位 ==
+   连杆孔心<->销心 最大偏差 = 9.52e-14 mm  (应 0)
+   闭环 |BD|-85 最大误差 = 5.68e-14 mm
+   连杆两端锚点(B叉头<->D销)距 最大偏差 = 0.000 mm  (刚杆应恒 0)
+   传动角范围 = 33.78 .. 89.99 deg
+   s(theta) 单调（无死点）：是 OK
+   [参考] theta=60 理想静载杆力 315.9 N（5kg@250mm）
+######################################################################
+# 连接物理性审计  target=hand  指链=ring  (hand_mechanism_3d.html)   网格数=1740
+######################################################################
+
+== 0. 基准参数 ==
+   电机 Ø36x80  A=(28,213)  前端面 y=137  后端面 y=217
+   连杆 BD=85  D0=(14,-31)  O销Ø10  B/D销Ø8
+   安装板 y0=141 厚8  抱箍 y=175..217  拼接孔Ø4.4@x=±4.5  y偏移6
+
+== 1. 电机安装：前法兰 <-> 安装板（承推面）==
+   m0MotorFlange  y=[-691.000,-687.000]  外径Ø38.000
+   palmFlangePlate  y=[-699.000,-691.000]
+   -> 法兰与安装板相对面共面：接触 OK
+   m0FlangeBolt1Head y=[-687.000,-683.000] 顶住法兰 OK
+   安装板导出孔(x=28,z=0) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=12,z=13) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=44,z=13) 射线命中 0  -> 通孔 OK
+   m1MotorFlange  y=[-391.000,-387.000]  外径Ø38.000
+   p1FlangePlate  y=[-399.000,-391.000]
+   -> 法兰与安装板相对面共面：接触 OK
+   m1FlangeBolt1Head y=[-387.000,-383.000] 顶住法兰 OK
+   安装板导出孔(x=28,z=0) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=12,z=13) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=44,z=13) 射线命中 0  -> 通孔 OK
+   m2MotorFlange  y=[-91.000,-87.000]  外径Ø38.000
+   p2FlangePlate  y=[-99.000,-91.000]
+   -> 法兰与安装板相对面共面：接触 OK
+   m2FlangeBolt1Head y=[-87.000,-83.000] 顶住法兰 OK
+   安装板导出孔(x=28,z=0) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=12,z=13) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=44,z=13) 射线命中 0  -> 通孔 OK
+
+== 2. 后抱箍 <-> 段身（2xM4 贯穿 + 双侧耳板）==
+   抱箍耳板网格 (16 片): ring_m2CollarTabA, ring_m2CollarTabAN, ring_m2CollarTabB, ring_m2CollarTabBN, ring_m1CollarTabA, ring_m1CollarTabAN, ring_m1CollarTabB, ring_m1CollarTabBN, ring_m0CollarTabA, ring_m0CollarTabAN, ring_m0CollarTabB, ring_m0CollarTabBN, ring_spCollarTabA, ring_spCollarTabAN, ring_spCollarTabB, ring_spCollarTabBN
+   螺栓A：耳板 8 片  z>0:true  z<0:true  -> 双侧夹持 OK
+   螺栓B：耳板 8 片  z>0:true  z<0:true  -> 双侧夹持 OK
+   palmBodyProximal z=[43.000,57.000]  抱箍螺栓孔位 y=184/209
+   m0CollarBoltShankA 光杆 z=[39.000,61.000] 长 22.000mm；双侧夹持所需 = 段身14.000+2x4 = 22.000mm
+   p1BodyHeel z=[44.000,56.000]  抱箍螺栓孔位 y=184/209
+   m1CollarBoltShankA 光杆 z=[39.000,61.000] 长 22.000mm；双侧夹持所需 = 段身12.000+2x4 = 20.000mm
+   p2BodyHeel z=[44.000,56.000]  抱箍螺栓孔位 y=184/209
+   m2CollarBoltShankA 光杆 z=[39.000,61.000] 长 22.000mm；双侧夹持所需 = 段身12.000+2x4 = 20.000mm
+
+== 3. 分段拼接：M4 竖向贯穿（垫板有孔；本体也必须开孔）==
+   ring_p3DSpliceBoltL @(x=4.500,y=181.000) 穿过本体 ring_p3BodyDistal  z向实体命中 0  -> 有通孔 OK
+   ring_p3DSpliceBoltR @(x=-4.500,y=181.000) 穿过本体 ring_p3BodyDistal  z向实体命中 0  -> 有通孔 OK
+   ring_p2DSpliceBoltL @(x=4.500,y=-74.000) 穿过本体 ring_p2BodyDistal  z向实体命中 0  -> 有通孔 OK
+   ring_p2DSpliceBoltR @(x=-4.500,y=-74.000) 穿过本体 ring_p2BodyDistal  z向实体命中 0  -> 有通孔 OK
+   ring_p1DSpliceBoltL @(x=4.500,y=-374.000) 穿过本体 ring_p1BodyDistal  z向实体命中 0  -> 有通孔 OK
+   ring_p1DSpliceBoltR @(x=-4.500,y=-374.000) 穿过本体 ring_p1BodyDistal  z向实体命中 0  -> 有通孔 OK
+   ring_palmPSpliceBoltL @(x=4.500,y=-696.000) 穿过本体 ring_palmBodyProximal  z向实体命中 0  -> 有通孔 OK
+   ring_palmPSpliceBoltR @(x=-4.500,y=-696.000) 穿过本体 ring_palmBodyProximal  z向实体命中 0  -> 有通孔 OK
+
+== 4. B 推杆叉头：底板通孔 / 螺母落位 ==
+   [m0] m0BridgeFloor y=[-613.839,-611.839] （底板 18x2x18）
+        m0RodNut y=[-618.839,-613.839] 高5.000 对边10
+        螺母<->底板 y 重叠 = -0.000mm -> 螺母坐在底板顶面 OK
+        底板中心 实体命中 0 -> 有通孔
+        杆端螺纹段 y=[-626.339,-614.339]  与螺母啮合长度 = 4.500mm（≥2mm 可用）
+        防转围壁 y=[-619.339,-613.339] 相对螺母[ -618.839,-613.839] 完整包住 OK（拉力靠螺纹副+防转传递）
+   [m1] m1BridgeFloor y=[-313.839,-311.839] （底板 18x2x18）
+        m1RodNut y=[-318.839,-313.839] 高5.000 对边10
+        螺母<->底板 y 重叠 = -0.000mm -> 螺母坐在底板顶面 OK
+        底板中心 实体命中 0 -> 有通孔
+        杆端螺纹段 y=[-326.339,-314.339]  与螺母啮合长度 = 4.500mm（≥2mm 可用）
+        防转围壁 y=[-319.339,-313.339] 相对螺母[ -318.839,-313.839] 完整包住 OK（拉力靠螺纹副+防转传递）
+   [m2] m2BridgeFloor y=[-13.839,-11.839] （底板 18x2x18）
+        m2RodNut y=[-18.839,-13.839] 高5.000 对边10
+        螺母<->底板 y 重叠 = -0.000mm -> 螺母坐在底板顶面 OK
+        底板中心 实体命中 0 -> 有通孔
+        杆端螺纹段 y=[-26.339,-14.339]  与螺母啮合长度 = 4.500mm（≥2mm 可用）
+        防转围壁 y=[-19.339,-13.339] 相对螺母[ -18.839,-13.839] 完整包住 OK（拉力靠螺纹副+防转传递）
+
+== 5. 手掌侧接口：palm_mount <-> 掌段指根方块 ==
+   palmBase(指根方块)     y=[303.000,320.000]  x±12.000 z±11.000
+   palmFlangeBase(法兰板) y=[320.000,326.000]  x±28.000 z±28.000
+   法兰板底面 vs 方块顶面 间隙 = 0.000mm -> 面接触 OK
+   内圈 M4 @(x=8,z=7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   内圈 M4 @(x=8,z=-7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   内圈 M4 @(x=-8,z=7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   内圈 M4 @(x=-8,z=-7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   M4×16 螺栓杆 y=[310.000,326.000]（穿法兰板6 + 旋入方块10）
+   外圈 Ø5.5 掌侧孔: (22,22) (22,-22) (-22,22) (-22,-22)  命中=0/0/0/0
+   palmPlateB 对位：外圈 4×Ø4.2 命中=0/0/0/0   内圈 4×Ø9 让位孔命中=0/0/0/0
+
+== 6. 销轴副堆叠（孔 / 浮动 / 销杆）==
+   O0  palmForkL z=[37.000,42.000]   p1SleeveBody z=[43.000,57.000]
+      o0BoltShank z=[37.000,63.000] 长26.000 需覆盖[37.000,57.000] OK
+   D0  p1DClevisBossL z=[55.000,56.000]   p1DClevisBossR z=[44.000,45.000]
+      p1dBoltShank z=[40.000,60.000] 长20.000 需覆盖[44.000,56.000] OK
+   B0  m0ClevisPlateL z=[55.000,59.000]   m0ClevisPlateR z=[41.000,45.000]
+      m0bBoltShank z=[41.000,59.000] 长18.000 需覆盖[41.000,59.000] OK
+   O1  p1ForkL z=[37.000,42.000]   p2SleeveBody z=[43.000,57.000]
+      o1BoltShank z=[37.000,63.000] 长26.000 需覆盖[37.000,57.000] OK
+   D1  p2DClevisBossL z=[55.000,56.000]   p2DClevisBossR z=[44.000,45.000]
+      p2dBoltShank z=[40.000,60.000] 长20.000 需覆盖[44.000,56.000] OK
+   B1  m1ClevisPlateL z=[55.000,59.000]   m1ClevisPlateR z=[41.000,45.000]
+      m1bBoltShank z=[41.000,59.000] 长18.000 需覆盖[41.000,59.000] OK
+   O2  p2ForkL z=[37.000,42.000]   p3SleeveBody z=[43.000,57.000]
+      o2BoltShank z=[37.000,63.000] 长26.000 需覆盖[37.000,57.000] OK
+   D2  p3DClevisBossL z=[55.000,56.000]   p3DClevisBossR z=[44.000,45.000]
+      p3dBoltShank z=[40.000,60.000] 长20.000 需覆盖[44.000,56.000] OK
+   B2  m2ClevisPlateL z=[55.000,59.000]   m2ClevisPlateR z=[41.000,45.000]
+      m2bBoltShank z=[41.000,59.000] 长18.000 需覆盖[41.000,59.000] OK
+
+== 7. 运动学 / 连杆错位 ==
+   连杆孔心<->销心 最大偏差 = 9.52e-14 mm  (应 0)
+   闭环 |BD|-85 最大误差 = 5.68e-14 mm
+   连杆两端锚点(B叉头<->D销)距 最大偏差 = 0.000 mm  (刚杆应恒 0)
+   传动角范围 = 33.78 .. 89.99 deg
+   s(theta) 单调（无死点）：是 OK
+   [参考] theta=60 理想静载杆力 315.9 N（5kg@250mm）
+######################################################################
+# 连接物理性审计  target=hand  指链=pinky  (hand_mechanism_3d.html)   网格数=1740
+######################################################################
+
+== 0. 基准参数 ==
+   电机 Ø36x80  A=(28,213)  前端面 y=137  后端面 y=217
+   连杆 BD=85  D0=(14,-31)  O销Ø10  B/D销Ø8
+   安装板 y0=141 厚8  抱箍 y=175..217  拼接孔Ø4.4@x=±4.5  y偏移6
+
+== 1. 电机安装：前法兰 <-> 安装板（承推面）==
+   m0MotorFlange  y=[-691.000,-687.000]  外径Ø38.000
+   palmFlangePlate  y=[-699.000,-691.000]
+   -> 法兰与安装板相对面共面：接触 OK
+   m0FlangeBolt1Head y=[-687.000,-683.000] 顶住法兰 OK
+   安装板导出孔(x=28,z=0) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=12,z=13) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=44,z=13) 射线命中 0  -> 通孔 OK
+   m1MotorFlange  y=[-391.000,-387.000]  外径Ø38.000
+   p1FlangePlate  y=[-399.000,-391.000]
+   -> 法兰与安装板相对面共面：接触 OK
+   m1FlangeBolt1Head y=[-387.000,-383.000] 顶住法兰 OK
+   安装板导出孔(x=28,z=0) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=12,z=13) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=44,z=13) 射线命中 0  -> 通孔 OK
+   m2MotorFlange  y=[-91.000,-87.000]  外径Ø38.000
+   p2FlangePlate  y=[-99.000,-91.000]
+   -> 法兰与安装板相对面共面：接触 OK
+   m2FlangeBolt1Head y=[-87.000,-83.000] 顶住法兰 OK
+   安装板导出孔(x=28,z=0) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=12,z=13) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=44,z=13) 射线命中 0  -> 通孔 OK
+
+== 2. 后抱箍 <-> 段身（2xM4 贯穿 + 双侧耳板）==
+   抱箍耳板网格 (16 片): pinky_m2CollarTabA, pinky_m2CollarTabAN, pinky_m2CollarTabB, pinky_m2CollarTabBN, pinky_m1CollarTabA, pinky_m1CollarTabAN, pinky_m1CollarTabB, pinky_m1CollarTabBN, pinky_m0CollarTabA, pinky_m0CollarTabAN, pinky_m0CollarTabB, pinky_m0CollarTabBN, pinky_spCollarTabA, pinky_spCollarTabAN, pinky_spCollarTabB, pinky_spCollarTabBN
+   螺栓A：耳板 8 片  z>0:true  z<0:true  -> 双侧夹持 OK
+   螺栓B：耳板 8 片  z>0:true  z<0:true  -> 双侧夹持 OK
+   palmBodyProximal z=[113.000,127.000]  抱箍螺栓孔位 y=184/209
+   m0CollarBoltShankA 光杆 z=[109.000,131.000] 长 22.000mm；双侧夹持所需 = 段身14.000+2x4 = 22.000mm
+   p1BodyHeel z=[114.000,126.000]  抱箍螺栓孔位 y=184/209
+   m1CollarBoltShankA 光杆 z=[109.000,131.000] 长 22.000mm；双侧夹持所需 = 段身12.000+2x4 = 20.000mm
+   p2BodyHeel z=[114.000,126.000]  抱箍螺栓孔位 y=184/209
+   m2CollarBoltShankA 光杆 z=[109.000,131.000] 长 22.000mm；双侧夹持所需 = 段身12.000+2x4 = 20.000mm
+
+== 3. 分段拼接：M4 竖向贯穿（垫板有孔；本体也必须开孔）==
+   pinky_p3DSpliceBoltL @(x=4.500,y=181.000) 穿过本体 pinky_p3BodyDistal  z向实体命中 0  -> 有通孔 OK
+   pinky_p3DSpliceBoltR @(x=-4.500,y=181.000) 穿过本体 pinky_p3BodyDistal  z向实体命中 0  -> 有通孔 OK
+   pinky_p2DSpliceBoltL @(x=4.500,y=-74.000) 穿过本体 pinky_p2BodyDistal  z向实体命中 0  -> 有通孔 OK
+   pinky_p2DSpliceBoltR @(x=-4.500,y=-74.000) 穿过本体 pinky_p2BodyDistal  z向实体命中 0  -> 有通孔 OK
+   pinky_p1DSpliceBoltL @(x=4.500,y=-374.000) 穿过本体 pinky_p1BodyDistal  z向实体命中 0  -> 有通孔 OK
+   pinky_p1DSpliceBoltR @(x=-4.500,y=-374.000) 穿过本体 pinky_p1BodyDistal  z向实体命中 0  -> 有通孔 OK
+   pinky_palmPSpliceBoltL @(x=4.500,y=-696.000) 穿过本体 pinky_palmBodyProximal  z向实体命中 0  -> 有通孔 OK
+   pinky_palmPSpliceBoltR @(x=-4.500,y=-696.000) 穿过本体 pinky_palmBodyProximal  z向实体命中 0  -> 有通孔 OK
+
+== 4. B 推杆叉头：底板通孔 / 螺母落位 ==
+   [m0] m0BridgeFloor y=[-613.839,-611.839] （底板 18x2x18）
+        m0RodNut y=[-618.839,-613.839] 高5.000 对边10
+        螺母<->底板 y 重叠 = -0.000mm -> 螺母坐在底板顶面 OK
+        底板中心 实体命中 0 -> 有通孔
+        杆端螺纹段 y=[-626.339,-614.339]  与螺母啮合长度 = 4.500mm（≥2mm 可用）
+        防转围壁 y=[-619.339,-613.339] 相对螺母[ -618.839,-613.839] 完整包住 OK（拉力靠螺纹副+防转传递）
+   [m1] m1BridgeFloor y=[-313.839,-311.839] （底板 18x2x18）
+        m1RodNut y=[-318.839,-313.839] 高5.000 对边10
+        螺母<->底板 y 重叠 = -0.000mm -> 螺母坐在底板顶面 OK
+        底板中心 实体命中 0 -> 有通孔
+        杆端螺纹段 y=[-326.339,-314.339]  与螺母啮合长度 = 4.500mm（≥2mm 可用）
+        防转围壁 y=[-319.339,-313.339] 相对螺母[ -318.839,-313.839] 完整包住 OK（拉力靠螺纹副+防转传递）
+   [m2] m2BridgeFloor y=[-13.839,-11.839] （底板 18x2x18）
+        m2RodNut y=[-18.839,-13.839] 高5.000 对边10
+        螺母<->底板 y 重叠 = -0.000mm -> 螺母坐在底板顶面 OK
+        底板中心 实体命中 0 -> 有通孔
+        杆端螺纹段 y=[-26.339,-14.339]  与螺母啮合长度 = 4.500mm（≥2mm 可用）
+        防转围壁 y=[-19.339,-13.339] 相对螺母[ -18.839,-13.839] 完整包住 OK（拉力靠螺纹副+防转传递）
+
+== 5. 手掌侧接口：palm_mount <-> 掌段指根方块 ==
+   palmBase(指根方块)     y=[303.000,320.000]  x±12.000 z±11.000
+   palmFlangeBase(法兰板) y=[320.000,326.000]  x±28.000 z±28.000
+   法兰板底面 vs 方块顶面 间隙 = 0.000mm -> 面接触 OK
+   内圈 M4 @(x=8,z=7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   内圈 M4 @(x=8,z=-7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   内圈 M4 @(x=-8,z=7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   内圈 M4 @(x=-8,z=-7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   M4×16 螺栓杆 y=[310.000,326.000]（穿法兰板6 + 旋入方块10）
+   外圈 Ø5.5 掌侧孔: (22,22) (22,-22) (-22,22) (-22,-22)  命中=0/0/0/0
+   palmPlateB 对位：外圈 4×Ø4.2 命中=0/0/0/0   内圈 4×Ø9 让位孔命中=0/0/0/0
+
+== 6. 销轴副堆叠（孔 / 浮动 / 销杆）==
+   O0  palmForkL z=[107.000,112.000]   p1SleeveBody z=[113.000,127.000]
+      o0BoltShank z=[107.000,133.000] 长26.000 需覆盖[107.000,127.000] OK
+   D0  p1DClevisBossL z=[125.000,126.000]   p1DClevisBossR z=[114.000,115.000]
+      p1dBoltShank z=[110.000,130.000] 长20.000 需覆盖[114.000,126.000] OK
+   B0  m0ClevisPlateL z=[125.000,129.000]   m0ClevisPlateR z=[111.000,115.000]
+      m0bBoltShank z=[111.000,129.000] 长18.000 需覆盖[111.000,129.000] OK
+   O1  p1ForkL z=[107.000,112.000]   p2SleeveBody z=[113.000,127.000]
+      o1BoltShank z=[107.000,133.000] 长26.000 需覆盖[107.000,127.000] OK
+   D1  p2DClevisBossL z=[125.000,126.000]   p2DClevisBossR z=[114.000,115.000]
+      p2dBoltShank z=[110.000,130.000] 长20.000 需覆盖[114.000,126.000] OK
+   B1  m1ClevisPlateL z=[125.000,129.000]   m1ClevisPlateR z=[111.000,115.000]
+      m1bBoltShank z=[111.000,129.000] 长18.000 需覆盖[111.000,129.000] OK
+   O2  p2ForkL z=[107.000,112.000]   p3SleeveBody z=[113.000,127.000]
+      o2BoltShank z=[107.000,133.000] 长26.000 需覆盖[107.000,127.000] OK
+   D2  p3DClevisBossL z=[125.000,126.000]   p3DClevisBossR z=[114.000,115.000]
+      p3dBoltShank z=[110.000,130.000] 长20.000 需覆盖[114.000,126.000] OK
+   B2  m2ClevisPlateL z=[125.000,129.000]   m2ClevisPlateR z=[111.000,115.000]
+      m2bBoltShank z=[111.000,129.000] 长18.000 需覆盖[111.000,129.000] OK
+
+== 7. 运动学 / 连杆错位 ==
+   连杆孔心<->销心 最大偏差 = 9.52e-14 mm  (应 0)
+   闭环 |BD|-85 最大误差 = 5.68e-14 mm
+   连杆两端锚点(B叉头<->D销)距 最大偏差 = 0.000 mm  (刚杆应恒 0)
+   传动角范围 = 33.78 .. 89.99 deg
+   s(theta) 单调（无死点）：是 OK
+   [参考] theta=60 理想静载杆力 315.9 N（5kg@250mm）
+######################################################################
+# 连接物理性审计  target=hand  指链=thumb  (hand_mechanism_3d.html)   网格数=1740
+######################################################################
+
+== 0. 基准参数 ==
+   电机 Ø36x80  A=(28,213)  前端面 y=137  后端面 y=217
+   连杆 BD=85  D0=(14,-31)  O销Ø10  B/D销Ø8
+   安装板 y0=141 厚8  抱箍 y=175..217  拼接孔Ø4.4@x=±4.5  y偏移6
+
+== 1. 电机安装：前法兰 <-> 安装板（承推面）==
+   m0MotorFlange  y=[-391.000,-387.000]  外径Ø38.000
+   palmFlangePlate  y=[-399.000,-391.000]
+   -> 法兰与安装板相对面共面：接触 OK
+   m0FlangeBolt1Head y=[-387.000,-383.000] 顶住法兰 OK
+   安装板导出孔(x=28,z=0) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=12,z=13) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=44,z=13) 射线命中 0  -> 通孔 OK
+   m1MotorFlange  y=[-91.000,-87.000]  外径Ø38.000
+   p1FlangePlate  y=[-99.000,-91.000]
+   -> 法兰与安装板相对面共面：接触 OK
+   m1FlangeBolt1Head y=[-87.000,-83.000] 顶住法兰 OK
+   安装板导出孔(x=28,z=0) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=12,z=13) 射线命中 0  -> 通孔 OK
+   安装板 M4 孔(x=44,z=13) 射线命中 0  -> 通孔 OK
+
+== 2. 后抱箍 <-> 段身（2xM4 贯穿 + 双侧耳板）==
+   抱箍耳板网格 (12 片): thumb_m1CollarTabA, thumb_m1CollarTabAN, thumb_m1CollarTabB, thumb_m1CollarTabBN, thumb_m0CollarTabA, thumb_m0CollarTabAN, thumb_m0CollarTabB, thumb_m0CollarTabBN, thumb_spCollarTabA, thumb_spCollarTabAN, thumb_spCollarTabB, thumb_spCollarTabBN
+   螺栓A：耳板 6 片  z>0:true  z<0:true  -> 双侧夹持 OK
+   螺栓B：耳板 6 片  z>0:true  z<0:true  -> 双侧夹持 OK
+   palmBodyProximal z=[-227.000,-213.000]  抱箍螺栓孔位 y=184/209
+   m0CollarBoltShankA 光杆 z=[-231.000,-209.000] 长 22.000mm；双侧夹持所需 = 段身14.000+2x4 = 22.000mm
+   p1BodyHeel z=[-226.000,-214.000]  抱箍螺栓孔位 y=184/209
+   m1CollarBoltShankA 光杆 z=[-231.000,-209.000] 长 22.000mm；双侧夹持所需 = 段身12.000+2x4 = 20.000mm
+
+== 3. 分段拼接：M4 竖向贯穿（垫板有孔；本体也必须开孔）==
+   thumb_p2DSpliceBoltL @(x=4.500,y=181.000) 穿过本体 thumb_p2BodyDistal  z向实体命中 0  -> 有通孔 OK
+   thumb_p2DSpliceBoltR @(x=-4.500,y=181.000) 穿过本体 thumb_p2BodyDistal  z向实体命中 0  -> 有通孔 OK
+   thumb_p1DSpliceBoltL @(x=4.500,y=-74.000) 穿过本体 thumb_p1BodyDistal  z向实体命中 0  -> 有通孔 OK
+   thumb_p1DSpliceBoltR @(x=-4.500,y=-74.000) 穿过本体 thumb_p1BodyDistal  z向实体命中 0  -> 有通孔 OK
+   thumb_palmPSpliceBoltL @(x=4.500,y=-396.000) 穿过本体 thumb_palmBodyProximal  z向实体命中 0  -> 有通孔 OK
+   thumb_palmPSpliceBoltR @(x=-4.500,y=-396.000) 穿过本体 thumb_palmBodyProximal  z向实体命中 0  -> 有通孔 OK
+
+== 4. B 推杆叉头：底板通孔 / 螺母落位 ==
+   [m0] m0BridgeFloor y=[-313.839,-311.839] （底板 18x2x18）
+        m0RodNut y=[-318.839,-313.839] 高5.000 对边10
+        螺母<->底板 y 重叠 = -0.000mm -> 螺母坐在底板顶面 OK
+        底板中心 实体命中 0 -> 有通孔
+        杆端螺纹段 y=[-326.339,-314.339]  与螺母啮合长度 = 4.500mm（≥2mm 可用）
+        防转围壁 y=[-319.339,-313.339] 相对螺母[ -318.839,-313.839] 完整包住 OK（拉力靠螺纹副+防转传递）
+   [m1] m1BridgeFloor y=[-13.839,-11.839] （底板 18x2x18）
+        m1RodNut y=[-18.839,-13.839] 高5.000 对边10
+        螺母<->底板 y 重叠 = -0.000mm -> 螺母坐在底板顶面 OK
+        底板中心 实体命中 0 -> 有通孔
+        杆端螺纹段 y=[-26.339,-14.339]  与螺母啮合长度 = 4.500mm（≥2mm 可用）
+        防转围壁 y=[-19.339,-13.339] 相对螺母[ -18.839,-13.839] 完整包住 OK（拉力靠螺纹副+防转传递）
+
+== 5. 手掌侧接口：palm_mount <-> 掌段指根方块 ==
+   palmBase(指根方块)     y=[303.000,320.000]  x±12.000 z±11.000
+   palmFlangeBase(法兰板) y=[320.000,326.000]  x±28.000 z±28.000
+   法兰板底面 vs 方块顶面 间隙 = 0.000mm -> 面接触 OK
+   内圈 M4 @(x=8,z=7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   内圈 M4 @(x=8,z=-7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   内圈 M4 @(x=-8,z=7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   内圈 M4 @(x=-8,z=-7)：法兰过孔命中0 通孔OK；方块底孔命中0 通孔OK
+   M4×16 螺栓杆 y=[310.000,326.000]（穿法兰板6 + 旋入方块10）
+   外圈 Ø5.5 掌侧孔: (22,22) (22,-22) (-22,22) (-22,-22)  命中=0/0/0/0
+   palmPlateA 对位：外圈 4×Ø4.2 命中=0/0/0/0   内圈 4×Ø9 让位孔命中=0/0/0/0
+
+== 6. 销轴副堆叠（孔 / 浮动 / 销杆）==
+   O0  palmForkL z=[-233.000,-228.000]   p1SleeveBody z=[-227.000,-213.000]
+      o0BoltShank z=[-233.000,-207.000] 长26.000 需覆盖[-233.000,-213.000] OK
+   D0  p1DClevisBossL z=[-215.000,-214.000]   p1DClevisBossR z=[-226.000,-225.000]
+      p1dBoltShank z=[-230.000,-210.000] 长20.000 需覆盖[-226.000,-214.000] OK
+   B0  m0ClevisPlateL z=[-215.000,-211.000]   m0ClevisPlateR z=[-229.000,-225.000]
+      m0bBoltShank z=[-229.000,-211.000] 长18.000 需覆盖[-229.000,-211.000] OK
+   O1  p1ForkL z=[-233.000,-228.000]   p2SleeveBody z=[-227.000,-213.000]
+      o1BoltShank z=[-233.000,-207.000] 长26.000 需覆盖[-233.000,-213.000] OK
+   D1  p2DClevisBossL z=[-215.000,-214.000]   p2DClevisBossR z=[-226.000,-225.000]
+      p2dBoltShank z=[-230.000,-210.000] 长20.000 需覆盖[-226.000,-214.000] OK
+   B1  m1ClevisPlateL z=[-215.000,-211.000]   m1ClevisPlateR z=[-229.000,-225.000]
+      m1bBoltShank z=[-229.000,-211.000] 长18.000 需覆盖[-229.000,-211.000] OK
+
+== 7. 运动学 / 连杆错位 ==
+   连杆孔心<->销心 最大偏差 = 4.33e-14 mm  (应 0)
+   闭环 |BD|-85 最大误差 = 0.00e+0 mm
+   连杆两端锚点(B叉头<->D销)距 最大偏差 = 0.000 mm  (刚杆应恒 0)
+   传动角范围 = 33.78 .. 89.99 deg
+   s(theta) 单调（无死点）：是 OK
+   [参考] theta=60 理想静载杆力 315.9 N（5kg@250mm）

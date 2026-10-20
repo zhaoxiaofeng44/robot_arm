@@ -208,12 +208,14 @@ HAND.keys = HAND.fingers.map(function(f){return f.key;});
 //   电机吊在枢轴下方、指中面外侧 z = +crankR，推杆沿 y 上行，经 85mm BD 连杆推 R = 26 曲柄。
 const SPREAD = {
   pivotY:     289,   // 枢轴 y（= 毂心；毂 R11 顶面 300，让开安装方块底面 303，1.5mm 摆角余量）
-  crankR:     26,    // 曲柄半径 / 电机轴线横向偏置（z）
-  noseY:     -149,   // 电机前端面（局部 y，枢轴为原点）→ 机身占 [−229,−149]，即指根段外侧、
-                     //   落在拼接垫/拼接螺栓（y≈155–195）之下，避让 Ø36 机身：机身 z∈[8,44] 与段体 z≤7 仅 1mm 间隙
+  crankR:     30,    // 曲柄半径 / 电机轴线横向偏置（z）：机身 z∈[12,48]，避开拼接垫脚(≤10) 与邻指(≥56)
+  noseY:     -11,    // 电机前端面（局部 y，枢轴为原点）→ 机身占 [−91,−11]（世界 y 198–278），
+                     //   正好落在"拼接垫/拼接螺栓之上、铰链毂之下"的净空带；推杆向下伸到 B 点
+
   earX:      10.5,   // 叉耳中心 x（±），Ø10 铰链销沿 x
   earT:       4,     // 叉耳厚
-  outX:      40,     // 电机/C 吊架/曲柄/D 双耳 的外移量（x）：避开接掌段两侧拼接垫与关节螺栓
+  outX:       0,     // 全部件留在指中面上 → 电机确实偏在"侧面"（z=+crankR），不再挂到掌背/掌心侧
+  bracketZ:  46,     // 侧向吊架 z（要落在曲柄眼 z≤26、连杆包络 ≤33.5 之外）
   dBossX:     7,     // D 双耳中心 x（±），Ø8 铰链销沿 x
   limitDeg:   12,    // 单指展开/并拢角（机构能力；由曲柄 26 + 连杆 85 与舵机行程决定）
   safeDeg:     5,    // 安全包络（相邻指 70mm 间隙实测值，校验器给出后回填）
@@ -861,13 +863,12 @@ function buildMechanism() {
     oBolt.rotation.y = Math.PI/2; fx.add(oBolt);                       // Ø10 铰链销：轴线沿 x（销体原生沿 z）
     // 吊架：电机安装板顶面(y=−77) → 掌骨法兰底面(y=+31)，落在 x∈[10,18]、z∈[16,28]，
     //   与曲柄(≤x9)、BD连杆(≤x4)、D双耳(≤x9) 在 x 上分离 → 摆动全程无干涉
-    //   L 形：立柱 x∈[outX−6,outX+6]、z∈[16,28]（贴着电机安装板外侧），横臂到指根方块 (y=+31)
-    const brk = createBox(12*s, 180*s, 12*s, MAT.base);
-    brk.name = K + '_spBracket'; brk.position.set(SP.outX*s, -59*s, 22*s); fx.add(brk);
-    const foot = createBox((SP.outX - 4)*s, 17*s, 12*s, MAT.base);
-    foot.name = K + '_spBracketFoot'; foot.position.set((SP.outX/2 + 2)*s, 22.5*s, 22*s); fx.add(foot);
-    const footPad = createBox(16*s, 17*s, 22*s, MAT.base);
-    footPad.name = K + '_spBracketPad'; footPad.position.set(4*s, 22.5*s, 11*s); fx.add(footPad);
+    // 侧向吊架（L 形）：立柱在 z=bracketZ（曲柄/连杆包络之外）从电机安装板吊到掌骨法兰底面，
+    //   横臂沿 z 从法兰边缘伸进来咬合 —— 全程不与曲柄扫掠、BD 连杆相碰
+    const brk = createBox(12*s, 32*s, 12*s, MAT.base);
+    brk.name = K + '_spBracket'; brk.position.set(0, 1*s, SP.bracketZ*s); fx.add(brk);
+    const foot = createBox(12*s, 11*s, 22*s, MAT.base);
+    foot.name = K + '_spBracketFoot'; foot.position.set(0, 36.5*s, (SP.bracketZ - 5)*s); fx.add(foot);
     // 电机：轴沿 y，轴线落在 (x=0, z=+R)；buildMotorSet 内部 +28mm 偏置用 mg 平移补回
     const mg = new THREE.Group(); mg.name = K + '_spMotorGroup';
     mg.position.set((SP.outX - P.motorMountX)*s, 0, R*s); fx.add(mg);   // 轴线落在 (x=outX, z=+R)

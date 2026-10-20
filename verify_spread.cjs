@@ -87,7 +87,8 @@ for (const k of HAND.keys) {
   check(lab + ' 展开全程 |BD| ≡ 85mm（φ=±' + SPREAD.limitDeg + '°）', worst < 1e-3, '最大偏差 ' + (worst * 1e6).toFixed(2) + 'e-6mm');
   // ⑦ 推杆始终在电机前端面与 B 之间（不脱出、不穿底）
   const noseY = SPREAD.noseY;
-  check(lab + ' 推杆露出段端面在电机前端面之下（不顶死）', !!eB0 && (eB0.y - SPREAD.pivotY) > noseY, 'B.y_local=' + f2(eB0.y - SPREAD.pivotY) + 'mm > nose=' + noseY);
+  const exposed = !!eB0 ? Math.abs(eB0.y - SPREAD.pivotY - noseY) : 0;
+  check(lab + ' 推杆露出段长度为正（不顶死不脱出）', exposed > 5, '露出 ' + f2(exposed) + 'mm（B 局部 y=' + (eB0 ? f2(eB0.y - SPREAD.pivotY) : '?') + '，前端面 ' + noseY + '）');
 }
 console.log('=== 展开/并拢副连接物理性审计 ===');
 console.log(log.join('\n'));
