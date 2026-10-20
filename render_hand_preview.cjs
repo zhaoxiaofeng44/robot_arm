@@ -200,10 +200,16 @@ for(const o of hidden) o.visible=true;
 // (8) 掌指关节特写（食指 MCP，含电机 0 / 叉耳 / 袖套 / 肩螺栓）
 //     反根后 O0 随自由端运动，必须先把姿态真正下发到场景再取景，否则解析关节与网格错位
 setU(0);
+{ // 取景用零位姿态：关节解析位置与网格矩阵一致（先前下发屈曲姿态后矩阵未刷新 → nearPoints 取空）
+  const pose={}; for(const f of HAND.fingers) pose[f.key]=f.limits.map(()=>0);
+  api.updateMechanism(pose);
+  renderNear(path.join(out,'hand_08_mcp_closeup.png'),1100,1000,[0.40,0.42,0.82],[0,0,-20],200); }
+// (8b) 展开/并拢副特写（中指：叉耳+Ø10 铰链+毂+曲柄+D 双耳+85mm 连杆+侧挂电机+C 形吊架）
+setU(0);
 { const pose={}; for(const f of HAND.fingers) pose[f.key]=f.limits.map(()=>0);
-  pose.index=[40,40,25]; api.updateMechanism(pose);
-  const C=api.getJoints({index:[40,40,25]})['index'];
-  renderNear(path.join(out,'hand_08_mcp_closeup.png'),1100,1000,[0.40,0.42,0.82],[C.OW[0].x/s,C.OW[0].y/s,C.OW[0].z/s],110); }
+  api.updateMechanism(pose);
+  const F=api.FINGERS['middle'];
+  renderNear(path.join(out,'hand_11_spread_hinge.png'),1200,1000,[0.55,0.22,0.80],[0,F.spreadGroup.position.y/s+18,F.pos[2]],190); }
 // (9) 指尖抓握垫特写（满握态中指尖）
 setU(1.0);
 { const C=api.getJoints({})['middle'];

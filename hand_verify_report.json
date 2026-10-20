@@ -110,7 +110,7 @@
     },
     "min_non_mating_clearance_mm": 1,
     "continuous_lower_bound_mm": -1.779,
-    "tested_pairs": 16523,
+    "tested_pairs": 16413,
     "physical_meshes": 1745,
     "poses_scanned": 8039,
     "closure_error_mm": 8.526512829121202e-14,
