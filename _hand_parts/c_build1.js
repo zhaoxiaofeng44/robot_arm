@@ -57,7 +57,10 @@
   //   φ = ±12° 时推杆只用 ±5.4mm 行程（电机 59mm 全行程的 9%），故侧挂小电机也可直接替换。
   function buildSpreadUnit(rootParent, movingParent, K) {
     const SP = SPREAD;
-    const R = SP.crankR, NE = SP.noseY;
+    const NE = SP.noseY;
+    // 拇指指根横向电机镜像到 −z 外侧（背侧）：避开掌fold转动半的扫掠楔形区（z −253→−150，下探 y≥305）
+    const ZS = (K === 'thumb') ? -1 : 1;
+    const R = (K === 'thumb') ? SP.thumbCrankR : SP.crankR;   // 拇指曲柄加大让开自身 p3
     // ---------- 固定侧 ----------
     const fx = new THREE.Group(); fx.name = K + '_spreadFixed';
     fx.position.set(0, SP.pivotY * s, 0); rootParent.add(fx);
@@ -75,12 +78,12 @@
     // 侧向吊架（L 形）：立柱在 z=bracketZ（曲柄/连杆包络之外）从电机安装板吊到掌骨法兰底面，
     //   横臂沿 z 从法兰边缘伸进来咬合 —— 全程不与曲柄扫掠、BD 连杆相碰
     const brk = createBox(12*s, 32*s, 12*s, MAT.base);
-    brk.name = K + '_spBracket'; brk.position.set(0, 1*s, SP.bracketZ*s); fx.add(brk);
+    brk.name = K + '_spBracket'; brk.position.set(0, 1*s, ZS*SP.bracketZ*s); fx.add(brk);
     const foot = createBox(12*s, 11*s, 22*s, MAT.base);
-    foot.name = K + '_spBracketFoot'; foot.position.set(0, 36.5*s, (SP.bracketZ - 5)*s); fx.add(foot);
+    foot.name = K + '_spBracketFoot'; foot.position.set(0, 36.5*s, ZS*(SP.bracketZ - 5)*s); fx.add(foot);
     // 电机：轴沿 y，轴线落在 (x=0, z=+R)；buildMotorSet 内部 +28mm 偏置用 mg 平移补回
     const mg = new THREE.Group(); mg.name = K + '_spMotorGroup';
-    mg.position.set((SP.outX - P.motorMountX)*s, 0, R*s); fx.add(mg);   // 轴线落在 (x=outX, z=+R)
+    mg.position.set((SP.outX - P.motorMountX)*s, 0, ZS*R*s); fx.add(mg);   // 轴线落在 (x=outX, z=+R)
     buildMotorSet(mg, K + '_sp', NE, NE - 80, NE - 38, [NE - 72, NE - 48]);
     buildFlangePlate(mg, K + '_sp', NE + 4);
     // 推杆 / 推杆叉头 / 桥座 / M6 螺母：由 buildMotorSet 一并生成（<前缀>ExposedRod / BClevis），
@@ -90,14 +93,14 @@
     hub.name = K + '_spHub'; hub.rotation.y = Math.PI/2; movingParent.add(hub);
     // 曲柄：毂 → 横向 (x=outX) → 外伸 R，末端 D 双耳（Ø8 销沿 x）
     const arm = createBox(SP.outX*s, 12*s, (R - 4)*s, MAT.forearm);
-    arm.name = K + '_spCrankArm'; arm.position.set((SP.outX/2)*s, 0, (R + 4)/2*s); movingParent.add(arm);
+    arm.name = K + '_spCrankArm'; arm.position.set((SP.outX/2)*s, 0, ZS*(R + 4)/2*s); movingParent.add(arm);
     for (const [tag, xx] of [['L', SP.outX + SP.dBossX], ['R', SP.outX - SP.dBossX]]) {
       const boss = createBoredDisc(pr.dBossOD/2, P.boreLink/2, pr.dBossT, MAT.base);
       boss.name = K + '_spDClevisBoss' + tag;
-      boss.rotation.y = Math.PI/2; boss.position.set(xx*s, 0, R*s); movingParent.add(boss);
+      boss.rotation.y = Math.PI/2; boss.position.set(xx*s, 0, ZS*R*s); movingParent.add(boss);
     }
     const dBolt = createShoulderBolt(K + '_sp_d', pr.boltD, MAT.fastener);
-    dBolt.rotation.y = Math.PI/2; dBolt.position.set(SP.outX*s, 0, R*s); movingParent.add(dBolt);
+    dBolt.rotation.y = Math.PI/2; dBolt.position.set(SP.outX*s, 0, ZS*R*s); movingParent.add(dBolt);
     // ---------- BD 连杆（85mm 同型件）：挂在平面转换组里，逐帧按 B/D 摆位 ----------
     const plan = new THREE.Group(); plan.name = K + '_spLinkPlane';
     plan.rotation.y = -Math.PI/2; plan.position.x = SP.outX*s; fx.add(plan);   // plan(x,y) ≡ 实际(z,y)，整体在 x=outX
@@ -132,7 +135,7 @@
     spread.position.set(0, SPREAD.pivotY*s, 0);   // 289：毂心
 
     root.add(spread); F.spreadGroup = spread;
-    F.spread = 0; F.spreadLimit = SPREAD.limitDeg;
+    F.spread = 0; F.spreadLimit = SPREAD.limitDeg; F.fold = 0;   // 拇指：fold = 掌fold对掌角
     chainRoot.position.set(0, (2*M - SPREAD.pivotY)*s, 0);
     spread.add(chainRoot); F.chainRoot = chainRoot;
 
@@ -186,8 +189,14 @@
       parent = g;
     }
 
-    // —— 展开/并拢副：固定侧挂 root（安装件侧），转动侧挂 spread（指根侧）——
+    // —— 横向摆副：五指指根各一套展开/并拢（同款分离电机）；拇指另加掌fold对掌副（见 buildChassis）——
     F.spreadUnit = buildSpreadUnit(root, spread, K);
+    if (K === 'thumb') {
+      F.foldGroup = scene.getObjectByName('thumbPalmFlapGroup');
+      F.foldMotor = scene.getObjectByName('thumbFoldMotorGroup');
+      F.foldLink  = scene.getObjectByName('thumbFold_tTendon');
+      F.foldBase  = { pos: root.position.clone(), quat: root.quaternion.clone() };
+    }
     // —— 掌部安装件（方块+56×56法兰）改为“固定件”：整组搬到 root 下，世界位姿逐点保持不变 ——
     //    原因：方块经 4×M4 锁在法兰上、法兰经 4×M5 锁在掌骨板上，物理上不能随指根摆；
     //    铰链把“方块以上”与“指根段以下”分开，因此安装件必须留在固定侧。

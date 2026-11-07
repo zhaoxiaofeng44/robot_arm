@@ -1,6 +1,6 @@
 'use strict';
 // 五指整手：从 hand_mechanism_3d.html 提取网格，按“打印件类型”导出二进制STL（mm，按打印姿态落地）。
-//   整手 = 四指×19 + 拇指×14 + 掌体骨架 5 = 95 个打印件；同规格件几何完全相同（verify_hand.cjs 逐件核验），
+//   整手 = 五指×19 + 掌体骨架 6（掌板A固定半/拇指掌板转动半/拼接条/腕块/拇指桥 = 掌板A分半+4）= 101 个打印件；同规格件几何完全相同（verify_hand.cjs 逐件核验），
 //   因此按类型导出 16 个 STL，每个文件附打印数量与用处（见 index.json）。
 // 用法: node export_hand_stl.cjs
 const fs=require('fs'),path=require('path');
@@ -32,16 +32,17 @@ const P_GRIP=['palmGripPad','palmGripRib1','palmGripRib2','palmGripRib3'];
 const PRINTS=[
   {file:'finger_palm_proximal', src:'index', sfx:P_PALM_P, pose:'flipX', qty:/^[a-z]+_palmBodyProximal$/, note:'掌段·自由末端外段（含电机0法兰安装板 + 反根后的指尖圆头/半球垫；指根方块已随掌部安装件搬到末端段）' },
   {file:'finger_palm_distal', src:'index', sfx:P_PALM_D, pose:null, qty:/^[a-z]+_palmBodyDistal$/, note:'掌段·自由末端段（含一体化叉耳与关节0接口；反根后带 Ø24 指尖圆头+半球垫，即新的指尖）' },
-  {file:'finger_phalanx_proximal', src:'index', sfx:P_PHAL_P, pose:'flipX', qty:[/^[a-z]+_p1BodyWaist$/,/^(index|middle|ring|pinky)_p2BodyWaist$/], note:'近节/中节·关节端段（含袖套/毂+D侧板叉耳，拼接 y=-170）；四指 P1≡P2 同件，拇指 P1 亦同件（9 件）' },
-  {file:'finger_phalanx_distal', src:'index', sfx:P_PHAL_D, pose:null, qty:[/^[a-z]+_p1BodyDistal$/,/^(index|middle|ring|pinky)_p2BodyDistal$/], note:'近节/中节·远端段（含一体化叉耳+电机法兰安装板）；四指 P1≡P2 同件，拇指 P1 亦同件（9 件）' },
-  {file:'finger_terminal_proximal', src:'index', sfx:P_TERM_P, pose:'flipX', qty:[/^[a-z]+_p3BodyWaist$/,/^thumb_p2BodyWaist$/], note:'末节·关节端段（拼接 y=-125）；四指 P3 ≡ 拇指 P2，同件' },
-  {file:'finger_terminal_distal', src:'index', sfx:P_TERM_D, pose:null, qty:[/^[a-z]+_p3BodyDistal$/,/^thumb_p2BodyDistal$/], note:'末节 P3/拇指 P2：接掌固定段远端段（无电机；含指根方块，56×56 安装法兰挂其端面）' },
-  {file:'finger_motor_collar', src:'index', sfx:P_COLLAR, pose:'rotX90', qty:/^[a-z]+_m[0-2]CollarRing$/, note:'电机后抱箍（开口300°，2×M4 贯穿所在段）；14 台电机通用' },
-  {file:'finger_b_clevis', src:'index', sfx:P_CLEVIS, pose:null, qty:/^[a-z]+_m[0-2]BridgeFloor$/, note:'B 推杆叉头（双耳+M6 螺母沉龛夹持桥）；14 个单元通用' },
-  {file:'finger_bd_link', src:'index', sfx:P_LINK, pose:null, unrotateGroup:'index_t0Tendon', qty:/^[a-z]+_t[0-2]TendonWeb$/, note:'BD 等宽长条连杆 100×15×8（长轴已摆正）；14 个单元通用' },
+  {file:'finger_phalanx_proximal', src:'index', sfx:P_PHAL_P, pose:'flipX', qty:/^[a-z]+_p[12]BodyWaist$/, note:'近节/中节·关节端段（含袖套/毂+D侧板叉耳，拼接 y=-170）；五指 P1≡P2 逐件同构（10 件）' },
+  {file:'finger_phalanx_distal', src:'index', sfx:P_PHAL_D, pose:null, qty:/^[a-z]+_p[12]BodyDistal$/, note:'近节/中节·远端段（含一体化叉耳+电机法兰安装板）；五指 P1≡P2 逐件同构（10 件）' },
+  {file:'finger_terminal_proximal', src:'index', sfx:P_TERM_P, pose:'flipX', qty:/^[a-z]+_p3BodyWaist$/, note:'末节·关节端段（拼接 y=-125）；五指 P3 同件（5 件）' },
+  {file:'finger_terminal_distal', src:'index', sfx:P_TERM_D, pose:null, qty:/^[a-z]+_p3BodyDistal$/, note:'末节 P3：接掌固定段远端段（无电机；含指根方块，56×56 安装法兰挂其端面）；五指 P3 同件（5 件）' },
+  {file:'finger_motor_collar', src:'index', sfx:P_COLLAR, pose:'rotX90', qty:/^[a-z]+_m[0-2]CollarRing$/, note:'电机后抱箍（开口300°，2×M4 贯穿所在段）；15 台电机通用' },
+  {file:'finger_b_clevis', src:'index', sfx:P_CLEVIS, pose:null, qty:/^[a-z]+_m[0-2]BridgeFloor$/, note:'B 推杆叉头（双耳+M6 螺母沉龛夹持桥）；15 个单元通用' },
+  {file:'finger_bd_link', src:'index', sfx:P_LINK, pose:null, unrotateGroup:'index_t0Tendon', qty:/^[a-z]+_t[0-2]TendonWeb$/, note:'BD 等宽长条连杆 100×15×8（长轴已摆正）；15 个单元通用' },
   {file:'finger_palm_mount', src:'index', sfx:P_MOUNT, pose:'rotX90', qty:/^[a-z]+_palmFlangeBase$/, note:'掌骨安装法兰 56×56 R8（内圈4×Ø4.4 接指根方块、外圈4×Ø5.5 接掌骨板、Ø9 走线）' },
   {file:'finger_grip_pad', src:'index', sfx:P_GRIP, pose:'flipX', qty:/^[a-z]+_palmGripPad$/, note:'指尖防滑抓握垫（反根后位于掌段自由端；TPU95A 柔性更佳）' },
-  {file:'chassis_palmPlateA', src:null, sfx:null, abs:['palmPlateA'], pose:null, qty:/^palmPlateA$/, note:'掌骨板A（66×10 平板，z∈[-253,-55]）：拇指+食指指根接口 + 顶部拼接条 4×M5' },
+  {file:'chassis_palmPlateA', src:null, sfx:null, abs:['palmPlateA'], pose:null, qty:/^palmPlateA$/, note:'掌骨板A·固定半（66×10，z∈[-150,-55]）：食指指根接口 + 顶部拼接条 4×M5 + 腕块螺栓孔；拇指侧分半线 z=-150 装掌fold铰链' },
+  {file:'chassis_thumbFlap', src:null, sfx:null, abs:['thumbPalmFlap'], pose:null, qty:/^thumbPalmFlap$/, note:'拇指掌板·转动半（66×10，z∈[-253,-150]）：拇指指根接口孔；经 Ø10 铰链挂固定半，掌侧横向电机折叠带动整个拇指对掌' },
   {file:'chassis_palmPlateB', src:null, sfx:null, abs:['palmPlateB'], pose:null, qty:/^palmPlateB$/, note:'掌骨板B（66×10 平板，z∈[-55,153]）：中指+无名指+小指指根接口' },
   {file:'chassis_palmSpliceTop', src:null, sfx:null, abs:['palmSpliceTop'], pose:null, qty:/^palmSpliceTop$/, note:'顶部拼接条（6mm，z∈[-80,-30]）：4×M5 自下而上把板A/板B 拉成一体' },
   {file:'chassis_wristBlock', src:null, sfx:null, abs:['wristBlock','wristBoss1','wristBoss2','wristBoss3','wristBoss4'], pose:null, qty:/^wristBlock$/, note:'腕拼接块（含 4×Ø14×6 支承凸台一体打印）：4×M5 旋入掌骨板 + Ø40 走线 + 4×Ø9 腕接口' },
@@ -49,17 +50,17 @@ const PRINTS=[
 ];
 
 const PURCHASED_BOM=[
-  {part:'shoulderBoltO10x26',spec:'肩螺栓（塞打螺丝）Ø10 h9×26，端部螺纹 M8',qty:14,used:'14 个关节单元的 O 转动副（每指 3/2 个）'},
-  {part:'shoulderBoltB8x18',spec:'肩螺栓 Ø8 h9×18，端部螺纹 M6',qty:14,used:'14 个单元 B 推杆叉头销轴'},
-  {part:'shoulderBoltD8x20',spec:'肩螺栓 Ø8 h9×20，端部螺纹 M6',qty:14,used:'14 个单元 D 连杆销轴'},
-  {part:'rodNutM6',spec:'M6 六角螺母（沉入 B 叉头沉龛）',qty:14,used:'推杆端部夹持'},
-  {part:'washerO',spec:'平垫 Ø10.5/Ø16×1.6',qty:14,used:'O 关节螺母侧'},
-  {part:'washerBD',spec:'平垫 Ø8.4/Ø12×1.6',qty:28,used:'B/D 关节螺母侧'},
-  {part:'nylocNutM8',spec:'M8 尼龙自锁螺母（AF13）',qty:14,used:'O 肩螺栓'},
-  {part:'nylocNutM6',spec:'M6 尼龙自锁螺母（AF10）',qty:28,used:'B/D 肩螺栓'},
-  {part:'boltM4x22',spec:'M4×22 内六角 + 平垫 + M4 尼龙自锁螺母',qty:28,used:'14 台电机后抱箍贯穿所在段（每台 2 组）'},
-  {part:'boltM4x16',spec:'M4×16 内六角（建议配 M4 热熔螺母）',qty:56,used:'14 台电机前法兰旋入安装板（每台 4 根）'},
-  {part:'boltM4x36',spec:'M4×36 + 平垫 + M4 尼龙自锁螺母',qty:36,used:'各段一体化拼接凸台贯穿（每处 2 根，共 18 处）'},
+  {part:'shoulderBoltO10x26',spec:'肩螺栓（塞打螺丝）Ø10 h9×26，端部螺纹 M8',qty:15,used:'15 个关节单元的 O 转动副（五指各 3）'},
+  {part:'shoulderBoltB8x18',spec:'肩螺栓 Ø8 h9×18，端部螺纹 M6',qty:15,used:'15 个单元 B 推杆叉头销轴'},
+  {part:'shoulderBoltD8x20',spec:'肩螺栓 Ø8 h9×20，端部螺纹 M6',qty:15,used:'15 个单元 D 连杆销轴'},
+  {part:'rodNutM6',spec:'M6 六角螺母（沉入 B 叉头沉龛）',qty:15,used:'推杆端部夹持'},
+  {part:'washerO',spec:'平垫 Ø10.5/Ø16×1.6',qty:15,used:'O 关节螺母侧'},
+  {part:'washerBD',spec:'平垫 Ø8.4/Ø12×1.6',qty:30,used:'B/D 关节螺母侧'},
+  {part:'nylocNutM8',spec:'M8 尼龙自锁螺母（AF13）',qty:15,used:'O 肩螺栓'},
+  {part:'nylocNutM6',spec:'M6 尼龙自锁螺母（AF10）',qty:30,used:'B/D 肩螺栓'},
+  {part:'boltM4x22',spec:'M4×22 内六角 + 平垫 + M4 尼龙自锁螺母',qty:30,used:'15 台电机后抱箍贯穿所在段（每台 2 组）'},
+  {part:'boltM4x16',spec:'M4×16 内六角（建议配 M4 热熔螺母）',qty:60,used:'15 台电机前法兰旋入安装板（每台 4 根）'},
+  {part:'boltM4x36',spec:'M4×36 + 平垫 + M4 尼龙自锁螺母',qty:40,used:'各段一体化拼接凸台贯穿（每处 2 根，共 20 处 = 五指 × 4 段）'},
   {part:'boltM5x20',spec:'M5×20 内六角',qty:20,used:'5 根手指的掌骨法兰外圈 4×Ø5.5 → 掌骨板 M5 螺孔（每指 4 根）'},
   {part:'boltM5x16',spec:'M5×16 内六角',qty:10,used:'顶部拼接条 4（自下而上旋入条体）+ 拇指桥 2（旋入板A）+ 腕块 4（旋入掌骨板）'},
 ];
@@ -138,9 +139,9 @@ for(const def of PRINTS){
   index.push({part:def.file,kind:'printed',qty:qty,note:def.note,pose:(def.pose||'as-modeled')+(thetaZ?('+alignLink('+(thetaZ*180/Math.PI).toFixed(2)+'deg)'):''),triangles:mm.length,bounding_box_mm:size,fits_220mm_bed:Math.max(size[0],size[1],size[2])<=220});
 }
 fs.writeFileSync(path.join(outDir,'index.json'),JSON.stringify({
-  unit:'mm', model:'hand print-ready v1 (five fingers / 14 units, 1:1)',
+  unit:'mm', model:'hand print-ready v2 (five fingers / 15 units, 1:1)',
   generated_from:'hand_mechanism_3d.html',
-  note:'整手 95 个打印件 = 四指×19 + 拇指×14 + 掌体骨架 5；同规格件几何完全相同（见 hand_verify_report.json 的互换性检查），故按类型出 16 个 STL，每个文件附打印数量。销轴孔轴=Z 竖直落地，免支撑打印。',
+  note:'整手 101 个打印件 = 五指×19 + 掌体骨架 6（掌板A 分为固定半+拇指转动半，掌fold对掌；拇指 3 屈曲关节与四指同构）；同规格件几何完全相同（见 hand_verify_report.json 的互换性检查），故按类型出 17 个 STL，每个文件附打印数量。销轴孔轴=Z 竖直落地，免支撑打印。',
   printed_part_total: total, stl_file_total: index.length,
   purchased_parts_bom: PURCHASED_BOM, parts: index},null,2)+'\n');
 console.log('打印件总数', total, '；STL 文件', index.length, '；外购标准件', PURCHASED_BOM.length, '项');

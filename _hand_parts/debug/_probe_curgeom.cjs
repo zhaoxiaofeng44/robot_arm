@@ -1,0 +1,31 @@
+'use strict';
+const fs=require('fs'), path=require('path');
+const G=require('../.verification/geom2d.cjs'); const THREE=G.THREE;
+const html=fs.readFileSync(path.join(__dirname,'..','hand_mechanism_3d.html'),'utf8');
+const src=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].find(m=>m[1].includes('const P ='))[1];
+const nodes=new Map();
+const mockEl=()=>({style:{},textContent:'',innerHTML:'',value:'0',className:'',addEventListener(){},appendChild(){}});
+const document={getElementById(id){if(!nodes.has(id))nodes.set(id,mockEl());return nodes.get(id);},
+  createElement(){return {style:{},className:'',innerHTML:'',appendChild(){},getContext(){return {font:'',fillStyle:'',measureText(){return {width:40};},fillText(){}}}};}};
+const main=src.slice(0,src.lastIndexOf('\ninitScene();'));
+const api=new Function('THREE','document',main+'\nscene = new THREE.Scene(); showLabels = false; buildMechanism(); updateMechanism(); return {P,s,scene,FINGERS,HAND,updateMechanism};')(THREE,document);
+const {s,scene,FINGERS,HAND,updateMechanism}=api;
+const meshes=[]; scene.traverse(o=>{ if(o.isMesh) meshes.push(o); });
+const by=n=>meshes.find(m=>m.name===n);
+const cache=new Map();
+const solid=o=>{let x=cache.get(o); if(!x){x=G.makeSolid(o,s);cache.set(o,x);} return x;};
+function inter(a,b){ const A=by(a),B=by(b); if(!A||!B) return 'missing:'+a+'/'+b; try{ return G.solidsIntersect(solid(A),solid(B))?'OVERLAP':'clear'; }catch(e){ return 'err'; } }
+scene.updateMatrixWorld(true);
+const b=n=>{const o=by(n); if(!o) return n+' MISSING'; const x=new THREE.Box3().setFromObject(o);
+  return n.padEnd(30)+' x['+x.min.x.toFixed(1)+','+x.max.x.toFixed(1)+'] y['+x.min.y.toFixed(1)+','+x.max.y.toFixed(1)+'] z['+x.min.z.toFixed(1)+','+x.max.z.toFixed(1)+']';};
+console.log('--- 中指 展开副 φ=0 世界包围盒 ---');
+for (const n of ['middle_spMotorBody','middle_spExposedRod','middle_spBClevis','middle_spRod','middle_sptTendonWeb','middle_sptTendonEyeB','middle_sptTendonEyeD','middle_sp_dBoltShank','middle_spDClevisBossL','middle_spClevisPlateL','middle_spHub','middle_spForkL']) console.log(b(n));
+console.log('--- 实体相交 ---');
+console.log('连杆web × 电机body :', inter('middle_sptTendonWeb','middle_spMotorBody'));
+console.log('连杆web × 电机前法兰 :', inter('middle_sptTendonWeb','middle_spMotorFlange'));
+console.log('连杆web × 推杆 :', inter('middle_sptTendonWeb','middle_spExposedRod'));
+console.log('连杆web × B叉头 :', inter('middle_sptTendonWeb','middle_spBClevis'));
+console.log('B端环 × 电机body :', inter('middle_sptTendonEyeB','middle_spMotorBody'));
+console.log('B端环 × B销 :', inter('middle_sptTendonEyeB','middle_sp_bBoltShank'));
+console.log('D端环 × D销 :', inter('middle_sptTendonEyeD','middle_sp_dBoltShank'));
+console.log('B叉头 × D销 :', inter('middle_spBClevis','middle_sp_dBoltShank'));

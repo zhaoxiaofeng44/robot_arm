@@ -1,76 +1,76 @@
 {
   "unit": "mm",
-  "model": "hand print-ready v1 (five fingers / 14 units, 1:1)",
+  "model": "hand print-ready v2 (five fingers / 15 units, 1:1)",
   "generated_from": "hand_mechanism_3d.html",
-  "note": "整手 95 个打印件 = 四指×19 + 拇指×14 + 掌体骨架 5；同规格件几何完全相同（见 hand_verify_report.json 的互换性检查），故按类型出 16 个 STL，每个文件附打印数量。销轴孔轴=Z 竖直落地，免支撑打印。",
-  "printed_part_total": 95,
-  "stl_file_total": 16,
+  "note": "整手 101 个打印件 = 五指×19 + 掌体骨架 6（掌板A 分为固定半+拇指转动半，掌fold对掌；拇指 3 屈曲关节与四指同构）；同规格件几何完全相同（见 hand_verify_report.json 的互换性检查），故按类型出 17 个 STL，每个文件附打印数量。销轴孔轴=Z 竖直落地，免支撑打印。",
+  "printed_part_total": 101,
+  "stl_file_total": 17,
   "purchased_parts_bom": [
     {
       "part": "shoulderBoltO10x26",
       "spec": "肩螺栓（塞打螺丝）Ø10 h9×26，端部螺纹 M8",
-      "qty": 14,
-      "used": "14 个关节单元的 O 转动副（每指 3/2 个）"
+      "qty": 15,
+      "used": "15 个关节单元的 O 转动副（五指各 3）"
     },
     {
       "part": "shoulderBoltB8x18",
       "spec": "肩螺栓 Ø8 h9×18，端部螺纹 M6",
-      "qty": 14,
-      "used": "14 个单元 B 推杆叉头销轴"
+      "qty": 15,
+      "used": "15 个单元 B 推杆叉头销轴"
     },
     {
       "part": "shoulderBoltD8x20",
       "spec": "肩螺栓 Ø8 h9×20，端部螺纹 M6",
-      "qty": 14,
-      "used": "14 个单元 D 连杆销轴"
+      "qty": 15,
+      "used": "15 个单元 D 连杆销轴"
     },
     {
       "part": "rodNutM6",
       "spec": "M6 六角螺母（沉入 B 叉头沉龛）",
-      "qty": 14,
+      "qty": 15,
       "used": "推杆端部夹持"
     },
     {
       "part": "washerO",
       "spec": "平垫 Ø10.5/Ø16×1.6",
-      "qty": 14,
+      "qty": 15,
       "used": "O 关节螺母侧"
     },
     {
       "part": "washerBD",
       "spec": "平垫 Ø8.4/Ø12×1.6",
-      "qty": 28,
+      "qty": 30,
       "used": "B/D 关节螺母侧"
     },
     {
       "part": "nylocNutM8",
       "spec": "M8 尼龙自锁螺母（AF13）",
-      "qty": 14,
+      "qty": 15,
       "used": "O 肩螺栓"
     },
     {
       "part": "nylocNutM6",
       "spec": "M6 尼龙自锁螺母（AF10）",
-      "qty": 28,
+      "qty": 30,
       "used": "B/D 肩螺栓"
     },
     {
       "part": "boltM4x22",
       "spec": "M4×22 内六角 + 平垫 + M4 尼龙自锁螺母",
-      "qty": 28,
-      "used": "14 台电机后抱箍贯穿所在段（每台 2 组）"
+      "qty": 30,
+      "used": "15 台电机后抱箍贯穿所在段（每台 2 组）"
     },
     {
       "part": "boltM4x16",
       "spec": "M4×16 内六角（建议配 M4 热熔螺母）",
-      "qty": 56,
-      "used": "14 台电机前法兰旋入安装板（每台 4 根）"
+      "qty": 60,
+      "used": "15 台电机前法兰旋入安装板（每台 4 根）"
     },
     {
       "part": "boltM4x36",
       "spec": "M4×36 + 平垫 + M4 尼龙自锁螺母",
-      "qty": 36,
-      "used": "各段一体化拼接凸台贯穿（每处 2 根，共 18 处）"
+      "qty": 40,
+      "used": "各段一体化拼接凸台贯穿（每处 2 根，共 20 处 = 五指 × 4 段）"
     },
     {
       "part": "boltM5x20",
@@ -117,8 +117,8 @@
     {
       "part": "finger_phalanx_proximal",
       "kind": "printed",
-      "qty": 9,
-      "note": "近节/中节·关节端段（含袖套/毂+D侧板叉耳，拼接 y=-170）；四指 P1≡P2 同件，拇指 P1 亦同件（9 件）",
+      "qty": 10,
+      "note": "近节/中节·关节端段（含袖套/毂+D侧板叉耳，拼接 y=-170）；五指 P1≡P2 逐件同构（10 件）",
       "pose": "flipX",
       "triangles": 3592,
       "bounding_box_mm": [
@@ -131,8 +131,8 @@
     {
       "part": "finger_phalanx_distal",
       "kind": "printed",
-      "qty": 9,
-      "note": "近节/中节·远端段（含一体化叉耳+电机法兰安装板）；四指 P1≡P2 同件，拇指 P1 亦同件（9 件）",
+      "qty": 10,
+      "note": "近节/中节·远端段（含一体化叉耳+电机法兰安装板）；五指 P1≡P2 逐件同构（10 件）",
       "pose": "as-modeled",
       "triangles": 3428,
       "bounding_box_mm": [
@@ -146,7 +146,7 @@
       "part": "finger_terminal_proximal",
       "kind": "printed",
       "qty": 5,
-      "note": "末节·关节端段（拼接 y=-125）；四指 P3 ≡ 拇指 P2，同件",
+      "note": "末节·关节端段（拼接 y=-125）；五指 P3 同件（5 件）",
       "pose": "flipX",
       "triangles": 3392,
       "bounding_box_mm": [
@@ -160,7 +160,7 @@
       "part": "finger_terminal_distal",
       "kind": "printed",
       "qty": 5,
-      "note": "末节 P3/拇指 P2：接掌固定段远端段（无电机；含指根方块，56×56 安装法兰挂其端面）",
+      "note": "末节 P3：接掌固定段远端段（无电机；含指根方块，56×56 安装法兰挂其端面）；五指 P3 同件（5 件）",
       "pose": "as-modeled",
       "triangles": 1840,
       "bounding_box_mm": [
@@ -173,8 +173,8 @@
     {
       "part": "finger_motor_collar",
       "kind": "printed",
-      "qty": 14,
-      "note": "电机后抱箍（开口300°，2×M4 贯穿所在段）；14 台电机通用",
+      "qty": 15,
+      "note": "电机后抱箍（开口300°，2×M4 贯穿所在段）；15 台电机通用",
       "pose": "rotX90",
       "triangles": 2788,
       "bounding_box_mm": [
@@ -187,8 +187,8 @@
     {
       "part": "finger_b_clevis",
       "kind": "printed",
-      "qty": 14,
-      "note": "B 推杆叉头（双耳+M6 螺母沉龛夹持桥）；14 个单元通用",
+      "qty": 15,
+      "note": "B 推杆叉头（双耳+M6 螺母沉龛夹持桥）；15 个单元通用",
       "pose": "as-modeled",
       "triangles": 1132,
       "bounding_box_mm": [
@@ -201,8 +201,8 @@
     {
       "part": "finger_bd_link",
       "kind": "printed",
-      "qty": 14,
-      "note": "BD 等宽长条连杆 100×15×8（长轴已摆正）；14 个单元通用",
+      "qty": 15,
+      "note": "BD 等宽长条连杆 100×15×8（长轴已摆正）；15 个单元通用",
       "pose": "as-modeled+alignLink(-9.48deg)",
       "triangles": 1368,
       "bounding_box_mm": [
@@ -244,13 +244,27 @@
       "part": "chassis_palmPlateA",
       "kind": "printed",
       "qty": 1,
-      "note": "掌骨板A（66×10 平板，z∈[-253,-55]）：拇指+食指指根接口 + 顶部拼接条 4×M5",
+      "note": "掌骨板A·固定半（66×10，z∈[-150,-55]）：食指指根接口 + 顶部拼接条 4×M5 + 腕块螺栓孔；拇指侧分半线 z=-150 装掌fold铰链",
       "pose": "as-modeled",
-      "triangles": 2108,
+      "triangles": 1208,
       "bounding_box_mm": [
         66,
         10,
-        203.75
+        100.75
+      ],
+      "fits_220mm_bed": true
+    },
+    {
+      "part": "chassis_thumbFlap",
+      "kind": "printed",
+      "qty": 1,
+      "note": "拇指掌板·转动半（66×10，z∈[-253,-150]）：拇指指根接口孔；经 Ø10 铰链挂固定半，掌侧横向电机折叠带动整个拇指对掌",
+      "pose": "as-modeled",
+      "triangles": 912,
+      "bounding_box_mm": [
+        66,
+        10,
+        103
       ],
       "fits_220mm_bed": true
     },
@@ -306,7 +320,7 @@
       "bounding_box_mm": [
         66,
         14,
-        107
+        100
       ],
       "fits_220mm_bed": true
     }

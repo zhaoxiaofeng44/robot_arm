@@ -35,9 +35,19 @@ const MAXPOSE = 400000;
 // ============ 网格清点与分类 =============
 const meshes = [];
 scene.traverse(o => { if (o.isMesh) meshes.push(o); });
-const CHASSIS_RE = /^(palmPlateA|palmPlateB|palmSpliceTop|wristBlock|wristBoss\d+|thumbBridge|thumbBridgeBoss\d+)$/;
+// 掌体骨架：两块半掌（固定半边 palmArcFlapGroup 由本正则直判；拇指半边 thumbPalmFlapGroup 归到拇指链）
+const CHASSIS_RE = /^(palmPlateA|palmPlateB|palmSpliceTop|wristBlock|wristBoss\d+|thumbBridge|thumbBridgeBoss\d+|palmHinge\w+|palmDrive\w+)$/;
 function classOf(mesh) {
   const chain = []; for (let o = mesh; o; o = o.parent) chain.push(o.name);
+  // 转动半 thumbPalmFlapGroup 下的件：掌板/推板 → 掌体骨架；电机/D 销等驱动件 → 掌心驱动组
+  const inThumbHalf = chain.indexOf('thumbPalmFlapGroup') >= 0;
+  const inCarrier = chain.indexOf('palmArcFlapGroup') >= 0;
+  if (inThumbHalf || inCarrier) {
+    const idx = chain.indexOf(inThumbHalf ? 'thumbPalmFlapGroup' : 'palmArcFlapGroup');
+    const inner = chain.slice(0, idx);           // 该半掌之下（含自身之上）的组名
+    if (inner.some(n => /^palmDrive/.test(n))) return 'PALMDRIVE';
+    return 'CHASSIS';
+  }
   if (chain.some(n => CHASSIS_RE.test(n))) return 'CHASSIS';
   let key = null;
   for (const k of KEYS) if (chain.indexOf(k + '_root') >= 0) { key = k; break; }

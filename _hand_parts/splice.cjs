@@ -5,7 +5,7 @@ const part = function(n){ return fs.readFileSync(base + '_hand_parts/' + n, 'utf
 const seg = function(a, b){ return src.slice(a - 1, b); };
 const out = [];
 out.push(...seg(1, 5));
-out.push('  <title>仿生五指整手 — 14 台直线电机驱动 4×3 + 拇指 2 关节（同一可拆肘关节单元）</title>');
+out.push('  <title>仿生五指整手 — 15 台直线电机驱动 五指×3 关节（同一可拆肘关节单元）</title>');
 out.push(...seg(7, 37));
 out.push(...part('c_panel.html'));
 out.push(...seg(66, 68));

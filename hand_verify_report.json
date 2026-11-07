@@ -52,7 +52,7 @@
       "n": 2,
       "limits": [
         90,
-        70
+        90
       ],
       "pos_z": -220,
       "spin": 0
@@ -81,7 +81,7 @@
     ],
     "thumb": [
       90,
-      70
+      90
     ]
   },
   "grid_step_deg": 10,
@@ -97,22 +97,22 @@
     "tipLen": 250
   },
   "results": {
-    "collision_count": 0,
-    "mating_zone_pairs": 2786,
+    "collision_count": 300,
+    "mating_zone_pairs": 0,
     "rejected_2p5d_by_exact3d": 0,
-    "allowance_mm": 2.779,
-    "radius_max_mm": 637,
+    "allowance_mm": 2.596,
+    "radius_max_mm": 595,
     "allowance_worst_joint": {
       "finger": "index",
       "joint": 2,
-      "r_max_mm": 637,
-      "allowance_mm": 2.779
+      "r_max_mm": 595,
+      "allowance_mm": 2.596
     },
     "min_non_mating_clearance_mm": 0,
-    "continuous_lower_bound_mm": -2.779,
-    "tested_pairs": 15980,
-    "physical_meshes": 1740,
-    "poses_scanned": 8039,
+    "continuous_lower_bound_mm": -2.596,
+    "tested_pairs": 950,
+    "physical_meshes": 1811,
+    "poses_scanned": 8139,
     "closure_error_mm": 8.526512829121202e-14,
     "stroke_error_mm": 2.534995,
     "transmission_angle_deg": [
@@ -120,183 +120,2404 @@
       89.7
     ],
     "tip_y_mm": {
-      "index": -1153,
-      "middle": -1153,
-      "ring": -1153,
-      "pinky": -1153,
-      "thumb": -853
+      "index": -1195,
+      "middle": -1195,
+      "ring": -1195,
+      "pinky": -1195,
+      "thumb": -895
     },
-    "svc_pass": 95,
+    "svc_pass": 94,
     "svc_total": 95
   },
-  "collisions": [],
+  "collisions": [
+    {
+      "pose": {
+        "index": [
+          0,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 2.75
+    },
+    {
+      "pose": {
+        "index": [
+          0,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorMountPlate | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          0,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_p2DSpliceBoltNutR",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 1.46
+    },
+    {
+      "pose": {
+        "index": [
+          0,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt2Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          0,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0ExposedRod | index_m2ExposedRod",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 46.6
+    },
+    {
+      "pose": {
+        "index": [
+          0.25,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 2.75
+    },
+    {
+      "pose": {
+        "index": [
+          0.25,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorMountPlate | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          0.25,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_p2DSpliceBoltNutR",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 1.46
+    },
+    {
+      "pose": {
+        "index": [
+          0.25,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt2Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          0.25,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0ExposedRod | index_m2ExposedRod",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 46.6
+    },
+    {
+      "pose": {
+        "index": [
+          0.5,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 2.75
+    },
+    {
+      "pose": {
+        "index": [
+          0.5,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorMountPlate | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          0.5,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_p2DSpliceBoltNutR",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 1.46
+    },
+    {
+      "pose": {
+        "index": [
+          0.5,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt2Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          0.5,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0ExposedRod | index_m2ExposedRod",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 46.6
+    },
+    {
+      "pose": {
+        "index": [
+          0.75,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 2.75
+    },
+    {
+      "pose": {
+        "index": [
+          0.75,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorMountPlate | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          0.75,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_p2DSpliceBoltNutR",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 1.46
+    },
+    {
+      "pose": {
+        "index": [
+          0.75,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt2Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          0.75,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0ExposedRod | index_m2ExposedRod",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 46.6
+    },
+    {
+      "pose": {
+        "index": [
+          1,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 2.75
+    },
+    {
+      "pose": {
+        "index": [
+          1,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorMountPlate | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          1,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_p2DSpliceBoltNutR",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 1.46
+    },
+    {
+      "pose": {
+        "index": [
+          1,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt2Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          1,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0ExposedRod | index_m2ExposedRod",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 46.6
+    },
+    {
+      "pose": {
+        "index": [
+          1.25,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 2.75
+    },
+    {
+      "pose": {
+        "index": [
+          1.25,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorMountPlate | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          1.25,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_p2DSpliceBoltNutR",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 1.46
+    },
+    {
+      "pose": {
+        "index": [
+          1.25,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt2Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          1.25,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0ExposedRod | index_m2ExposedRod",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 46.6
+    },
+    {
+      "pose": {
+        "index": [
+          1.5,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 2.75
+    },
+    {
+      "pose": {
+        "index": [
+          1.5,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorMountPlate | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          1.5,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_p2DSpliceBoltNutR",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 1.46
+    },
+    {
+      "pose": {
+        "index": [
+          1.5,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt2Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          1.5,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0ExposedRod | index_m2ExposedRod",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 46.6
+    },
+    {
+      "pose": {
+        "index": [
+          1.75,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 2.75
+    },
+    {
+      "pose": {
+        "index": [
+          1.75,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorMountPlate | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          1.75,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_p2DSpliceBoltNutR",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 1.46
+    },
+    {
+      "pose": {
+        "index": [
+          1.75,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt2Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          1.75,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0ExposedRod | index_m2ExposedRod",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 46.6
+    },
+    {
+      "pose": {
+        "index": [
+          2,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 2.75
+    },
+    {
+      "pose": {
+        "index": [
+          2,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorMountPlate | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          2,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_p2DSpliceBoltNutR",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 1.46
+    },
+    {
+      "pose": {
+        "index": [
+          2,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt2Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          2,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0ExposedRod | index_m2ExposedRod",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 46.6
+    },
+    {
+      "pose": {
+        "index": [
+          2.25,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 2.75
+    },
+    {
+      "pose": {
+        "index": [
+          2.25,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorMountPlate | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          2.25,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_p2DSpliceBoltNutR",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 1.46
+    },
+    {
+      "pose": {
+        "index": [
+          2.25,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt2Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          2.25,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0ExposedRod | index_m2ExposedRod",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 46.6
+    },
+    {
+      "pose": {
+        "index": [
+          2.5,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 2.75
+    },
+    {
+      "pose": {
+        "index": [
+          2.5,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorMountPlate | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          2.5,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_p2DSpliceBoltNutR",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 1.46
+    },
+    {
+      "pose": {
+        "index": [
+          2.5,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt2Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          2.5,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0ExposedRod | index_m2ExposedRod",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 46.6
+    },
+    {
+      "pose": {
+        "index": [
+          2.75,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 2.75
+    },
+    {
+      "pose": {
+        "index": [
+          2.75,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorMountPlate | index_m2FlangeBolt4Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          2.75,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_p2DSpliceBoltNutR",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 1.46
+    },
+    {
+      "pose": {
+        "index": [
+          2.75,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt2Head",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 3.5
+    },
+    {
+      "pose": {
+        "index": [
+          2.75,
+          0,
+          0
+        ],
+        "middle": [
+          0,
+          0,
+          0
+        ],
+        "ring": [
+          0,
+          0,
+          0
+        ],
+        "pinky": [
+          0,
+          0,
+          0
+        ],
+        "thumb": [
+          0,
+          0
+        ]
+      },
+      "pair": "palmDriveA_m0ExposedRod | index_m2ExposedRod",
+      "assemblies": [
+        "PALMDRIVE",
+        "CHASSIS"
+      ],
+      "zone": null,
+      "exact3d": false,
+      "max_r_mm": null,
+      "overlap_mm2": 46.6
+    }
+  ],
   "closest": [
     {
-      "pair": "palmPlateA | thumb_spBracketFoot",
+      "pair": "palmDriveA_m0MotorFlange | index_m2MotorBody",
       "assemblies": [
-        "CHASSIS",
-        "thumb_SPF"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
       "min_clearance_mm": 0
     },
     {
-      "pair": "palmPlateA | index_spBracketFoot",
+      "pair": "palmDriveA_m0MotorFlange | index_m2MotorFrontCap",
       "assemblies": [
-        "CHASSIS",
-        "index_SPF"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
       "min_clearance_mm": 0
     },
     {
-      "pair": "palmPlateB | index_spBracketFoot",
+      "pair": "palmDriveA_m0MotorFlange | index_m2FlangeBolt4Head",
       "assemblies": [
-        "CHASSIS",
-        "index_SPF"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
       "min_clearance_mm": 0
     },
     {
-      "pair": "palmPlateB | middle_spBracketFoot",
+      "pair": "palmDriveA_m0bBoltThread | index_m2MotorBody",
       "assemblies": [
-        "CHASSIS",
-        "middle_SPF"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
       "min_clearance_mm": 0
     },
     {
-      "pair": "palmPlateB | ring_spBracketFoot",
+      "pair": "palmDriveA_m0bBoltThread | index_m2MotorFrontCap",
       "assemblies": [
-        "CHASSIS",
-        "ring_SPF"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
       "min_clearance_mm": 0
     },
     {
-      "pair": "palmPlateB | pinky_spBracketFoot",
+      "pair": "palmDriveA_m0bBoltWasher | index_m2MotorBody",
       "assemblies": [
-        "CHASSIS",
-        "pinky_SPF"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
       "min_clearance_mm": 0
     },
     {
-      "pair": "index_palmDSplicePadBottom | index_m0MotorFlange",
+      "pair": "palmDriveA_m0bBoltWasher | index_m2MotorFrontCap",
       "assemblies": [
-        "index_PALM",
-        "index_m0Fixed"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
-      "min_clearance_mm": 1
+      "min_clearance_mm": 0
     },
     {
-      "pair": "index_palmDSplicePadTop | index_m0MotorFlange",
+      "pair": "palmDriveA_m0bBoltWasher | index_m2FlangeBolt4Head",
       "assemblies": [
-        "index_PALM",
-        "index_m0Fixed"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
-      "min_clearance_mm": 1
+      "min_clearance_mm": 0
     },
     {
-      "pair": "middle_palmDSplicePadTop | middle_m0MotorFlange",
+      "pair": "palmDriveA_m0bBoltNut | index_m2MotorBody",
       "assemblies": [
-        "middle_PALM",
-        "middle_m0Fixed"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
-      "min_clearance_mm": 1
+      "min_clearance_mm": 0
     },
     {
-      "pair": "middle_palmDSplicePadBottom | middle_m0MotorFlange",
+      "pair": "palmDriveA_m0bBoltNut | index_m2MotorFrontCap",
       "assemblies": [
-        "middle_PALM",
-        "middle_m0Fixed"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
-      "min_clearance_mm": 1
+      "min_clearance_mm": 0
     },
     {
-      "pair": "ring_palmDSplicePadBottom | ring_m0MotorFlange",
+      "pair": "palmDriveA_m0bBoltNut | index_m2FlangeBolt4",
       "assemblies": [
-        "ring_PALM",
-        "ring_m0Fixed"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
-      "min_clearance_mm": 1
+      "min_clearance_mm": 0
     },
     {
-      "pair": "ring_palmDSplicePadTop | ring_m0MotorFlange",
+      "pair": "palmDriveA_m0bBoltNut | index_m2FlangeBolt4Head",
       "assemblies": [
-        "ring_PALM",
-        "ring_m0Fixed"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
-      "min_clearance_mm": 1
+      "min_clearance_mm": 0
     },
     {
-      "pair": "pinky_palmDSplicePadTop | pinky_m0MotorFlange",
+      "pair": "palmDriveA_m0MotorMountPlate | index_m2MotorBody",
       "assemblies": [
-        "pinky_PALM",
-        "pinky_m0Fixed"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
-      "min_clearance_mm": 1
+      "min_clearance_mm": 0
     },
     {
-      "pair": "pinky_palmDSplicePadBottom | pinky_m0MotorFlange",
+      "pair": "palmDriveA_m0MotorMountPlate | index_m2MotorFrontCap",
       "assemblies": [
-        "pinky_PALM",
-        "pinky_m0Fixed"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
-      "min_clearance_mm": 1
+      "min_clearance_mm": 0
     },
     {
-      "pair": "index_palmPSplicePadBottom | index_m0MotorFlange",
+      "pair": "palmDriveA_m0MotorMountPlate | index_m2FlangeBolt4",
       "assemblies": [
-        "index_PALM",
-        "index_m0Fixed"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
-      "min_clearance_mm": 1
+      "min_clearance_mm": 0
     },
     {
-      "pair": "index_palmPSplicePadTop | index_m0MotorFlange",
+      "pair": "palmDriveA_m0MotorMountPlate | index_m2FlangeBolt4Head",
       "assemblies": [
-        "index_PALM",
-        "index_m0Fixed"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
-      "min_clearance_mm": 1
+      "min_clearance_mm": 0
     },
     {
-      "pair": "middle_palmPSplicePadTop | middle_m0MotorFlange",
+      "pair": "palmDriveBPost | index_m2MotorBody",
       "assemblies": [
-        "middle_PALM",
-        "middle_m0Fixed"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
-      "min_clearance_mm": 1
+      "min_clearance_mm": 0
     },
     {
-      "pair": "middle_palmPSplicePadBottom | middle_m0MotorFlange",
+      "pair": "palmDriveBPost | index_m2MotorFrontCap",
       "assemblies": [
-        "middle_PALM",
-        "middle_m0Fixed"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
-      "min_clearance_mm": 1
+      "min_clearance_mm": 0
     },
     {
-      "pair": "ring_palmPSplicePadBottom | ring_m0MotorFlange",
+      "pair": "palmDriveBPost | index_m2FlangeBolt4",
       "assemblies": [
-        "ring_PALM",
-        "ring_m0Fixed"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
-      "min_clearance_mm": 1
+      "min_clearance_mm": 0
     },
     {
-      "pair": "ring_palmPSplicePadTop | ring_m0MotorFlange",
+      "pair": "palmDriveBPost | index_m2FlangeBolt4Head",
       "assemblies": [
-        "ring_PALM",
-        "ring_m0Fixed"
+        "PALMDRIVE",
+        "CHASSIS"
       ],
-      "min_clearance_mm": 1
+      "min_clearance_mm": 0
     }
   ],
   "serviceability": [
     {
       "name": "无铆接/永久连接",
       "pass": true,
-      "detail": "1740 网格"
+      "detail": "1811 网格"
     },
     {
       "name": "食指 O0 关节肩螺栓（头/光杆/螺纹/平垫/自锁螺母）齐全",
@@ -764,9 +2985,9 @@
       "detail": ""
     },
     {
-      "name": "五指同规格件逐件同几何（1727 件可互换，含拇指末端 P2≡四指末端 P3）",
-      "pass": true,
-      "detail": ""
+      "name": "五指同规格件逐件同几何（1722 件可互换，含拇指末端 P2≡四指末端 P3）",
+      "pass": false,
+      "detail": "index_spCrankArm ⇔ thumb_spCrankArm"
     }
   ]
 }

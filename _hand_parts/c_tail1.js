@@ -42,6 +42,8 @@ function fingerChain(key, angles) {
   const world = function(p){
     const v = new THREE.Vector3(p.x*s, p.y*s, 0);
     v.applyQuaternion(F.chainRoot.quaternion); v.add(F.chainRoot.position);
+    // 反根链完整路径：chainRoot → spread(枢轴层) → root(→掌fold折叠，root 变换已含 φ)
+    if (F.spreadGroup) { v.applyQuaternion(F.spreadGroup.quaternion); v.add(F.spreadGroup.position); }
     v.applyQuaternion(F.root.quaternion); v.add(F.root.position);
     return v;
   };
@@ -89,7 +91,7 @@ function updateLabels() {
     if (f.key === 'index' || f.key === 'middle' || f.key === 'ring' || f.key === 'pinky' || f.key === 'thumb')
       put('关节0 ' + (f.key === 'thumb' ? 'MCP' : 'MCP'), '#ffaa44', p0);
   }
-  put('掌骨板 + 腕拼接块（14 台电机全部随各自段运动）', '#7c8aff', new THREE.Vector3(-140*s, (P.upperArmLen+70)*s, 0));
+  put('掌骨板 + 腕拼接块（15 台电机全部随各自段运动）', '#7c8aff', new THREE.Vector3(-140*s, (P.upperArmLen+70)*s, 0));
 }
 
 function updateTrail() {
@@ -151,15 +153,34 @@ function updateMechanism(pose){
       updateRodUnit(F.motors[k], f.key+'_m'+k, -P.phalanx1Len+P.motorFrontY, C.Bl[k].x, C.Bl[k].y);
       updateTendon(F.tendons[k], C.Bl[k], C.Dl[k]);
     }
-    // 展开/并拢：指根绕 x 转 φ，推杆 + BD 连杆按闭合关系逐帧摆位（|BD| ≡ L = 85 恒等）
+    // 横向摆：五指指根展开/并拢（同款分离电机）；拇指另有掌fold对掌（转动半掌板带整个拇指绕掌板铰链折叠）
     const phi = (F.spread || 0) * Math.PI/180;
     if (F.spreadGroup) F.spreadGroup.rotation.x = phi;
     if (F.spreadUnit) {
-      const R = SPREAD.crankR, L = P.tendonLinkLen;
-      const Dy = -R*Math.sin(phi), Dz = R*Math.cos(phi);
-      const By = Dy - Math.sqrt(L*L - (R - Dz)*(R - Dz));
+      const ZS = (f.key === 'thumb') ? -1 : 1;   // 拇指指根横向电机镜像到 −z 外侧
+      const R = (f.key === 'thumb') ? SPREAD.thumbCrankR : SPREAD.crankR, L = P.tendonLinkLen;
+      const Dy = -R*Math.sin(phi), Dz = ZS*R*Math.cos(phi);
+      const By = Dy - Math.sqrt(L*L - (R - ZS*Dz)*(R - ZS*Dz));
       updateRodUnit(F.spreadUnit.motor, f.key+'_sp', SPREAD.noseY, P.motorMountX, By);
-      updateTendon(F.spreadUnit.link, {x:R, y:By}, {x:Dz, y:Dy});
+      updateTendon(F.spreadUnit.link, {x:ZS*R, y:By}, {x:Dz, y:Dy});
+    }
+    if (f.key === 'thumb' && F.foldGroup) {
+      const fPhi = (F.fold || 0) * Math.PI/180;
+      F.foldGroup.rotation.x = fPhi;
+      // 拇指整链随转动半掌板做同一刚体转动：root 变换 = 平移到铰链 → Qx(fPhi) → 回基位
+      if (F.foldBase) {
+        const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0), fPhi);
+        F.root.quaternion.copy(q).multiply(F.foldBase.quat);
+        const H = new THREE.Vector3(0, (HAND.plateY0 + HAND.plateT/2)*s, THUMB_FOLD.hingeZ*s);
+        const off = F.foldBase.pos.clone().sub(H).applyQuaternion(q);
+        F.root.position.copy(H).add(off);
+      }
+      // 掌fold电机/连杆：与展开副同款闭式解，|BD| ≡ 85 恒等
+      const R = THUMB_FOLD.crankR, L = P.tendonLinkLen;
+      const Dy = -R*Math.sin(fPhi), Dz = R*Math.cos(fPhi);
+      const By = Dy - Math.sqrt(L*L - (R - Dz)*(R - Dz));
+      if (F.foldMotor) updateRodUnit(F.foldMotor, 'thumbFold_m0', THUMB_FOLD.noseY, P.motorMountX, By);
+      if (F.foldLink) updateTendon(F.foldLink, {x:R, y:By}, {x:Dz, y:Dy});
     }
   }
   updateLabels();

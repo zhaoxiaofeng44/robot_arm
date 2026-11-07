@@ -15,7 +15,7 @@ function updateLiveData() {
     out += ' · 行程 ' + parts.join('/') + ' mm<br>';
     out += '<span class=hl>传动角</span> ' + ta.join('/') + '° · 指尖 y ' + (c.tip.y/s).toFixed(0) + ' mm<br>';
   }
-  out += '<b>合计</b> 14 关节总行程 <span class=highlight>' + tot.toFixed(1) + ' mm</span> · 峰值理想静载力 ' + maxF.toFixed(1) + ' N<br>';
-  out += '<b>关节</b>: 14 个可拆肩螺栓单元（四指 3 + 拇指 2，几何逐件相同）';
+  out += '<b>合计</b> 15 关节总行程 <span class=highlight>' + tot.toFixed(1) + ' mm</span> · 峰值理想静载力 ' + maxF.toFixed(1) + ' N<br>';
+  out += '<b>关节</b>: 15 个可拆肩螺栓单元（五指各 3，几何逐件相同）';
   document.getElementById('live-data').innerHTML = out;
 }

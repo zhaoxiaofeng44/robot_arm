@@ -147,7 +147,7 @@ const ISO =[0.62, 0.46, 0.64];   // 3/4 等轴（从掌侧上方看）
 const ISO2=[-0.55,0.40, 0.73];   // 另一侧 3/4
 const FACE=[0.04, 0.06, 1.00];   // 沿 +z：手指机构平面正视（电机/BD 连杆/叉耳同平面）
 const SIDE=[1.00, 0.05, 0.07];   // 沿 +x 看机构剖面（五平面互相平行、指根法兰共面）
-const ALL=/index_|middle_|ring_|pinky_|thumb_|palmPlate|wrist|thumbBridge/;
+const ALL=/index_|middle_|ring_|pinky_|thumb_|palmPlate|wrist|thumbBridge|thumbPalmFlap|thumbFold/;
 const PLATE=/^palmPlate/;
 
 // 朝向自检：断言“掌骨板在画面里比指尖高”（screenY 越小越靠上），把“指尖/指根颠倒”变成可测项。
@@ -187,8 +187,10 @@ setU(1.0);
 // (6) 拇指对掌位 + 食指捏合
 setU(0);
 { const pose={}; for(const f of HAND.fingers) pose[f.key]=f.limits.map(()=>0);
-  pose.thumb=[90,70]; pose.index=[60,70,45]; pose.middle=[25,30,20];
-  api.updateMechanism(pose); }
+  pose.thumb=[70,70,50]; pose.index=[60,70,45]; pose.middle=[25,30,20];
+  api.updateMechanism(pose);
+  // 拇指掌fold对掌：掌板转动半带整个拇指横向向 +z（掌心/食指侧）聚拢
+  api.FINGERS.thumb.fold = -10; api.updateMechanism(); }
 {const f=renderAuto(path.join(out,'hand_06_pinch.png'),1200,1400,ISO,ALL,1.05); orientCheck('hand_06_pinch',ISO,f,1200,1400);}
 // (7) 掌体骨架单独（隐藏五指）
 setU(0);
@@ -204,12 +206,12 @@ setU(0);
   const pose={}; for(const f of HAND.fingers) pose[f.key]=f.limits.map(()=>0);
   api.updateMechanism(pose);
   renderNear(path.join(out,'hand_08_mcp_closeup.png'),1100,1000,[0.40,0.42,0.82],[0,0,-20],200); }
-// (8b) 展开/并拢副特写（中指：叉耳+Ø10 铰链+毂+曲柄+D 双耳+85mm 连杆+侧挂电机+C 形吊架）
+// (8b) 展开/并拢副特写（中指：电机在手指上 + 掌侧D锚臂 + 外伸臂x=30平面上的85mm连杆）
 setU(0);
 { const pose={}; for(const f of HAND.fingers) pose[f.key]=f.limits.map(()=>0);
   api.updateMechanism(pose);
   const F=api.FINGERS['middle'];
-  renderNear(path.join(out,'hand_11_spread_hinge.png'),1200,1000,[0.55,0.22,0.80],[0,F.spreadGroup.position.y/s+18,F.pos[2]],190); }
+  renderNear(path.join(out,'hand_11_spread_hinge.png'),1200,1000,[-0.62,0.12,0.78],[16,F.spreadGroup.position.y/s-44,F.pos[2]],118); }
 // (9) 指尖抓握垫特写（满握态中指尖）
 setU(1.0);
 { const C=api.getJoints({})['middle'];

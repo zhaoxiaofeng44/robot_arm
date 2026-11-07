@@ -40,11 +40,13 @@ for (const k of KEYS) {
   check(lab + ' 掌骨法兰 4×M4 齐套', has(k + '_palmFlangeBase') && [1,2,3,4].every(i => has(k + '_palmMountBolt' + i) && has(k + '_palmMountBoltHead' + i)), '');
   // 反根链：P{n}(固定·接掌) → 关节组 n−1 → P{n−1} → … → 关节组 0 → 掌段(自由末端·带指尖配件)
   // 展开/并拢副（新增 DOF）：铰链枢轴必须落在掌骨安装件底面下方，且件件齐套
-  const sOk = has(k + '_spForkL') && has(k + '_spForkR') && has(k + '_spHub') && has(k + '_spCrankArm')
-    && has(k + '_spDClevisBossL') && has(k + '_spDClevisBossR') && has(k + '_spBracket')
+  const sOk = has(k + '_spForkL') && has(k + '_spForkR') && has(k + '_spForkBossL') && has(k + '_spForkBossR')
+    && has(k + '_spHub') && has(k + '_spCrankArm')
+    && has(k + '_spDClevisBossL') && has(k + '_spDClevisBossR')
+    && has(k + '_spBracket') && has(k + '_spBracketFoot')
     && has(k + '_spMotorBody') && has(k + '_spFlangePlate')
     && has(k + '_spClevisPlateL') && has(k + '_spBridgeFloor') && has(k + '_spRodNut')
-    && ['Head', 'Shank', 'Thread', 'Washer', 'Nut'].every(x => has(k + '_sp_oBolt' + x) && has(k + '_sp_dBolt' + x))
+    && ['Head', 'Shank', 'Thread', 'Washer', 'Nut'].every(x => has(k + '_sp_oBolt' + x) && has(k + '_sp_dBolt' + x) && has(k + '_spbBolt' + x))
     && has(k + '_spExposedRod') && has(k + '_sptTendonWeb') && has(k + '_sptTendonEyeB') && has(k + '_sptTendonEyeD');
   check(lab + ' 展开/并拢副齐套（叉耳+毂+曲柄+D双耳+吊架+侧挂电机+Ø10/Ø8肩螺栓+BD连杆）', sOk, '');
   const spOk = f.spreadGroup && f.spreadGroup.parent === f.root
@@ -56,12 +58,12 @@ for (const k of KEYS) {
     f.groups.slice(0, f.n).every((g, j) => g.parent === f.joints[j] && f.joints[j].parent === f.groups[j + 1]);
   check(lab + ' 反根链条父子关系正确（P' + f.n + '(固定·接掌)→…→P1→掌段(自由·指尖)）', okChain, '');
 }
-check('14 个关节单元（四指 3 + 拇指 2）肩螺栓总数 = 42 组', boltUnits === 42, boltUnits + ' 组 O/B/D');
+check('15 个关节单元（五指各 3）肩螺栓总数 = 45 组', boltUnits === 45, boltUnits + ' 组 O/B/D');
 check('轴向浮动 = ' + P.print.axialClearance + 'mm/侧（耳内档−连杆/袖套，与肘版 v5 相同）',
   ((16 - P.print.sleeveThickness) / 2) >= P.print.axialClearance - 1e-9 &&
   ((2 * (P.print.clevisPlateZ - 2)) - P.print.linkThickness) / 2 >= P.print.axialClearance - 1e-9, '');
 check('连杆为等宽长条（几何同肘版 v5）', P.print.linkWidth === 15, '');
-// 同规格件互换性：剥掉指名前缀后逐件比几何（拇指末端 P2 与四指末端 P3 对位）
+// 同规格件互换性：剥掉指名前缀后逐件比几何（拇指本轮也改为 3 关节，p1/p2/p3 与其他手指同构）
 function localSig(mesh) {
   const a = mesh.geometry.attributes.position, out = [];
   for (let i = 0; i < a.count; i++) out.push([a.getX(i).toFixed(6), a.getY(i).toFixed(6), a.getZ(i).toFixed(6)].join(','));
@@ -70,9 +72,7 @@ function localSig(mesh) {
 function normName(n) {
   const i = n.indexOf('_');
   if (i < 0) return n;
-  const key = n.slice(0, i), rest = n.slice(i);
-  if (key === 'thumb') return rest.replace(/^_p2/, '_p3');
-  return rest;
+  return n.slice(i);
 }
 const groups = new Map();
 for (const m of meshes) {
@@ -95,7 +95,7 @@ for (const g of groups.values()) {
   if (bad.length) interBad.push(g[0].name + ' ⇔ ' + bad.slice(0, 2).join(','));
   else interCount += g.length;
 }
-check('五指同规格件逐件同几何（' + interCount + ' 件可互换，含拇指末端 P2≡四指末端 P3）', interBad.length === 0, interBad.slice(0, 4).join('; '));
+check('五指同规格件逐件同几何（' + interCount + ' 件可互换，含拇指 P2≡四指 P2、拇指 P3≡四指 P3）', interBad.length === 0, interBad.slice(0, 4).join('; '));
 const svcPass = svc.filter(c => c.pass).length;
 
 // ============ 汇总 =============
@@ -106,8 +106,8 @@ const zonePairs = [...pairStats.values()].filter(p => p.mating_zone).length;
 const tips = {};
 for (const k of KEYS) tips[k] = +(getJoints(zeroPose())[k].tip.y / s).toFixed(1);
 const summary = {
-  version: 'hand-v1-five-finger-14-unit',
-  status: '五指整手（四指×3 + 拇指×2 = 14 个同构关节单元）闭合/行程/配合区/安全包络碰撞/可拆装性核验',
+  version: 'hand-v2-five-finger-15-unit',
+  status: '五指整手（五指×3 = 15 个同构关节单元）闭合/行程/配合区/安全包络碰撞/可拆装性核验',
   scale_note: '1:1 与手指版同尺寸（非人体尺度）：掌段300 + 300/300/250，整手 z 展宽 ' + (HAND.plateZ1 - HAND.plateZ0) + 'mm',
   fingers: FINGERS_PUBLIC(),
   limits_deg: LIMITS_PUBLIC(),

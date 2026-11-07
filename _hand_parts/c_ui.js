@@ -12,17 +12,28 @@ function setupUI() {
     for (let i = 0; i < f.n; i++) {
       const row = document.createElement('div');
       row.className = 'slider-group';
-      const nm = (f.n === 2 && i === 1) ? '关节1 IP 指间' : jointNames[i];
+      const nm = jointNames[i] || ('关节' + i);
       row.innerHTML = '<label>' + nm + ' <span class=value id=' + f.key + '_a' + i + '-val>0.0°</span></label>'
         + '<input type=range id=' + f.key + '_a' + i + '-slider min=0 max=' + f.limits[i] + ' value=0 step=0.5>';
       blk.appendChild(row);
     }
-    // —— 展开/并拢（外展/内收）：绕掌骨安装处 x 轴，正 = 向 −z 侧张开 ——
+    // —— 横向摆副：五指指根各一套（展开/并拢，同款分离电机）；拇指另加掌fold对掌滑杆 ——
+    const isThumb = f.key === 'thumb';
+    const spLabel = isThumb ? '指根 展开/并拢 外展（内收限 −4°）' : '展开/并拢 外展';
+    const spMin = isThumb ? (-THUMB_OPP.spreadInwardDeg) : (-SPREAD.safeDeg);
+    const spMax = isThumb ? 0 : SPREAD.safeDeg;   // 拇指指根电机镜像在外侧：外展由掌fold +5° 承担
     const srow = document.createElement('div');
     srow.className = 'slider-group';
-    srow.innerHTML = '<label>展开/并拢 外展 <span class=value id=' + f.key + '_sp-val>0.0°</span></label>'
-      + '<input type=range id=' + f.key + '_sp-slider min=' + (-SPREAD.safeDeg) + ' max=' + SPREAD.safeDeg + ' value=0 step=0.5>';
+    srow.innerHTML = '<label>' + spLabel + ' <span class=value id=' + f.key + '_sp-val>0.0°</span></label>'
+      + '<input type=range id=' + f.key + '_sp-slider min=' + spMin + ' max=' + spMax + ' value=0 step=0.5>';
     blk.appendChild(srow);
+    if (isThumb) {
+      const frow = document.createElement('div');
+      frow.className = 'slider-group';
+      frow.innerHTML = '<label>对掌 · 掌fold 横向聚拢（配合屈指可到 −12°） <span class=value id=thumb_fold-val>0.0°</span></label>'
+        + '<input type=range id=thumb_fold-slider min=' + (-THUMB_OPP.inwardDeg) + ' max=' + THUMB_OPP.outwardDeg + ' value=0 step=0.5>';
+      blk.appendChild(frow);
+    }
     host.appendChild(blk);
   }
   const onSlide = function(key, i) {
@@ -49,6 +60,17 @@ function setupUI() {
     };
   };
   for (const f of HAND.fingers) document.getElementById(f.key + '_sp-slider').addEventListener('input', onSpread(f.key));
+  const syncFold = function() {
+    const F = FINGERS.thumb; if (!F) return;
+    const el = document.getElementById('thumb_fold-val'); if (el) el.textContent = (F.fold >= 0 ? '+' : '') + F.fold.toFixed(1) + '°';
+    const sl = document.getElementById('thumb_fold-slider'); if (sl) sl.value = F.fold;
+  };
+  document.getElementById('thumb_fold-slider').addEventListener('input', function(e) {
+    isPlaying = false;
+    const pb = document.getElementById('btn-play'); if (pb) pb.textContent = '▶ 播放';
+    FINGERS.thumb.fold = parseFloat(e.target.value);
+    syncFold(); updateMechanism();
+  });
   // 对称扇开：以中指为轴（权重 index +1 … pinky −2，拇指 +2 反向张开）
   const SPW = { index: 1, middle: 0, ring: -1, pinky: -2, thumb: 2 };
   const spreadAll = function(u) {
@@ -70,6 +92,7 @@ function setupUI() {
   document.getElementById('btn-reset').addEventListener('click', function() {
     stopPlay(); animU = 0;
     for (const k of HAND.keys) { FINGERS[k].pose = fingerDef(k).limits.map(function(){ return 0; }); FINGERS[k].spread = 0; syncSpread(k); }
+    FINGERS.thumb.fold = 0; syncFold();
     updateMechanism(); updateSliderLabels();
   });
   const pOpen = function(){ const p = {}; for (const k of HAND.keys) p[k] = fingerDef(k).limits.map(function(){ return 0; }); return p; };
@@ -85,9 +108,17 @@ function setupUI() {
   document.getElementById('btn-preset-open').addEventListener('click', preset(pOpen));
   document.getElementById('btn-preset-half').addEventListener('click', preset(function(){ return pScale({}, 0.5); }));
   document.getElementById('btn-preset-fist').addEventListener('click', preset(function(){ return pScale({}, 1.0); }));
-  document.getElementById('btn-preset-pinch').addEventListener('click', preset(function(){ return pScale({index:0.55, thumb:0.6}, 0.12); }));
+  document.getElementById('btn-preset-pinch').addEventListener('click', function(){
+    stopPlay(); animU = 0;
+    FINGERS.thumb.fold = THUMB_OPP.presetDeg; syncFold();
+    setPose(pScale({index:0.55, middle:0.25, ring:0.45, pinky:0.35, thumb:0.6}, 0));
+  });
   document.getElementById('btn-preset-index').addEventListener('click', preset(function(){ return pScale({index:1.0}, 0.0); }));
-  document.getElementById('btn-preset-thumb').addEventListener('click', preset(function(){ return pScale({thumb:1.0}, 0.0); }));
+  document.getElementById('btn-preset-thumb').addEventListener('click', function(){
+    stopPlay(); animU = 0;
+    FINGERS.thumb.fold = THUMB_OPP.presetDeg; syncFold();
+    setPose(pScale({thumb:0.5}, 0.0));
+  });
   document.getElementById('show-grid').addEventListener('change', function(e) {
     showGrid = e.target.checked;
     const g = scene.getObjectByName('grid');
